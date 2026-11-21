@@ -271,3 +271,8 @@ test('a key removed in one tab is not written back by another tab', () => {
   `);
   assert.deepEqual(r, { diskKey: '', memKey: '' });
 });
+
+test('index.html preloads every module the app loads at startup', () => {
+  // (without the list, the browser finds the modules three round trips deep)
+  execFileSync('python3', [join(dirname(fileURLToPath(import.meta.url)), '..', 'tools', 'modulepreload.py'), '--check'], { encoding: 'utf8' });
+});

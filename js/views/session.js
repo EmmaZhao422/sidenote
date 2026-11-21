@@ -365,9 +365,13 @@ export function sessionView(root, navigate) {
     }, t('prep.planReady'));
     const startNow = h('button', { type: 'button', class: 'btn btn-ghost', onclick: beginFocus }, t('prep.startNow'));
     const foot = h('div', { class: 'stage-foot' });
+    // while planning, the way out is a link by the countdown; on the breathing
+    // screen the button at the bottom says the same thing, so the link goes
+    const skipLink = h('button', { type: 'button', class: 'linklike prep-skip', onclick: beginFocus }, t('prep.startNow'));
 
     function drawPhase() {
       const settling = active().settling;
+      skipLink.hidden = !!settling;
       body.replaceChildren(settling ? settlePhase : planPhase);
       foot.replaceChildren(...(settling ? [startNow] : [toSettle]), volumeControl());
       title.textContent = settling ? t('prep.settleTitle') : t('prep.title');
@@ -382,7 +386,7 @@ export function sessionView(root, navigate) {
     showStage(scene,
       h('header', { class: 'stage-head' }, title,
         h('p', { class: 'prep-count' }, t('prep.startsIn'), ' ', countdown,
-          h('button', { type: 'button', class: 'linklike prep-skip', onclick: beginFocus }, t('prep.startNow')))),
+          skipLink)),
       body, foot);
     drawParked();
     drawPhase();
