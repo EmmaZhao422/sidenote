@@ -135,10 +135,25 @@ export function homeView(root, navigate) {
   const dl = store.state.settings.deadline;
   if (dl && dl.date) {
     const days = Math.round((new Date(`${dl.date}T12:00`).getTime() - new Date(`${store.dayKey(0)}T12:00`).getTime()) / 86400000);
+    if (days < 0) store.setSettings({ deadline: null }); // the day has passed
     if (days >= 0) {
       const name = dl.label || t('home.deadlineDefault');
       countdown = h('p', { class: 'countdown' }, days === 0 ? t('home.deadlineToday', { name }) : t('home.deadline', { name, n: days }));
     }
+  }
+
+  // No date set yet: offer it right here, where a student preparing for an exam will see it
+  if (!countdown && real.length) {
+    const pick = h('input', {
+      type: 'date', class: 'field field-date', id: 'home-deadline', min: store.dayKey(0),
+      onchange: (e) => {
+        if (!e.target.value) return;
+        store.setSettings({ deadline: { label: '', date: e.target.value } });
+        toast(t('settings.deadline.saved'));
+        navigate('#/');
+      },
+    });
+    countdown = h('p', { class: 'countdown countdown-ask' }, h('label', { for: 'home-deadline' }, t('home.deadlineAsk')), pick);
   }
 
   // --- today and the streak, once there is something to show

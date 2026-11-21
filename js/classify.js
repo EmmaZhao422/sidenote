@@ -20,7 +20,7 @@ const RULES = {
   todo: [
     /^(i )?(need to|have to|must|gotta|should|remember to|don't forget|dont forget|todo|to-do)\b/i,
     /^(buy|email|call|text|reply|pay|book|submit|finish|send|sign up|register|schedule|clean|wash|renew|return|print|pick up|order|ask)\b/i,
-    /(记得|别忘|不要忘|得去|要去|要交|要买|要回|要发|要问|需要|买|回复|报名|预约|打电话|洗衣|取快递|寄|提交|缴费|还书|订票|续费)/,
+    /(记得|别忘|不要忘|得去|要去|要交|要买|要回|要发|要问|需要|买|回复|报名|预约|打电话|回电话|回个电话|回消息|回微信|回邮件|让我(去|回|给|带|买)|洗衣|取快递|寄|提交|缴费|还书|订票|续费)/,
   ],
   idea: [
     /\b(idea|what about|maybe i could|i could build|could make|should try|side project|startup|an app that|a website that|business)\b/i,

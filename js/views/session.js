@@ -158,6 +158,17 @@ export function sessionView(root, navigate) {
       { value: 0, label: t('setup.prepSkip') },
     ], draft.prep, (v) => { draft.prep = v; drawChoices(); });
 
+    // In a hurry: go straight to the timer this once, without changing the saved habit
+    const skipPrep = h('button', {
+      type: 'button', class: 'linklike setup-skip',
+      onclick: () => {
+        const keep = store.state.settings.prepMin;
+        startBlock({ goal: draft.goal, minutes: draft.minutes, scene: draft.scene, mode: draft.mode, prep: 0 });
+        store.setSettings({ prepMin: keep });
+        render();
+      },
+    }, t('setup.skipOnce'));
+
     const choices = h('span', { class: 'setup-choices' });
     const start = h('button', { type: 'submit', class: 'btn btn-ink btn-big' });
     function drawChoices() {
@@ -167,6 +178,7 @@ export function sessionView(root, navigate) {
         draft.prep ? t('setup.prepShort', { n: draft.prep }) : t('setup.prepNone'),
       ].map((text) => h('span', null, text)));
       start.textContent = draft.prep ? t('setup.start') : t('setup.startNow');
+      skipPrep.hidden = !draft.prep;
     }
     drawChoices();
 
@@ -192,7 +204,7 @@ export function sessionView(root, navigate) {
     h('div', { class: 'label' }, t('setup.length')), h('div', { class: 'row' }, length, customWrap),
     h('div', { class: 'label' }, t('setup.moreLabel')), more,
     waiting ? h('p', { class: 'hint setup-carried' }, t('setup.carried', { n: waiting })) : null,
-    start);
+    h('div', { class: 'row setup-go' }, start, skipPrep));
 
     show(form);
     // On a phone, focusing the box would throw the keyboard over the whole form
@@ -320,13 +332,15 @@ export function sessionView(root, navigate) {
     function drawPhase() {
       const settling = active().settling;
       body.replaceChildren(settling ? settlePhase : planPhase);
-      foot.replaceChildren(...(settling ? [startNow] : [toSettle, startNow]), volumeControl());
+      foot.replaceChildren(...(settling ? [startNow] : [toSettle]), volumeControl());
       title.textContent = settling ? t('prep.settleTitle') : t('prep.title');
     }
 
     const title = h('h1', { class: 'stage-title' }, t('prep.title'));
     showStage(scene,
-      h('header', { class: 'stage-head' }, title, h('p', { class: 'prep-count' }, t('prep.startsIn'), ' ', countdown)),
+      h('header', { class: 'stage-head' }, title,
+        h('p', { class: 'prep-count' }, t('prep.startsIn'), ' ', countdown,
+          h('button', { type: 'button', class: 'linklike prep-skip', onclick: beginFocus }, t('prep.startNow')))),
       body, foot);
     drawParked();
     drawPhase();
@@ -393,7 +407,7 @@ export function sessionView(root, navigate) {
 
     const input = h('input', {
       type: 'text', class: 'margin-input', maxlength: '500', autocomplete: 'off', dir: 'auto', enterkeyhint: 'done',
-      placeholder: t('focus.parkPlaceholder'), 'aria-label': t('focus.parkLabel'),
+      placeholder: t(window.innerWidth < 560 ? 'focus.parkPlaceholderShort' : 'focus.parkPlaceholder'), 'aria-label': t('focus.parkLabel'),
     });
     const flash = h('span', { class: 'margin-flash', 'aria-live': 'polite' });
     const strip = h('form', {
@@ -550,7 +564,8 @@ export function sessionView(root, navigate) {
 
     const saveBtn = h('button', { type: 'button', class: 'btn btn-ink btn-big', disabled: true, onclick: commit },
       parked ? t('wrap.saveAndSort', { n: parked }) : t('wrap.save'));
-    const check = () => { saveBtn.disabled = !(answers.rating && answers.finished); };
+    const need = h('p', { class: 'hint wrap-need' }, t('wrap.need'));
+    const check = () => { saveBtn.disabled = !(answers.rating && answers.finished); need.hidden = !saveBtn.disabled; };
 
     function commit() {
       const cur = active();
@@ -615,7 +630,7 @@ export function sessionView(root, navigate) {
         h('p', { class: 'lede' }, t('wrap.summary', { min: Math.max(1, Math.round(focusSec / 60)), n: parked })),
         h('div', { class: 'label' }, t('wrap.ratingLabel')), rating, ratingWord,
         h('div', { class: 'label' }, t('wrap.finishedLabel')), finished,
-        saveBtn,
+        saveBtn, need,
         h('p', { class: 'wrap-links' }, more, discard)));
   }
 

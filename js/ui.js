@@ -120,7 +120,8 @@ export function dayLabel(ts, style = 'short') {
 }
 
 export function timeLabel(ts) {
-  return new Date(ts).toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
+  // hour12 gives 上午/下午 in Chinese, so "5:25" is never mistaken for a countdown
+  return new Date(ts).toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit', hour12: true });
 }
 
 export function whenLabel(ts) {

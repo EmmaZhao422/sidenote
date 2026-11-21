@@ -26,10 +26,11 @@ export function noteCard(thoughtId, opts = {}) {
     class: 'note-kind', 'aria-label': t('note.kindLabel'), title: t('note.kindHint'),
     onchange: (e) => { store.updateThought(thought.id, { category: e.target.value }); opts.onChange?.('kind'); },
   }, CATEGORIES.map((c) => h('option', { value: c, selected: c === thought.category }, t(`cat.${c}`))));
-  const meta = h('div', { class: 'note-meta' }, kind, h('span', null, whenLabel(thought.createdAt)));
-  if (typeof thought.offsetSec === 'number') {
-    meta.append(h('span', null, t('note.offset', { n: Math.max(1, Math.round(thought.offsetSec / 60)) })));
-  }
+  // Parked during a block: say which minute of the block. Otherwise: the time of day.
+  const meta = h('div', { class: 'note-meta' }, kind,
+    h('span', null, typeof thought.offsetSec === 'number'
+      ? t('note.offset', { n: Math.max(1, Math.round(thought.offsetSec / 60)) })
+      : whenLabel(thought.createdAt)));
   if (thought.due && thought.status !== 'done') {
     const today = store.dayKey(0);
     const label = thought.due <= today ? t('due.today') : thought.due === store.dayKey(1) ? t('due.tomorrow') : t('due.by', { day: dayLabel(new Date(`${thought.due}T12:00`).getTime()) });
@@ -106,7 +107,8 @@ export function noteCard(thoughtId, opts = {}) {
   // A to-do gets a "when": today, tomorrow, this week, or straight into the next study block.
   // Dated to-dos show on the home page until they are done.
   let whenRow = null;
-  if (thought.category === 'todo' && thought.status !== 'done') {
+  // (worries and "other" thoughts can be given a day too: "look at this again tonight")
+  if (['todo', 'worry', 'other'].includes(thought.category) && thought.status !== 'done') {
     const sunday = () => { const d = new Date(); return store.dayKey(((7 - d.getDay()) % 7) || 7); };
     const choices = [
       { key: 'today', due: () => store.dayKey(0) },
@@ -125,7 +127,7 @@ export function noteCard(thoughtId, opts = {}) {
           opts.onChange?.('due');
         },
       }, t(`due.pick.${c.key}`))),
-      h('button', {
+      thought.category !== 'todo' ? null : h('button', {
         type: 'button', class: 'chip',
         onclick: () => {
           if ((store.state.nextPlan || []).length >= 3) { toast(t('note.nextFull')); return; }
@@ -142,6 +144,7 @@ export function noteCard(thoughtId, opts = {}) {
     type: 'button', class: 'btn btn-quiet',
     onclick: () => {
       breakTimer.start(10);
+      toast(t('note.breakStarted'), 4000);
       store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
       opts.onChange?.('status');
     },
@@ -157,7 +160,6 @@ export function noteCard(thoughtId, opts = {}) {
       type: 'button', class: 'btn btn-quiet',
       onclick: () => {
         store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
-        toast(t('note.doneToast'));
         opts.onChange?.('status');
       },
     }, t('note.done'));
