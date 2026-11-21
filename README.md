@@ -1,6 +1,6 @@
 # Sidenote · 走神本
 
-**Mind wandered? Put it in the margin.**
+**Mind wandered? Park it here.**
 
 A study timer with one extra box. While you study, every stray thought goes into the box in one line and you keep working. When the block ends you deal with them one by one: an answer for a question, a day for an errand, one thing to do about a worry. With an AI model connected, it writes the answers. The summary page then shows where your attention went.
 
@@ -12,7 +12,7 @@ Live site: https://emmazhao422.github.io/sidenote/
 
 - **Five minutes to get ready.** Name the goal, split it into up to three steps, empty your head, then a short breathing guide while the sound fades in.
 - **Park stray thoughts.** One input box during the block. Type, press Enter, back to work. The count beside it opens a list of what you have parked, in case of a typo.
-- **Deal with them afterwards.** Each thought ends in something to do: a to-do gets a day (and stays on the home page until it is done) or goes into the next block's plan, a question gets your own guess and then the answer, a worry gets one next step, an urge gets a ten-minute break on the clock. Anything given a day folds away under "Planned", so the list shows what is still undecided.
+- **Go through them afterwards.** Each thought ends in something to do: a to-do gets a day (and stays on the home page until it is done) or goes into the next block's plan, a question gets your own guess and then the answer, a worry gets one next step, a distraction gets a ten-minute break on the timer. Anything given a day folds away under "Planned", so the list shows what is still undecided.
 - **Summary.** Focus time per day, a focus score per block, what your stray thoughts were about, and the minute of a block they tend to show up.
 - **Ten scenes, generated in the browser.** Rain, waves, fireplace, forest, summer night, night train, quiet library, and brown, pink and white noise. No audio files.
 - **Scene recommendation.** After three rated blocks on at least two scenes it shows which one you focus best with and suggests untried scenes with a similar character.
@@ -32,7 +32,7 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/views/` | One file per screen: home, study block, margin, summary, scenes, settings |
 | `js/block.js` | Starts a study block (used by the setup screen and the one-tap "Same as last time") |
 | `js/store.js` | Saves everything in the browser's local storage |
-| `js/classify.js` | Sorts a thought into question / to-do / worry / idea / urge |
+| `js/classify.js` | Sorts a thought into question / to-do / worry / idea / distraction (`urge` in the code) |
 | `js/score.js` | Focus score, totals for the summary, scene recommendation |
 | `js/audio.js`, `js/backdrop.js` | The soundscapes and the moving backdrop |
 | `js/ai.js`, `js/prompts.js` | Talking to the AI model (site proxy, a visitor's own key, or Claude itself when the page is opened inside the Claude app), and what it is told |

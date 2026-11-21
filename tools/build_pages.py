@@ -563,9 +563,9 @@ page('guides/zh/index.html', 'zh', '学习方法', '十二篇实用短文：学�
 # ----------------------------------------------------------------------------- Chinese landing page
 # A plain page in Chinese that search engines can read without running the app.
 zh_guides = ''.join(f'<li><a href="../guides/zh/{g["slug"]}.html">{g["zh"]["title"]}</a></li>' for g in GUIDES)
-page('zh/index.html', 'zh', '学习时把走神的念头先记下来', '走神本是一个免费的学习计时器，多了一个输入框：学习时冒出来的念头一句话记下，继续学；这一轮学完再处理，接上 AI 还能直接给答案。还会告诉你注意力都去了哪儿。', f'''
+page('zh/index.html', 'zh', '学习时把走神的念头先记下来', '走神本是一个免费的学习计时器，多了一个输入框：学习时冒出来的念头一句话记下，继续学；这一轮学完再看，接上 AI 还能直接给答案。还会告诉你注意力都去了哪儿。', f'''
     <h1>走神了？先记下来。</h1>
-    <p>走神本（Sidenote）是一个免费的学习计时器，只多了一个输入框。学习的时候，冒出来的念头用一句话记在里面，然后继续学。这一轮学完，再一条条处理：问题给答案，待办给第一步，担心的事换个更平静的角度看。最后你会看到注意力都去了哪儿。</p>
+    <p>走神本（Sidenote）是一个免费的学习计时器，只多了一个输入框。学习的时候，冒出来的念头用一句话记在里面，然后继续学。这一轮学完，再一条条看：问题给答案，待办给第一步，担心的事换个更平静的角度看。最后你会看到注意力都去了哪儿。</p>
     <p class="cta"><a class="btn btn-ink btn-big" href="../?lang=zh#/focus">开始一轮学习</a></p>
     <p class="byline">免费，不用注册。记下的内容只存在你自己的浏览器里。</p>
 
@@ -573,7 +573,7 @@ page('zh/index.html', 'zh', '学习时把走神的念头先记下来', '走神�
     <ol>
       <li><strong>先花五分钟准备。</strong>写下这一轮要做什么，拆成两三步，把已经在脑子里转的事先倒出来，再跟着呼吸两分钟。</li>
       <li><strong>学习时只留一个输入框。</strong>一个计时器，一个背景声，一个输入框。念头冒出来，打一行字，回车，它就不占脑子了。</li>
-      <li><strong>学完再处理那些念头。</strong>计时结束后一条条过一遍，处理完就勾掉。待办可以直接排进下一轮的计划。</li>
+      <li><strong>学完再过一遍那些念头。</strong>计时结束后一条条过一遍，搞定一条就点「搞定」。待办可以直接排进下一轮的计划。</li>
       <li><strong>看出规律。</strong>总结页会显示你都学了什么、每一轮有多稳、走神时通常在想什么，以及一般在第几分钟开始走神。</li>
     </ol>
 
@@ -629,7 +629,7 @@ page('claude.html', 'en', 'Use Sidenote with Claude', 'A free skill that lets Cl
 
     <h2>What it does</h2>
     <ul>
-      <li><strong>Sorts out your margin.</strong> Paste your parked thoughts, or attach a backup file. Questions get answered, to-dos get a first step, worries get a calmer second look, and you get a short "next ten minutes" list.</li>
+      <li><strong>Goes through your parked thoughts.</strong> Paste your parked thoughts, or attach a backup file. Questions get answered, to-dos get a first step, worries get a calmer second look, and you get a short "next ten minutes" list.</li>
       <li><strong>Reviews your week.</strong> From a backup file it reports your focus time, focus score, what your stray thoughts were about, the minute of a block they tend to hit, and which scene you focus best with. The numbers are computed by a script, the same way this site computes them.</li>
       <li><strong>Plans a block</strong> in under a minute: one checkable goal, two or three steps, a starting line.</li>
       <li><strong>Holds your thoughts in the chat</strong> when you study without this site open. It replies with a tick and nothing else until you say you're done.</li>
@@ -650,7 +650,7 @@ page('claude.html', 'en', 'Use Sidenote with Claude', 'A free skill that lets Cl
 
     <h2>Use it</h2>
     <ul>
-      <li><strong>After a study block:</strong> on the Margin page here, click <strong>Copy for Claude</strong>, then paste into a Claude chat.</li>
+      <li><strong>After a study block:</strong> on the <strong>Thoughts</strong> page here, click <strong>Copy for Claude</strong>, then paste into a Claude chat.</li>
       <li><strong>For a weekly review:</strong> in Settings here, click <strong>Save a backup file</strong>, attach that file in Claude and ask "How did my week go?"</li>
       <li><strong>Before studying:</strong> tell Claude "Help me plan a 45-minute block for chapter 7."</li>
       <li><strong>Without this site:</strong> tell Claude "I'm starting a 25-minute block, hold my thoughts."</li>

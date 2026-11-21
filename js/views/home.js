@@ -65,9 +65,16 @@ export function homeView(root, navigate) {
   function showParked(id) {
     const thought = store.state.thoughts.find((x) => x.id === id);
     if (!thought || thought.status === 'done') { const had = parkedBox.contains(document.activeElement); parkedBox.hidden = true; mount(parkedBox); if (had) input.focus(); return; }
-    mount(parkedBox,
-      h('p', { class: 'hero-parked-head' }, t(real.length ? 'home.parkedHeadBack' : 'home.parkedHead')),
-      noteCard(id, { onChange: (what) => { drawParked(false); drawTodo(); if (what === 'status') showParked(id); } }));
+    const card = noteCard(id, { onChange: (what) => { drawParked(false); drawTodo(); if (what === 'status') showParked(id); } });
+    // Someone who has never finished a block came to park a thought and keep studying:
+    // they get one line, and the "after" half stays folded until they ask for it.
+    if (real.length) mount(parkedBox, h('p', { class: 'hero-parked-head' }, t('home.parkedHeadBack')), card);
+    else {
+      mount(parkedBox,
+        h('p', { class: 'hero-parked-line' }, h('span', { class: 'hero-parked-text' }, thought.text)),
+        h('p', { class: 'hero-parked-head' }, t('home.parkedHead')),
+        h('details', { class: 'hero-parked-more' }, h('summary', null, t('home.parkedPreview')), card));
+    }
     parkedBox.hidden = false;
     // on a phone the card would otherwise open below the fold, behind the tab bar
     parkedBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' });

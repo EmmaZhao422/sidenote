@@ -97,6 +97,14 @@ export function announce(message) {
 }
 let announceTimer = 0;
 
+let toastAt = 0;
+// On a change of screen: hide a toast that has had time to be read. One raised
+// in the same moment as the navigation ("Saved", then the next screen) stays.
+export function clearToast() {
+  if (Date.now() - toastAt < 1200) return;
+  document.getElementById('toast')?.classList.remove('is-on');
+}
+
 export function clearAnnounce() {
   clearTimeout(announceTimer);
   const el = document.getElementById('sr-status');
@@ -111,6 +119,7 @@ export function toast(message, ms = 2600) {
   }
   el.textContent = message;
   el.classList.add('is-on');
+  toastAt = Date.now();
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('is-on'), ms);
 }

@@ -168,6 +168,7 @@ export function summaryView(root) {
       h('td', { 'data-label': t('summary.colTime') }, minutesText(s.minutes))));
     const scenes = h('section', { class: 'card' },
       h('h2', null, t('summary.scenesTitle')),
+      sceneRows.length > 1 ? h('p', { class: 'hint' }, t('summary.scenesHint')) : null,
       // the favourite is already named in the written recap above; here only say when there is none yet
       rec.status === 'ready' ? null : h('p', null, rec.oneScene ? t('scenes.oneScene') : t('scenes.learning', { n: rec.need })),
       rec.status === 'ready' && rec.similar.length
@@ -176,8 +177,7 @@ export function summaryView(root) {
         h('thead', null, h('tr', null,
           h('th', { scope: 'col' }, t('summary.colScene')), h('th', { scope: 'col' }, t('summary.colScore')),
           h('th', { scope: 'col' }, t('summary.colBlocks')), h('th', { scope: 'col' }, t('summary.colTime')))),
-        h('tbody', null, sceneRows)),
-      h('p', { class: 'hint' }, t('summary.scenesHint')));
+        h('tbody', null, sceneRows)));
 
     // ---- the blocks themselves, newest first, each one opens its review
     const recentBlocks = state.sessions

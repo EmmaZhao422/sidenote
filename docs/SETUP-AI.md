@@ -27,7 +27,7 @@ npx wrangler deploy                         # 部署
 ai: { proxyUrl: 'https://sidenote-ai.你的名字.workers.dev' },
 ```
 
-提交并推送，等一分钟，网站上的「帮我想想」就会用真正的 AI 回答。
+提交并推送，等一分钟，网站上每条念头旁会多出「帮我想想」按钮，点它就由真正的 AI 回答。（没接 AI 时没有这个按钮，只有内置小帮手。）
 
 **同一次提交里还要改隐私页。** 隐私页现在写着「截至上面的日期，本站自己的服务器连接还没有开通」。接上之后这句话就不是真的了：打开 `tools/build_pages.py`，搜「还没有开通」和 `switched off`，把中英文两处改成实际情况，再运行 `python3 tools/build_pages.py .` 重新生成页面。
 
