@@ -2,7 +2,7 @@
 
 **Mind wandered? Put it in the margin.**
 
-A study timer with one extra box. While you study, every stray thought goes into the box in one line and you keep working. When the block ends, an AI model answers the questions, plans the errands and talks through the worries. The summary page then shows where your attention went.
+A study timer with one extra box. While you study, every stray thought goes into the box in one line and you keep working. When the block ends you deal with them one by one: an answer for a question, a day for an errand, one thing to do about a worry. With an AI model connected, it writes the answers. The summary page then shows where your attention went.
 
 Live site: https://emmazhao422.github.io/sidenote/
 
@@ -12,11 +12,12 @@ Live site: https://emmazhao422.github.io/sidenote/
 
 - **Five minutes to get ready.** Name the goal, split it into up to three steps, empty your head, then a short breathing guide while the sound fades in.
 - **Park stray thoughts.** One input box during the block. Type, press Enter, back to work.
-- **Deal with them afterwards.** Click a parked thought and it gets an answer, a first step, or a calmer second look, depending on what kind of thought it is.
+- **Deal with them afterwards.** Each thought ends in something to do: a to-do gets a day (and stays on the home page until it is done) or goes into the next block's plan, a question gets your own guess and then the answer, a worry gets one next step, an urge gets a ten-minute break on the clock.
 - **Summary.** Focus time per day, a focus score per block, what your stray thoughts were about, and the minute of a block they tend to show up.
 - **Ten scenes, generated in the browser.** Rain, waves, fireplace, forest, summer night, night train, quiet library, and brown, pink and white noise. No audio files.
-- **Scene recommendation.** After three rated blocks it shows which scene you focus best with and suggests untried scenes with a similar character.
-- **A break timer** after each block, light and dark themes, and it still opens when the connection drops.
+- **Scene recommendation.** After three rated blocks on at least two scenes it shows which one you focus best with and suggests untried scenes with a similar character.
+- **Reasons to come back.** One tap to repeat the last block, a streak, an optional exam-date countdown, a calendar reminder for tomorrow, and a picture of the week to share (numbers only).
+- **A break timer** that follows you around the site, light and dark themes, a phone layout with a tab bar, a spreadsheet export, and it still opens when the connection drops.
 - **English and Chinese.** No account. Data stays in the visitor's browser.
 
 ## How it is built
@@ -40,6 +41,7 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/theme.js` | Light and dark theme switch |
 | `js/analytics.js` | Optional visit counter (off until configured) |
 | `js/charts.js`, `js/recap.js`, `js/sample.js` | Charts, the written recap, and example data for the summary page |
+| `js/breaktimer.js`, `js/ics.js`, `js/sharecard.js`, `js/csv.js`, `js/handoff.js` | The break timer, the calendar reminder, the picture to share, the spreadsheet export, and "Copy for Claude" |
 | `worker/` | The Cloudflare Worker that keeps the API key off the website |
 | `guides/`, `about.html`, `privacy.html`, `terms.html`, `claude.html`, `zh/` | Articles and plain pages. They are generated: the text lives in `tools/build_pages.py` and `tools/more_guides.py` |
 | `fonts/` | The two typefaces, served from the site itself |
@@ -85,9 +87,9 @@ No open-source licence has been chosen yet, so all rights are reserved for now. 
 
 ## 中文说明
 
-**走神了？先记在页边。**
+**走神了？先记下来。**
 
-走神本是一个多了一个输入框的学习计时器。学习时冒出来的念头，用一行字记下来，继续学。这一轮结束后，AI 来回答问题、拆解待办、陪你理一理担心的事。总结页会告诉你注意力都去了哪儿。
+走神本是一个多了一个输入框的学习计时器。学习时冒出来的念头，用一行字记下来，继续学。这一轮结束后，再一条条处理：待办定个日子，问题先猜再查，担心的事写一件能做的。接上 AI 之后，回答由 AI 来写。总结页会告诉你注意力都去了哪儿。
 
 线上地址：https://emmazhao422.github.io/sidenote/
 
@@ -95,11 +97,12 @@ No open-source licence has been chosen yet, so all rights are reserved for now. 
 
 - **五分钟准备：** 写目标、拆两三步、把脑子里的事先倒出来，再跟着呼吸进入状态
 - **记下走神的念头：** 学习时只有一个输入框，打字、回车、继续
-- **学完再处理：** 点开一条念头，按它的类型给答案、第一步，或者换个角度看
+- **学完再处理：** 每条念头最后都落到一件能做的事上：待办定个日子（没做完会一直显示在首页）或排进下一轮；问题先写猜测再看答案；担心的事写一件能做的；想摸鱼给一个 10 分钟的休息计时
 - **总结：** 每天专注多久、每轮的专注分、走神时在想什么、一般在第几分钟走神
 - **十个场景：** 全部在浏览器里实时生成，没有音频文件
-- **场景推荐：** 打过三次分后，告诉你在哪个场景里最专注，并推荐相似的
-- 每轮之后有休息计时；有浅色和深色两种外观；断网时也能打开
+- **场景推荐：** 打过三次分、至少用过两个场景后，告诉你在哪个场景里最专注，并推荐相似的
+- **回来的理由：** 「和上次一样」一键开始、连续天数、可选的考试倒计时、「明天提醒我」的日历文件、一张只有数字的分享图
+- 全站共用的休息计时；浅色和深色两种外观；手机上有底部导航；学习记录可以导出成表格；断网时也能打开
 - 中英文切换，不用注册，数据只存在访客自己的浏览器里
 
 ### 怎么改

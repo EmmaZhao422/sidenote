@@ -460,6 +460,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .tile-value { font-family: var(--display); font-weight: 800; font-size: 2.3rem; line-height: 1.1; letter-spacing: -0.02em; }
 .tile-note { font-size: 0.84rem; color: var(--ink-3); }
 .recap .reply-text { font-size: 1.02rem; }
+.share-row { margin-top: 1.2rem; }
 
 .chart { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.5rem; margin-top: 2.2rem; }
 .chart-axis { display: flex; flex-direction: column; justify-content: space-between; height: 10rem; font-size: 0.72rem; color: var(--ink-3); text-align: right; line-height: 1; }
@@ -506,6 +507,9 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .scene-card .scene-stat { font-size: 0.82rem; color: rgba(243, 245, 251, 0.65); }
 .scene-card .row { margin-top: auto; padding-top: 0.8rem; }
 .scene-card .btn { padding: 0.42rem 0.8rem; font-size: 0.88rem; }
+/* on the paler scenes a see-through button washes out, so give it its own dark backing */
+.scene-card .btn-ghost { background: rgba(10, 16, 40, 0.38); border-color: rgba(255, 255, 255, 0.55); }
+.scene-card .btn-ghost:hover:not(:disabled) { background: rgba(10, 16, 40, 0.55); }
 
 /* ---------- settings ---------- */
 

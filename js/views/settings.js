@@ -6,6 +6,7 @@ import { store } from '../store.js';
 import { aiMode, testConnection, DEFAULT_ANTHROPIC_MODEL } from '../ai.js';
 import { CONFIG } from '../config.js';
 import { applyTheme } from '../theme.js';
+import { sessionsToCsv } from '../csv.js';
 
 export function settingsView(root, navigate, rerenderAll) {
   const s = store.state.settings;
@@ -184,6 +185,17 @@ export function settingsView(root, navigate, rerenderAll) {
           setTimeout(() => URL.revokeObjectURL(a.href), 1000);
         },
       }, t('settings.export')),
+      h('button', {
+        type: 'button', class: 'btn btn-quiet', disabled: !store.state.sessions.length,
+        onclick: () => {
+          const blob = new Blob([sessionsToCsv(store.state.sessions.filter((x) => !x.sample))], { type: 'text/csv' });
+          const a = h('a', { href: URL.createObjectURL(blob), download: `sidenote-blocks-${new Date().toISOString().slice(0, 10)}.csv` });
+          document.body.append(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        },
+      }, t('settings.csv')),
       h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => file.click() }, t('settings.import')),
       file, clear),
     confirmBox);

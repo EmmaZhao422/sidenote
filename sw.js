@@ -16,8 +16,8 @@ const SHELL = [
   './', 'index.html', 'css/app.css', 'css/hand-zh.css', 'favicon.svg', 'manifest.webmanifest', 'icon-192.png',
   'fonts/bricolage-grotesque-latin.woff2', 'fonts/caveat-latin.woff2',
   'js/ads.js', 'js/ai.js', 'js/analytics.js', 'js/audio.js', 'js/backdrop.js', 'js/block.js', 'js/breaktimer.js', 'js/charts.js',
-  'js/classify.js', 'js/config.js', 'js/handoff.js', 'js/i18n.js', 'js/ics.js', 'js/main.js', 'js/prompts.js', 'js/recap.js',
-  'js/sample.js', 'js/scenes.js', 'js/score.js', 'js/site.js', 'js/store.js', 'js/theme.js', 'js/ui.js',
+  'js/classify.js', 'js/config.js', 'js/csv.js', 'js/handoff.js', 'js/i18n.js', 'js/ics.js', 'js/main.js', 'js/prompts.js', 'js/recap.js',
+  'js/sample.js', 'js/scenes.js', 'js/score.js', 'js/sharecard.js', 'js/site.js', 'js/store.js', 'js/theme.js', 'js/ui.js',
   'js/views/home.js', 'js/views/margin.js', 'js/views/note.js', 'js/views/scenes.js', 'js/views/session.js',
   'js/views/settings.js', 'js/views/summary.js',
 ];

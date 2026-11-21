@@ -11,6 +11,7 @@ import { getScene, sceneName } from '../scenes.js';
 import { localRecap } from '../recap.js';
 import { aiMode, writeRecap } from '../ai.js';
 import { buildSample } from '../sample.js';
+import { shareCardButton } from '../sharecard.js';
 
 export function summaryView(root) {
   let rangeKey = '7d';
@@ -185,7 +186,12 @@ export function summaryView(root) {
           h('td', { 'data-label': t('summary.colScoreShort') }, String(s.score ?? '–')),
           h('td', null, preview ? null : h('a', { href: `#/review/${s.id}` }, t('summary.review'))))))));
 
-    mount(body, sampleNote, ranges, tiles, recap, perDay,
+    // a picture of these numbers to share (numbers only: no goals, no thoughts)
+    const share = preview ? null : h('div', { class: 'row share-row' },
+      shareCardButton(() => ({ stats, rec, rangeLabel: t(`summary.${rangeKey}`) })),
+      h('span', { class: 'hint' }, t('share.hint')));
+
+    mount(body, sampleNote, ranges, tiles, share, recap, perDay,
       h('div', { class: 'two-col' }, kinds, timing), scenes, blocks,
       h('p', { class: 'hint' }, t('summary.scoreExplain')));
   }
