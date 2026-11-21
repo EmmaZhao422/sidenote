@@ -115,15 +115,28 @@ export function settingsView(root, navigate, rerenderAll) {
       const f = e.target.files[0];
       if (!f) return;
       try {
-        store.importJSON(await f.text());
-        toast(t('settings.imported'));
-        rerenderAll();
+        const text = await f.text();
+        const inside = store.peekJSON(text);
+        // Restoring replaces everything here, so say what is about to happen first
+        mount(confirmBox,
+          h('p', null, t('settings.importConfirm', {
+            sessions: inside.sessions, thoughts: inside.thoughts,
+            nowSessions: store.state.sessions.length, nowThoughts: store.state.thoughts.length,
+          })),
+          h('div', { class: 'row' },
+            h('button', {
+              type: 'button', class: 'btn btn-ink',
+              onclick: () => { store.importJSON(text); toast(t('settings.imported')); rerenderAll(); },
+            }, t('settings.importGo')),
+            h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => { confirmBox.hidden = true; } }, t('settings.importCancel'))));
+        confirmBox.hidden = false;
       } catch {
         toast(t('settings.importFailed'));
       }
       e.target.value = '';
     },
   });
+  const confirmBox = h('div', { class: 'notice confirm-box', role: 'alert', hidden: true });
   let armed = false;
   const clear = h('button', {
     type: 'button', class: 'btn btn-quiet btn-danger',
@@ -153,7 +166,8 @@ export function settingsView(root, navigate, rerenderAll) {
         },
       }, t('settings.export')),
       h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => file.click() }, t('settings.import')),
-      file, clear));
+      file, clear),
+    confirmBox);
 
   mount(root,
     h('header', { class: 'view-head' }, h('h1', null, t('settings.title'))),

@@ -9,6 +9,8 @@ import { adSlot } from '../ads.js';
 import { recommendScene, habit } from '../score.js';
 import { getScene, sceneName } from '../scenes.js';
 import { createBackdrop } from '../backdrop.js';
+import { startBlock } from '../block.js';
+import { aiMode } from '../ai.js';
 
 const GUIDES = [
   { slug: 'parking-lot-method', en: 'The parking lot method: what to do with a thought that shows up mid-study', zh: '「念头停车场」：学到一半冒出来的想法，该拿它怎么办' },
@@ -18,7 +20,7 @@ const GUIDES = [
   { slug: 'phone-while-studying', en: 'Where should your phone be while you study?', zh: '学习的时候，手机该放哪儿？' },
 ];
 
-export function homeView(root) {
+export function homeView(root, navigate) {
   const lang = getLang();
   const scene = getScene(store.state.settings.scene);
   const openThoughts = () => store.state.thoughts.filter((x) => x.status !== 'done');
@@ -37,7 +39,7 @@ export function homeView(root) {
 
   // --- hero: park a thought right here
   const input = h('input', {
-    type: 'text', class: 'hero-input', maxlength: '500', autocomplete: 'off', enterkeyhint: 'done',
+    type: 'text', id: 'hero-park', class: 'hero-input', maxlength: '500', autocomplete: 'off', enterkeyhint: 'done',
     placeholder: t('home.placeholder'), 'aria-label': t('home.inputLabel'),
   });
   const openLink = h('a', { class: 'hero-open', href: '#/margin' });
@@ -66,19 +68,38 @@ export function homeView(root) {
   }, input, h('button', { type: 'submit', class: 'btn btn-ink' }, t('park.button')));
 
   const active = store.state.active;
+  const real = store.state.sessions.filter((s) => !s.sample);
+
+  // One tap to repeat the last block: same goal, length and sound, with the steps left over
+  const last = real.length ? real.reduce((a, b) => (b.startedAt > a.startedAt ? b : a)) : null;
+  const again = last && !active ? h('button', {
+    type: 'button', class: 'btn btn-quiet btn-again',
+    onclick: () => {
+      startBlock({
+        goal: last.goal, minutes: last.plannedMin, scene: last.scene, mode: last.mode,
+        steps: (last.steps || []).filter((x) => !x.done).map((x) => x.text),
+      });
+      navigate('#/focus');
+    },
+  }, h('strong', null, t('home.again')),
+  h('span', null, t('home.againWhat', { goal: last.goal || t('focus.noGoal'), n: last.plannedMin }))) : null;
+
   const hero = h('section', { class: 'hero' },
     h('div', { class: 'hero-copy' },
       h('h1', { class: 'hero-title' }, t('home.title')),
       h('p', { class: 'hero-sub' }, t('home.sub')),
-      form, openLink,
       h('div', { class: 'hero-cta' },
         h('a', { class: 'btn btn-ink btn-big', href: '#/focus' }, active ? t('home.resume') : t('home.start')),
-        h('span', { class: 'hint' }, t('home.startHint')))),
+        again,
+        real.length ? null : h('span', { class: 'hint' }, t('home.startHint'))),
+      h('label', { class: 'hero-park-label', for: 'hero-park' }, t('home.parkLabel')),
+      form, openLink,
+      aiMode() === 'offline'
+        ? h('p', { class: 'hint hero-ai' }, t('home.aiHint'), ' ', h('a', { href: '#/settings' }, t('home.aiLink'))) : null),
     demo);
 
   // --- today and the streak, once there is something to show
   let today = null;
-  const real = store.state.sessions.filter((s) => !s.sample);
   if (real.length) {
     const hb = habit(real);
     const peak = Math.max(25, ...hb.week.map((d) => d.minutes));
@@ -87,7 +108,7 @@ export function homeView(root) {
         h('h2', null, hb.todayBlocks
           ? t('home.today', { time: minutesText(hb.todayMinutes), n: hb.todayBlocks })
           : t('home.todayNone')),
-        h('p', null, hb.streak >= 2 ? t('home.streak', { n: hb.streak }) : t('home.streakStart'))),
+        h('p', null, hb.streak >= 2 ? t(hb.todayBlocks ? 'home.streakDone' : 'home.streak', { n: hb.streak }) : t('home.streakStart'))),
       h('ol', { class: 'week', 'aria-label': t('home.weekLabel') }, hb.week.map((d) =>
         h('li', { title: `${dayLabel(d.day)}: ${minutesText(d.minutes)}` },
           h('span', { class: 'week-bar', style: `height:${Math.max(d.minutes ? 12 : 0, (d.minutes / peak) * 100)}%` }),

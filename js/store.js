@@ -229,6 +229,14 @@ export const store = {
     state.active = active;
     persist();
   },
+  // Change a few fields of the running block, on top of the newest saved copy
+  patchActive(patch) {
+    refresh();
+    if (!state.active) return null;
+    state.active = { ...state.active, ...patch };
+    persist();
+    return state.active;
+  },
 
   // ---- import / export / reset ----
   exportJSON() {

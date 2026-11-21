@@ -39,3 +39,12 @@ test('flags thoughts that need a person, not a study tip', () => {
   assert.equal(looksLikeCrisis('this deadline is killing me'), false);
   assert.equal(looksLikeCrisis('when does the lab report die down'), false);
 });
+
+test('self-doubt phrased as a question is still a worry, and "look into it" lines are to-dos', () => {
+  assert.equal(classify('我是不是比班上其他人都落后'), 'worry');
+  assert.equal(classify('现在转专业是不是太晚了'), 'worry');
+  assert.equal(classify('Is it too late to switch majors?'), 'worry');
+  assert.equal(classify('看看周日健身房开不开'), 'todo');
+  assert.equal(classify('给林老师发邮件'), 'todo');
+  assert.equal(classify('担心室友是不是生我气了'), 'worry');
+});

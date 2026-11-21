@@ -11,8 +11,8 @@ const RULES = {
     /(刷|手机|抖音|小红书|微信|朋友圈|微博|b站|B站|游戏|王者|原神|零食|奶茶|好饿|饿了|想吃|外卖|睡一会|追剧|短视频)/,
   ],
   worry: [
-    /\b(worried|worry|anxious|anxiety|afraid|scared|what if|stress|stressed|nervous|fail|failing|behind|overwhelmed|lonely|sad|tired of|hate|can't do|embarrass|regret)\b/i,
-    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|怎么办|丢人|后悔|孤独|撑不住)/,
+    /\b(worried|worry|anxious|anxiety|afraid|scared|what if|stress|stressed|nervous|fail|failing|behind|overwhelmed|lonely|sad|tired of|hate|can't do|embarrass|regret|too late|not good enough|mad at me|annoyed with me)\b/i,
+    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我)/,
   ],
   todo: [
     /^(i )?(need to|have to|must|gotta|should|remember to|don't forget|dont forget|todo|to-do)\b/i,
@@ -36,7 +36,7 @@ const RULES = {
 const TODO_OPENERS = [
   /^(i )?(need to|have to|must|gotta|remember to|don't forget|dont forget|todo|to-do)\b/i,
   /^(buy|email|call|text|reply|pay|book|submit|finish|send|sign up|register|schedule|clean|wash|renew|return|print|pick up|order|look up|check if|check whether)\b/i,
-  /^(记得|别忘|不要忘|要交|要买|要回|要发|要问|查一下|查查|搜一下|看一下|问一下|买|回复|报名|预约|取快递|提交|缴费|还书|订票|续费)/,
+  /^(记得|别忘|不要忘|要交|要买|要回|要发|要问|查一下|查查|搜一下|看一下|看看|问一下|问问|买|回复|报名|预约|取快递|提交|缴费|还书|订票|续费|给.{1,8}(发|回|打|寄|买))/,
 ];
 
 // Order matters: a line like "what if I fail?" is a worry before it is a question.

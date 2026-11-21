@@ -3,6 +3,7 @@
 
 import { store } from './store.js';
 import { t, getLang } from './i18n.js';
+import { toast } from './ui.js';
 import { CONFIG } from './config.js';
 import { applyTheme } from './theme.js';
 import { startAnalytics } from './analytics.js';
@@ -111,7 +112,22 @@ if (insideClaudeApp()) {
 // Follow the device when it switches between light and dark
 window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyTheme(store.state.settings.theme));
 
+// A link can ask for a language: ...?lang=zh (used by the Chinese landing page)
+try {
+  const asked = new URLSearchParams(location.search).get('lang');
+  if ((asked === 'zh' || asked === 'en') && !store.state.settings.lang) store.setSettings({ lang: asked });
+} catch { /* no query string support: carry on */ }
+
 window.addEventListener('hashchange', render);
-store.subscribe(updateCount);
+store.subscribe((_, info) => {
+  updateCount();
+  // Another tab changed something: show it here too, unless the student is mid-sentence.
+  // (The study screens look after themselves.)
+  if (!info?.external || route().name === 'focus') return;
+  const el = document.activeElement;
+  const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.value;
+  if (!typing) render();
+});
+store.onStorageFailure(() => toast(t('settings.storageFailed'), 9000));
 render();
 startAnalytics();

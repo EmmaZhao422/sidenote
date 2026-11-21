@@ -17,7 +17,7 @@ export function columnChart(data, options = {}) {
   data.forEach((d, i) => {
     const pct = (d.value / top) * 100;
     cols.append(h('div', {
-      class: 'col', role: 'listitem', tabindex: '0', 'aria-label': d.tip, dataset: { tip: d.tip },
+      class: 'col', role: 'listitem', tabindex: i === 0 ? '0' : '-1', 'aria-label': d.tip, dataset: { tip: d.tip },
     },
     h('div', { class: 'col-track' },
       // label only the tallest bar; the rest are a hover away
@@ -26,6 +26,7 @@ export function columnChart(data, options = {}) {
     h('span', { class: 'col-label' }, i % every === 0 || i === data.length - 1 ? d.label : '')));
   });
 
+  arrowKeys(cols);
   return h('div', { class: 'chart' },
     h('div', { class: 'chart-axis', 'aria-hidden': 'true' },
       h('span', null, `${top}${options.unit ? ' ' + options.unit : ''}`), h('span', null, String(top / 2)), h('span', null, '0')),
@@ -36,11 +37,27 @@ export function columnChart(data, options = {}) {
 // rows: [{ label, value, tip }]
 export function barList(rows) {
   const max = Math.max(1, ...rows.map((r) => r.value));
-  return h('div', { class: 'bars', role: 'list' }, rows.map((r) =>
-    h('div', { class: 'bar-row', role: 'listitem', tabindex: '0', 'aria-label': r.tip, dataset: { tip: r.tip } },
+  const list = h('div', { class: 'bars', role: 'list' }, rows.map((r, i) =>
+    h('div', { class: 'bar-row', role: 'listitem', tabindex: i === 0 ? '0' : '-1', 'aria-label': r.tip, dataset: { tip: r.tip } },
       h('span', { class: 'bar-label' }, r.label),
       h('span', { class: 'bar-track' }, h('span', { class: 'bar-fill', style: `width:${(r.value / max) * 100}%` })),
       h('span', { class: 'bar-value' }, String(r.value)))));
+  arrowKeys(list);
+  return list;
+}
+
+// A chart is one stop for the Tab key; the arrow keys walk through its bars.
+function arrowKeys(group) {
+  group.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    const items = [...group.children];
+    const next = items[items.indexOf(document.activeElement) + step];
+    if (!next) return;
+    e.preventDefault();
+    items.forEach((el) => { el.tabIndex = el === next ? 0 : -1; });
+    next.focus();
+  });
 }
 
 // Round an axis maximum up to a friendly number: 37 -> 40, 130 -> 150

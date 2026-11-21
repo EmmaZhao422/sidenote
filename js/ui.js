@@ -80,7 +80,7 @@ function inline(text) {
 }
 
 let toastTimer = 0;
-export function toast(message) {
+export function toast(message, ms = 2600) {
   let el = document.getElementById('toast');
   if (!el) {
     el = h('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite' });
@@ -89,7 +89,7 @@ export function toast(message) {
   el.textContent = message;
   el.classList.add('is-on');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('is-on'), 2600);
+  toastTimer = setTimeout(() => el.classList.remove('is-on'), ms);
 }
 
 // 1500 -> "25:00"
@@ -131,19 +131,37 @@ export function whenLabel(ts) {
 }
 
 // A segmented choice: [{ value, label }]
+// Works like a group of radio buttons: one Tab stop, arrow keys move the choice.
+// wrap.setValue(v) changes the selection from outside without calling onChange.
 export function segmented(name, options, value, onChange) {
   const wrap = h('div', { class: 'seg', role: 'radiogroup', 'aria-label': name });
-  options.forEach((o) => {
-    const btn = h('button', {
-      type: 'button', class: 'seg-btn', role: 'radio',
-      'aria-checked': String(o.value === value),
-      onclick: () => {
-        wrap.querySelectorAll('.seg-btn').forEach((b) => b.setAttribute('aria-checked', 'false'));
-        btn.setAttribute('aria-checked', 'true');
-        onChange(o.value);
-      },
-    }, o.label);
-    wrap.append(btn);
+  const buttons = options.map((o) => h('button', {
+    type: 'button', class: 'seg-btn', role: 'radio',
+    onclick: () => { mark(o.value); onChange(o.value); },
+  }, o.label));
+  function mark(v) {
+    const chosen = options.findIndex((o) => o.value === v);
+    buttons.forEach((b, i) => {
+      b.setAttribute('aria-checked', String(i === chosen));
+      b.tabIndex = i === chosen || (chosen < 0 && i === 0) ? 0 : -1;
+    });
+  }
+  wrap.addEventListener('keydown', (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const at = buttons.indexOf(document.activeElement);
+    const next = buttons[(at + step + buttons.length) % buttons.length];
+    next.focus();
+    next.click();
   });
+  wrap.setValue = mark;
+  mark(value);
+  wrap.append(...buttons);
   return wrap;
+}
+
+// True on phones and tablets (a finger, not a mouse)
+export function isTouchDevice() {
+  try { return window.matchMedia('(pointer: coarse)').matches; } catch { return false; }
 }

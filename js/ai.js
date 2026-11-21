@@ -149,10 +149,9 @@ export function offlineReply(thought) {
   const category = thought.category || classify(thought.text);
   const links = [];
   if (category === 'question') {
-    links.push({
-      label: t('offline.search'),
-      url: `https://www.google.com/search?q=${encodeURIComponent(thought.text)}`,
-    });
+    // Bing is reachable where Google is not, so Chinese-language visitors get that
+    const engine = getLang() === 'zh' ? 'https://cn.bing.com/search?q=' : 'https://www.google.com/search?q=';
+    links.push({ label: t('offline.search'), url: engine + encodeURIComponent(thought.text) });
   }
   return { text: t(`offline.${category}`), source: 'offline', category, links };
 }

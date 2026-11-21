@@ -34,13 +34,12 @@ export function noteCard(thoughtId, opts = {}) {
   // --- reply
   const replyBox = h('div', { class: 'note-reply' });
   if (thought.reply) {
-    replyBox.append(
-      h('div', { class: 'note-reply-from' }, thought.reply.source === 'ai' ? t('note.fromAi') : t('note.fromOffline')),
-      renderText(thought.reply.text),
-    );
+    replyBox.append(h('div', { class: 'note-reply-from' }, thought.reply.source === 'ai' ? t('note.fromAi') : t('note.fromOffline')));
+    // Without an AI, the useful thing for a question is the search link, so it goes first
     (thought.reply.links || []).forEach((l) => {
-      replyBox.append(h('a', { class: 'btn btn-quiet', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
+      replyBox.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
     });
+    replyBox.append(renderText(thought.reply.text));
     if (thought.reply.source === 'offline' && aiMode() === 'offline') {
       replyBox.append(h('p', { class: 'hint' }, t('note.connectHint'), ' ', h('a', { href: '#/settings' }, t('note.connectLink'))));
     }
@@ -80,6 +79,21 @@ export function noteCard(thoughtId, opts = {}) {
     type: 'button', class: thought.reply ? 'btn btn-quiet' : 'btn btn-ink',
     onclick: () => sortOut(false),
   }, thought.reply ? t('note.again') : t('note.sort'));
+  // The built-in helper always says the same thing, so asking it again is pointless
+  const canAsk = !thought.reply || aiMode() !== 'offline';
+
+  // A to-do can be handed to the next study block, where it becomes a step of the plan
+  const queued = (store.state.nextPlan || []).includes(thought.text);
+  const nextBtn = thought.category === 'todo' ? h('button', {
+    type: 'button', class: 'btn btn-quiet', disabled: queued,
+    onclick: () => {
+      if ((store.state.nextPlan || []).length >= 3) { toast(t('note.nextFull')); return; }
+      store.addToNextPlan(thought.text);
+      store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
+      toast(t('note.nextAdded'));
+      opts.onChange?.('status');
+    },
+  }, queued ? t('note.nextQueued') : t('note.next')) : null;
 
   if (thought.status === 'done') {
     actions.append(h('button', {
@@ -87,14 +101,15 @@ export function noteCard(thoughtId, opts = {}) {
       onclick: () => { store.updateThought(thought.id, { status: 'open', doneAt: null }); opts.onChange?.('status'); },
     }, t('note.reopen')));
   } else {
-    actions.append(sortBtn, h('button', {
+    const doneBtn = h('button', {
       type: 'button', class: 'btn btn-quiet',
       onclick: () => {
         store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
         toast(t('note.doneToast'));
         opts.onChange?.('status');
       },
-    }, t('note.done')));
+    }, t('note.done'));
+    actions.append(...[canAsk ? sortBtn : null, nextBtn, doneBtn].filter(Boolean));
   }
 
   // Delete asks twice by changing its own label, instead of a pop-up dialog

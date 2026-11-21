@@ -2,10 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sidenote: park stray thoughts while you study</title>
-  <meta name="description" content="A free study timer with one extra box: type every stray thought into the margin, keep studying, and let AI answer, plan or talk it through when the block is over. Then see where your attention went.">
+  <meta name="description" content="A free study timer with one extra box: type every stray thought into the margin, keep studying, and deal with it when the block is over, with AI answers if you connect one. Then see where your attention went.">
   <link rel="canonical" href="https://emmazhao422.github.io/sidenote/">
+  <link rel="alternate" hreflang="en" href="https://emmazhao422.github.io/sidenote/">
+  <link rel="alternate" hreflang="zh" href="https://emmazhao422.github.io/sidenote/zh/">
+  <link rel="alternate" hreflang="x-default" href="https://emmazhao422.github.io/sidenote/">
   <meta property="og:title" content="Sidenote: park stray thoughts while you study">
   <meta property="og:description" content="Type every stray thought into the margin, keep studying, deal with it afterwards. Free, no sign-up.">
   <meta property="og:type" content="website">
@@ -16,9 +19,7 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/app.css">
   <script>
     // Set the theme before anything is drawn, so a dark-mode visitor never sees a white flash
@@ -36,12 +37,12 @@
     <header class="rail">
       <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true"></span><span data-brand>Sidenote</span></a>
       <nav class="nav" aria-label="Main">
-        <a href="#/" data-nav="" data-i18n="nav.home">Home</a>
-        <a href="#/focus" data-nav="focus" data-i18n="nav.focus">Focus</a>
-        <a href="#/margin" data-nav="margin"><span data-i18n="nav.margin">Margin</span><span class="badge" id="open-count" hidden></span></a>
-        <a href="#/summary" data-nav="summary" data-i18n="nav.summary">Summary</a>
-        <a href="#/scenes" data-nav="scenes" data-i18n="nav.scenes">Scenes</a>
-        <a href="#/settings" data-nav="settings" data-i18n="nav.settings">Settings</a>
+        <a href="#/" data-nav=""><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20h-5.5v-5h-5v5H4z"/></svg><span data-i18n="nav.home">Home</span></a>
+        <a href="#/focus" data-nav="focus"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M9.5 3h5"/></svg><span data-i18n="nav.focus">Focus</span></a>
+        <a href="#/margin" data-nav="margin"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4h12v16H6zM9.5 4v16M12.5 9h3M12.5 13h3"/></svg><span data-i18n="nav.margin">Margin</span><span class="badge" id="open-count" hidden></span></a>
+        <a href="#/summary" data-nav="summary"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg><span data-i18n="nav.summary">Summary</span></a>
+        <a href="#/scenes" data-nav="scenes"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15c2-4 4-4 6 0s4 4 6 0 3-3 4-1"/></svg><span data-i18n="nav.scenes">Scenes</span></a>
+        <a href="#/settings" data-nav="settings"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h9M18 7h1M5 12h3M12 12h7M5 17h8M17 17h2"/><circle cx="16" cy="7" r="1.8"/><circle cx="10" cy="12" r="1.8"/><circle cx="15" cy="17" r="1.8"/></svg><span data-i18n="nav.settings">Settings</span></a>
       </nav>
       <button type="button" class="lang" id="lang-toggle">中文</button>
     </header>
@@ -50,7 +51,7 @@
       <!-- Shown until the app loads, and to anything that doesn't run JavaScript -->
       <section class="hero">
         <h1 class="hero-title">Mind wandered? Put it in the margin.</h1>
-        <p class="hero-sub">While you study, every stray thought goes here in one line. When the block is over, the AI answers the questions, plans the errands and talks through the worries. Then it shows you where your attention went.</p>
+        <p class="hero-sub">While you study, every stray thought goes here in one line. When the block is over, you deal with them one by one: answers for the questions, a first step for the errands, a calmer look at the worries. Then you see where your attention went.</p>
         <noscript><p>Sidenote needs JavaScript to run the timer and save your notes in this browser.</p></noscript>
       </section>
     </main>

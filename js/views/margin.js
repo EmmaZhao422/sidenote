@@ -9,6 +9,7 @@ import { noteCard, sortAll } from './note.js';
 import { audio } from '../audio.js';
 import { copyForClaudeButton } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
+import { startBlock } from '../block.js';
 
 function sortAllButton(getIds, goalFor, refresh) {
   const btn = h('button', {
@@ -145,6 +146,20 @@ export function reviewView(root, navigate, sessionId) {
   // --- a short break before the next block, timed here so the phone stays put
   let breakTicker = 0;
   const breakBox = h('section', { class: 'break' });
+  // What is left of this block's plan can roll straight into the next one
+  const leftover = (session.steps || []).filter((x) => !x.done).map((x) => x.text);
+  const unfinished = Boolean(session.goal) && (leftover.length > 0 || session.finished !== 'yes');
+  const nextButtons = () => [
+    unfinished ? h('button', {
+      type: 'button', class: 'btn btn-ink',
+      title: t('review.againHint'),
+      onclick: () => {
+        startBlock({ goal: session.goal, minutes: session.plannedMin, scene: session.scene, mode: session.mode, steps: leftover });
+        navigate('#/focus');
+      },
+    }, t('review.again')) : null,
+    h('a', { class: unfinished ? 'btn btn-quiet' : 'btn btn-ink', href: '#/focus' }, t('review.another')),
+  ];
   function drawBreakChoice() {
     clearInterval(breakTicker);
     mount(breakBox,
@@ -152,7 +167,7 @@ export function reviewView(root, navigate, sessionId) {
       h('div', { class: 'row' },
         h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => startBreak(5) }, t('review.break', { n: 5 })),
         h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => startBreak(15) }, t('review.break', { n: 15 })),
-        h('a', { class: 'btn btn-ink', href: '#/focus' }, t('review.another'))));
+        nextButtons()));
   }
   function startBreak(minutes) {
     const endsAt = Date.now() + minutes * 60000;
@@ -170,10 +185,12 @@ export function reviewView(root, navigate, sessionId) {
       if (store.state.settings.chime) audio.chime();
       mount(breakBox,
         h('h2', null, t('review.breakOver')),
-        h('div', { class: 'row' }, h('a', { class: 'btn btn-ink', href: '#/focus' }, t('review.another'))));
+        h('div', { class: 'row' }, nextButtons()));
     }, 500);
   }
   drawBreakChoice();
+  // A block worth keeping exists now: ask the browser not to clear this site's data on its own
+  store.keepData();
 
   mount(root,
     h('header', { class: 'view-head' },

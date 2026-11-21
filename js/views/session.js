@@ -5,9 +5,10 @@
 // The block in progress is kept in store.state.active, with real timestamps,
 // so the timer stays correct in a background tab and survives a reload.
 
-import { h, toast, clock, segmented } from '../ui.js';
+import { h, toast, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
-import { store, uid } from '../store.js';
+import { store, TAB_ID } from '../store.js';
+import { startBlock, heldElsewhere } from '../block.js';
 import { SCENES, getScene, sceneName, sceneBlurb } from '../scenes.js';
 import { audio } from '../audio.js';
 import { createBackdrop } from '../backdrop.js';
@@ -23,10 +24,11 @@ export function sessionView(root, navigate) {
   let heartbeat = 0;
   let backdrop = null;
   let offVisibility = null;
+  let yielded = false;   // true once another tab has taken this block over
   const baseTitle = document.title;
 
   const active = () => store.state.active;
-  const save = (patch) => store.setActive({ ...active(), ...patch });
+  const save = (patch) => store.patchActive(patch);
 
   // Phones lock their screen after a minute or so, which would stop the sound and
   // look like the student left. A "wake lock" asks the device to stay on.
@@ -85,29 +87,44 @@ export function sessionView(root, navigate) {
   // ------------------------------------------------------------------ setup
   function renderSetup() {
     const s = store.state.settings;
-    const draft = { goal: '', minutes: s.focusMin, scene: s.scene, mode: s.studyMode, prep: s.prepMin };
+    const lang = getLang();
+    const touch = isTouchDevice();
+    const draft = { goal: '', minutes: s.focusMin, scene: s.scene, mode: s.studyMode, prep: [5, 2, 0].includes(s.prepMin) ? s.prepMin : 5 };
     const rec = recommendScene(store.state.sessions);
     const bestId = rec.status === 'ready' ? rec.best.id : null;
 
     const goal = h('input', {
-      type: 'text', id: 'goal', class: 'field', maxlength: '120', autocomplete: 'off',
+      type: 'text', id: 'goal', class: 'field', maxlength: '120', autocomplete: 'off', enterkeyhint: 'go',
       placeholder: t('setup.goalPlaceholder'),
       oninput: (e) => { draft.goal = e.target.value; },
     });
 
-    const custom = h('input', {
-      type: 'number', class: 'field field-small', min: '5', max: '180', value: String(draft.minutes),
-      'aria-label': t('setup.customMinutes'),
-      oninput: (e) => {
-        const v = Math.round(Number(e.target.value));
-        if (v >= 5 && v <= 180) draft.minutes = v;
-      },
-    });
+    // --- how long: three usual lengths, or any other number of minutes
     const presets = [25, 45, 60];
-    const length = segmented(t('setup.length'), presets.map((m) => ({ value: m, label: t('unit.min', { n: m }) })),
-      presets.includes(draft.minutes) ? draft.minutes : null,
-      (v) => { draft.minutes = v; custom.value = String(v); });
+    const isPreset = presets.includes(draft.minutes);
+    const custom = h('input', {
+      type: 'number', inputmode: 'numeric', class: 'field field-small', min: '5', max: '180',
+      value: String(draft.minutes), 'aria-label': t('setup.customMinutes'),
+      oninput: () => {
+        const v = Math.round(Number(custom.value));
+        const ok = v >= 5 && v <= 180;
+        if (ok) draft.minutes = v;
+        clampHint.hidden = ok || custom.value === '';
+      },
+      onblur: () => { custom.value = String(draft.minutes); clampHint.hidden = true; },
+    });
+    const clampHint = h('span', { class: 'hint', role: 'status', hidden: true }, t('setup.clamp'));
+    const customWrap = h('span', { class: 'row setup-custom', hidden: isPreset }, custom, h('span', { class: 'hint' }, t('setup.minutes')), clampHint);
+    const length = segmented(t('setup.length'),
+      [...presets.map((m) => ({ value: m, label: t('unit.min', { n: m }) })), { value: 'other', label: t('setup.other') }],
+      isPreset ? draft.minutes : 'other',
+      (v) => {
+        customWrap.hidden = v !== 'other';
+        if (v === 'other') { custom.value = String(draft.minutes); custom.focus(); custom.select(); }
+        else draft.minutes = v;
+      });
 
+    // --- sound, where, warm-up: remembered from last time, tucked away
     const sceneGrid = h('div', { class: 'scene-pick', role: 'radiogroup', 'aria-label': t('setup.scene') });
     SCENES.forEach((sc) => {
       const btn = h('button', {
@@ -117,66 +134,78 @@ export function sessionView(root, navigate) {
           draft.scene = sc.id;
           sceneGrid.querySelectorAll('.scene-chip').forEach((b) => b.setAttribute('aria-checked', 'false'));
           btn.setAttribute('aria-checked', 'true');
-          blurb.textContent = sceneBlurb(sc, getLang());
+          blurb.textContent = sceneBlurb(sc, lang);
+          drawChoices();
         },
-      }, sceneName(sc, getLang()), sc.id === bestId ? h('span', { class: 'scene-best' }, t('setup.yourBest')) : null);
+      }, sceneName(sc, lang), sc.id === bestId ? h('span', { class: 'scene-best' }, t('setup.yourBest')) : null);
       sceneGrid.append(btn);
     });
-    const blurb = h('p', { class: 'hint' }, sceneBlurb(getScene(draft.scene), getLang()));
+    const blurb = h('p', { class: 'hint' }, sceneBlurb(getScene(draft.scene), lang));
 
+    const hintFor = (m) => t(m === 'paper' && touch ? 'setup.modeHint.paperTouch' : `setup.modeHint.${m}`);
     const mode = segmented(t('setup.where'), [
       { value: 'paper', label: t('setup.modePaper') },
       { value: 'screen', label: t('setup.modeScreen') },
-    ], draft.mode, (v) => { draft.mode = v; modeHint.textContent = t(`setup.modeHint.${v}`); });
-    const modeHint = h('p', { class: 'hint' }, t(`setup.modeHint.${draft.mode}`));
+    ], draft.mode, (v) => { draft.mode = v; modeHint.textContent = hintFor(v); drawChoices(); });
+    const modeHint = h('p', { class: 'hint' }, hintFor(draft.mode));
 
     const prep = segmented(t('setup.prep'), [
       { value: 5, label: t('unit.min', { n: 5 }) },
       { value: 2, label: t('unit.min', { n: 2 }) },
       { value: 0, label: t('setup.prepSkip') },
-    ], [5, 2, 0].includes(draft.prep) ? draft.prep : 5, (v) => { draft.prep = v; });
+    ], draft.prep, (v) => { draft.prep = v; drawChoices(); });
 
-    const start = h('button', { type: 'submit', class: 'btn btn-ink btn-big' }, t('setup.start'));
+    const choices = h('span', { class: 'setup-choices' });
+    const start = h('button', { type: 'submit', class: 'btn btn-ink btn-big' });
+    function drawChoices() {
+      choices.textContent = [
+        sceneName(getScene(draft.scene), lang),
+        t(draft.mode === 'paper' ? 'setup.modePaper' : 'setup.modeScreen'),
+        draft.prep ? t('setup.prepShort', { n: draft.prep }) : t('setup.prepNone'),
+      ].join(' · ');
+      start.textContent = draft.prep ? t('setup.start') : t('setup.startNow');
+    }
+    drawChoices();
+
+    const more = h('details', { class: 'setup-more' },
+      h('summary', null, choices, h('span', { class: 'setup-change' }, t('setup.change'))),
+      h('div', { class: 'label' }, t('setup.scene')), sceneGrid, blurb,
+      h('div', { class: 'label' }, t('setup.where')), mode, modeHint,
+      h('div', { class: 'label' }, t('setup.prep')), prep, h('p', { class: 'hint' }, t('setup.prepHint')));
+
+    const waiting = (store.state.nextPlan || []).length;
 
     const form = h('form', {
       class: 'setup',
       onsubmit: (e) => {
         e.preventDefault();
-        store.setSettings({ focusMin: draft.minutes, scene: draft.scene, studyMode: draft.mode, prepMin: draft.prep });
-        const now = Date.now();
-        store.setActive({
-          id: uid(),
-          stage: draft.prep > 0 ? 'prep' : 'focus',
-          goal: draft.goal.trim(),
-          steps: [],
-          plannedMin: draft.minutes,
-          prepMin: draft.prep,
-          scene: draft.scene,
-          mode: draft.mode,
-          prepStartedAt: now,
-          settling: false,
-          focusStartedAt: draft.prep > 0 ? null : now,
-          pausedAt: null, pausedMs: 0, pauses: 0,
-          awayMs: 0, awayCount: 0, awaySince: null,
-          lastSeenAt: now,
-        });
-        // This click is the "user gesture" browsers need before sound can play.
-        audio.setVolume(store.state.settings.volume);
-        audio.play(draft.scene, 4);
+        startBlock({ goal: draft.goal, minutes: draft.minutes, scene: draft.scene, mode: draft.mode, prep: draft.prep });
         render();
       },
     },
     h('h1', null, t('setup.title')),
     h('p', { class: 'lede' }, t('setup.lede')),
     h('label', { class: 'label', for: 'goal' }, t('setup.goal')), goal,
-    h('div', { class: 'label' }, t('setup.length')), h('div', { class: 'row' }, length, custom, h('span', { class: 'hint' }, t('setup.minutes'))),
-    h('div', { class: 'label' }, t('setup.scene')), sceneGrid, blurb,
-    h('div', { class: 'label' }, t('setup.where')), mode, modeHint,
-    h('div', { class: 'label' }, t('setup.prep')), prep, h('p', { class: 'hint' }, t('setup.prepHint')),
+    h('div', { class: 'label' }, t('setup.length')), h('div', { class: 'row' }, length, customWrap),
+    h('div', { class: 'label' }, t('setup.moreLabel')), more,
+    waiting ? h('p', { class: 'hint setup-carried' }, t('setup.carried', { n: waiting })) : null,
     start);
 
     show(form);
-    goal.focus();
+    // On a phone, focusing the box would throw the keyboard over the whole form
+    if (!touch) goal.focus();
+  }
+
+  // Shown when the block on record is running in another tab right now
+  function renderElsewhere() {
+    audio.stop(0.5);
+    show(h('section', { class: 'setup' },
+      h('h1', null, t('setup.elsewhereTitle')),
+      h('p', { class: 'lede' }, t('setup.elsewhereBody')),
+      h('button', {
+        type: 'button', class: 'btn btn-ink',
+        onclick: () => { yielded = false; takeOver(); render(); },
+      }, t('setup.takeOver'))));
   }
 
   // ------------------------------------------------------------------- prep
@@ -201,12 +230,20 @@ export function sessionView(root, navigate) {
       type: 'text', class: 'field field-dark', maxlength: '120', value: a.goal,
       placeholder: t('setup.goalPlaceholder'), 'aria-label': t('setup.goal'),
     });
+    // The goal was just typed on the previous screen, so it is shown as a heading
+    // here and only becomes a box again if the student wants to change it.
+    const goalLine = h('p', { class: 'prep-goal' }, h('span', null, a.goal),
+      h('button', {
+        type: 'button', class: 'linklike',
+        onclick: () => { goalLine.replaceWith(goal); goal.focus(); },
+      }, t('prep.goalEdit')));
+    let lastTyped = 0;
     const stepInputs = [0, 1, 2].map((i) => h('input', {
       type: 'text', class: 'field field-dark', maxlength: '90', value: a.steps[i]?.text || '',
       placeholder: t(`prep.step${i + 1}`), 'aria-label': t('prep.stepLabel', { n: i + 1 }),
     }));
     function savePlan() {
-      if (!goal.isConnected && !stepInputs[0].isConnected) return;
+      if (!stepInputs[0].isConnected) return;
       save({
         goal: goal.value.trim(),
         steps: stepInputs.map((el) => el.value.trim()).filter(Boolean).map((text) => ({ text, done: false })),
@@ -248,11 +285,12 @@ export function sessionView(root, navigate) {
       },
     }, dump, h('button', { type: 'submit', class: 'btn btn-ghost' }, t('park.button')));
 
-    const planPhase = h('div', { class: 'prep-plan' },
+    const planPhase = h('div', { class: 'prep-plan', oninput: () => { lastTyped = Date.now(); } },
       h('div', { class: 'prep-col' },
         h('h2', null, t('prep.planTitle')),
+        a.goal ? goalLine : goal,
         h('p', { class: 'stage-hint' }, t('prep.planHint', { n: a.plannedMin })),
-        goal, ...stepInputs, suggest),
+        ...stepInputs, suggest),
       h('div', { class: 'prep-col' },
         h('h2', null, t('prep.dumpTitle')),
         h('p', { class: 'stage-hint' }, t('prep.dumpHint')),
@@ -290,7 +328,7 @@ export function sessionView(root, navigate) {
     drawParked();
     drawPhase();
     audio.play(a.scene, 3); // already playing after "Get ready"; this covers a reload
-    if (!active().settling) goal.value ? stepInputs[0].focus() : goal.focus();
+    if (!active().settling && !isTouchDevice()) (a.goal ? stepInputs.find((el) => !el.value) || stepInputs[0] : goal).focus();
 
     ticker = setInterval(() => {
       const left = totalMs - (Date.now() - active().prepStartedAt);
@@ -298,9 +336,13 @@ export function sessionView(root, navigate) {
       // 4 seconds in, 6 seconds out
       const phase = (Date.now() / 1000) % 10;
       breathWord.textContent = phase < 4 ? t('prep.breatheIn') : t('prep.breatheOut');
-      if (!active().settling && left <= settleMs) { savePlan(); save({ settling: true }); drawPhase(); }
+      // Move on to breathing when the planning time is up, but never mid-sentence:
+      // wait until the student has stopped typing for a while.
+      const idle = Date.now() - lastTyped > 15000;
+      if (!active().settling && left <= settleMs && (idle || left <= 20000)) { savePlan(); save({ settling: true }); drawPhase(); }
       if (left <= 0) beginFocus();
     }, 250);
+    heartbeat = setInterval(() => { if (active()?.owner === TAB_ID) save({ lastSeenAt: Date.now() }); }, HEARTBEAT_MS);
   }
 
   // ------------------------------------------------------------------ focus
@@ -338,21 +380,12 @@ export function sessionView(root, navigate) {
     });
 
     // the margin: where stray thoughts go
+    // Only a count is shown while studying: reading the list back would be its own distraction.
     const mine = () => store.state.thoughts.filter((x) => x.sessionId === a.id);
-    const peekList = h('ul', { class: 'margin-peek', hidden: true });
-    const count = h('button', {
-      type: 'button', class: 'margin-count', 'aria-expanded': 'false',
-      onclick: () => {
-        peekList.hidden = !peekList.hidden;
-        count.setAttribute('aria-expanded', String(!peekList.hidden));
-      },
-    });
+    const count = h('span', { class: 'margin-count' });
     const drawMargin = () => {
-      const list = mine();
-      count.textContent = list.length ? t('focus.inMargin', { n: list.length }) : t('focus.marginEmpty');
-      count.disabled = !list.length;
-      peekList.replaceChildren(...list.map((x) => h('li', null, x.text)));
-      if (!list.length) peekList.hidden = true;
+      const n = mine().length;
+      count.textContent = n ? t('focus.inMargin', { n }) : t('focus.marginEmpty');
     };
 
     const input = h('input', {
@@ -380,12 +413,17 @@ export function sessionView(root, navigate) {
     const pauseBtn = h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => togglePause() });
     const endBtn = h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => finish() }, t('focus.end'));
     const pausedBanner = h('p', { class: 'paused-banner', hidden: true }, t('focus.paused'));
+    const endsAt = h('p', { class: 'ends-at' });
 
     function drawPause() {
-      const paused = Boolean(active().pausedAt);
+      const cur = active();
+      const paused = Boolean(cur.pausedAt);
       pauseBtn.textContent = paused ? t('focus.resume') : t('focus.pause');
       pausedBanner.hidden = !paused;
       timer.classList.toggle('is-paused', paused);
+      // The clock time the block ends, so a glance at a watch is enough
+      endsAt.hidden = paused;
+      endsAt.textContent = t('focus.endsAt', { time: timeLabel(Date.now() + plannedMs - elapsedMs(cur)) });
     }
 
     function togglePause() {
@@ -427,18 +465,22 @@ export function sessionView(root, navigate) {
       render();
     }
 
+    // A phone that cannot be asked to stay awake will lock mid-block: say so once, up front
+    const lockNote = isTouchDevice() && !('wakeLock' in navigator)
+      ? h('p', { class: 'stage-hint lock-note' }, t('focus.noWakeLock')) : null;
+
     showStage(scene,
       h('header', { class: 'stage-head' },
-        h('p', { class: 'focus-goal' }, a.goal || t('focus.noGoal')),
+        h('p', { class: 'focus-goal' }, a.goal || ''),
         h('div', { class: 'stage-tools' }, volumeControl(), pauseBtn, endBtn)),
-      h('div', { class: 'focus-center' }, timer, pausedBanner, steps),
+      h('div', { class: 'focus-center' }, timer, endsAt, pausedBanner, steps, lockNote),
       h('div', { class: 'margin' },
         h('div', { class: 'margin-top' }, h('span', { class: 'margin-title' }, t('focus.marginTitle')), flash, count),
-        peekList, strip));
+        strip));
     drawTimer();
     drawMargin();
     drawPause();
-    input.focus();
+    if (!isTouchDevice()) input.focus();
     if (!a.pausedAt) audio.play(a.scene, 2);
 
     keepAwake();
@@ -448,6 +490,7 @@ export function sessionView(root, navigate) {
       if (!document.hidden) keepAwake(); // the lock is dropped whenever the page is hidden
       const cur = active();
       if (!cur || cur.stage !== 'focus' || cur.pausedAt) return;
+      if (cur.trackAway === false) return; // phones: a locked screen is not drifting
       if (document.hidden) {
         save({ awaySince: Date.now() });
       } else if (cur.awaySince) {
@@ -465,7 +508,7 @@ export function sessionView(root, navigate) {
       if (!cur.pausedAt && elapsedMs(cur) >= plannedMs) finish();
     }, 250);
     heartbeat = setInterval(() => {
-      if (active() && !active().pausedAt) save({ lastSeenAt: Date.now() });
+      if (active()?.owner === TAB_ID && !active().pausedAt) save({ lastSeenAt: Date.now() });
     }, HEARTBEAT_MS);
   }
 
@@ -559,9 +602,21 @@ export function sessionView(root, navigate) {
   }
 
   // ----------------------------------------------------------------- router
+  function takeOver() {
+    const a = active();
+    if (!a) return;
+    const patch = { owner: TAB_ID, lastSeenAt: Date.now() };
+    if (a.stage === 'prep') Object.assign(patch, { prepStartedAt: Date.now(), settling: false });
+    // The time since the other tab last touched the block is treated as a pause
+    else if (a.stage === 'focus' && !a.pausedAt) Object.assign(patch, { pausedAt: a.lastSeenAt || Date.now(), pauses: a.pauses + 1, awaySince: null });
+    save(patch);
+  }
+
   function render() {
     const a = active();
     if (!a) return renderSetup();
+    if (a.owner !== TAB_ID && (yielded || heldElsewhere(a))) return renderElsewhere();
+    if (a.owner !== TAB_ID) takeOver();
     if (a.stage === 'prep') return renderPrep();
     if (a.stage === 'focus') return renderFocus();
     return renderWrap();
@@ -569,23 +624,33 @@ export function sessionView(root, navigate) {
 
   audio.setVolume(store.state.settings.volume);
 
-  // Coming back after a reload or a closed tab
+  // Coming back after a reload or a closed tab (same tab: the block picks up paused)
   const a = active();
-  if (a) {
+  if (a && (a.owner === TAB_ID || !a.owner)) {
     if (a.stage === 'prep') {
-      save({ prepStartedAt: Date.now(), settling: false });
+      save({ owner: TAB_ID, prepStartedAt: Date.now(), settling: false });
     } else if (a.stage === 'focus' && !a.pausedAt) {
       // The time the page was closed is treated as a pause, starting at the last heartbeat.
-      save({ pausedAt: a.lastSeenAt || Date.now(), pauses: a.pauses + 1, awaySince: null });
+      save({ owner: TAB_ID, pausedAt: a.lastSeenAt || Date.now(), pauses: a.pauses + 1, awaySince: null });
     }
   }
   render();
 
+  // If another tab ends, takes over or changes the block, follow it
+  const stopWatching = store.subscribe((_, info) => {
+    if (!info?.external) return;
+    const cur = active();
+    // Another tab took the block over: step aside here instead of grabbing it back
+    if (cur && cur.owner !== TAB_ID) yielded = true;
+    if (!cur || cur.owner !== TAB_ID) render();
+  });
+
   return function destroy() {
+    stopWatching();
     cleanupStage();
     // Walking away from a block mid-way pauses it rather than losing it.
     const cur = active();
-    if (cur && cur.stage === 'focus' && !cur.pausedAt) save({ pausedAt: Date.now(), pauses: cur.pauses + 1 });
+    if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) save({ pausedAt: Date.now(), pauses: cur.pauses + 1 });
     audio.stop(0.8);
   };
 }

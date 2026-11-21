@@ -326,12 +326,23 @@ let master = null;
 let noise = null;
 let playing = null;      // { id, gain, nodes, schedule, scheduledTo, timer }
 let volume = 0.6;
+let request = 0;         // goes up on every play() and stop(), so a late play() can tell it was overtaken
 
 function ensureContext() {
   if (ctx) return ctx;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return null;
+  // On iPhones, tell the system this is "playback" sound, so the ring/silent
+  // switch does not mute a study scene.
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* older Safari */ }
   ctx = new AC();
+  // Phones suspend sound when the page is hidden or a call comes in.
+  // Pick it up again when the student is back.
+  const wake = () => {
+    if (!document.hidden && playing && ctx.state !== 'running') ctx.resume().catch(() => {});
+  };
+  document.addEventListener('visibilitychange', wake);
+  window.addEventListener('pageshow', wake);
   master = gainNode(ctx, volume * volume);
   // A gentle limiter so a loud crackle on top of a loud roar can never clip
   const limiter = ctx.createDynamicsCompressor();
@@ -363,8 +374,11 @@ export const audio = {
   // Browsers only allow sound after a click or key press. Call this from one.
   async play(sceneId, fadeSeconds = 2) {
     if (!ensureContext()) return false;
-    if (ctx.state === 'suspended') {
+    const mine = ++request;
+    if (ctx.state !== 'running') {
       try { await ctx.resume(); } catch { return false; }
+      // stop() or another play() arrived while the browser was waking the sound up
+      if (mine !== request) return false;
     }
     if (playing && playing.id === sceneId) return true;
     fadeOutAndStop(playing, 1);
@@ -394,6 +408,7 @@ export const audio = {
   },
 
   stop(fadeSeconds = 1) {
+    request += 1;
     if (!ctx || !playing) return;
     fadeOutAndStop(playing, fadeSeconds);
     playing = null;

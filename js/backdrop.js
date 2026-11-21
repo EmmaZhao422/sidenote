@@ -110,16 +110,23 @@ export function createBackdrop(canvas) {
     }
   }
 
-  function frame() {
-    t += 0.016;
+  // Drawn about 30 times a second: smooth enough for drifting rain and embers,
+  // and half the battery of running at the screen's full rate for a whole study block.
+  let lastDraw = 0;
+  function frame(now) {
+    if (now !== undefined && now - lastDraw < 31) { raf = requestAnimationFrame(frame); return; }
+    // k = how many sixtieths of a second passed, so speeds look the same at any frame rate
+    const k = now === undefined || !lastDraw ? 1 : Math.min(4, (now - lastDraw) / 16.7);
+    lastDraw = now === undefined ? 0 : now;
+    t += 0.016 * k;
     g.clearRect(0, 0, w, h);
     drawSetting();
     if (kind === 'waves') drawWaves();
     const p = preset;
     for (const part of parts) {
-      part.x += p.vx * part.s;
-      part.y += p.vy * part.s;
-      if (kind === 'embers' || kind === 'dust' || kind === 'leaves') part.x += Math.sin(t + part.phase) * 0.3;
+      part.x += p.vx * part.s * k;
+      part.y += p.vy * part.s * k;
+      if (kind === 'embers' || kind === 'dust' || kind === 'leaves') part.x += Math.sin(t + part.phase) * 0.3 * k;
       if (part.x < -60 || part.x > w + 60 || part.y < -20 || part.y > h + 20) {
         Object.assign(part, spawn(false));
         if (p.vx < -1) part.x = w + 50;

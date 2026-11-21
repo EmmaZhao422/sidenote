@@ -14,6 +14,7 @@ import { buildSample } from '../sample.js';
 
 export function summaryView(root) {
   let rangeKey = '7d';
+  let preview = null; // example data, shown without being saved
   const body = h('div', { class: 'summary' });
 
   function tile(label, value, note) {
@@ -24,8 +25,8 @@ export function summaryView(root) {
   }
 
   function draw() {
-    const state = store.state;
     const lang = getLang();
+    const state = preview ? { ...store.state, sessions: preview.sessions, thoughts: preview.thoughts } : store.state;
     const range = rangeFor(rangeKey);
     const stats = aggregate(state, range);
     const rec = recommendScene(state.sessions);
@@ -39,14 +40,18 @@ export function summaryView(root) {
           h('a', { class: 'btn btn-ink', href: '#/focus' }, t('home.start')),
           h('button', {
             type: 'button', class: 'btn btn-quiet',
-            onclick: () => { const s = buildSample(lang); store.addSample(s.sessions, s.thoughts); draw(); },
+            onclick: () => { preview = buildSample(lang); draw(); },
           }, t('summary.showExample')))));
       return;
     }
 
-    const sampleNote = store.hasSample() ? h('p', { class: 'notice' },
+    // Example data is only ever a preview. (Older versions saved it; that copy can still be removed here.)
+    const sampleNote = preview || store.hasSample() ? h('p', { class: 'notice' },
       t('summary.sampleNote'), ' ',
-      h('button', { type: 'button', class: 'linklike', onclick: () => { store.removeSample(); draw(); } }, t('summary.removeSample'))) : null;
+      h('button', {
+        type: 'button', class: 'linklike',
+        onclick: () => { preview = null; if (store.hasSample()) store.removeSample(); draw(); },
+      }, t('summary.removeSample'))) : null;
 
     const ranges = segmented(t('summary.range'), [
       { value: 'today', label: t('summary.today') },
@@ -135,7 +140,7 @@ export function summaryView(root) {
           h('h2', null, t('summary.timingTitle')),
           h('p', { class: 'hint' }, t('summary.timingHint')),
           columnChart(stats.timing.slice(0, lastUsed + 1).map((n, i) => ({
-            label: i === 9 ? '45+' : String(i * 5),
+            label: i === 9 ? '45+' : `${i * 5}–${i * 5 + 5}`,
             value: n,
             tip: i === 9 ? t('summary.timingTipLate', { n }) : t('summary.timingTip', { from: i * 5, to: i * 5 + 5, n }),
           }))));
@@ -146,9 +151,9 @@ export function summaryView(root) {
     const sceneRows = rec.stats.map((s, i) => h('tr', null,
       // the current favourite gets the highlighter
       h('th', { scope: 'row' }, h('span', { class: i === 0 && rec.status === 'ready' ? 'hl' : null }, sceneName(getScene(s.id), lang))),
-      h('td', null, String(s.avg)),
-      h('td', null, String(s.n)),
-      h('td', null, minutesText(s.minutes))));
+      h('td', { 'data-label': t('summary.colScore') }, String(s.avg)),
+      h('td', { 'data-label': t('summary.colBlocks') }, String(s.n)),
+      h('td', { 'data-label': t('summary.colTime') }, minutesText(s.minutes))));
     const scenes = h('section', { class: 'card' },
       h('h2', null, t('summary.scenesTitle')),
       h('p', null, rec.status === 'ready'
@@ -172,15 +177,15 @@ export function summaryView(root) {
       h('h2', null, t('summary.blocksTitle')),
       h('table', { class: 'table' },
         h('thead', null, h('tr', null,
-          h('th', { scope: 'col' }, t('summary.colWhen')), h('th', { scope: 'col' }, t('summary.colGoal')),
+          h('th', { scope: 'col' }, t('summary.colGoal')), h('th', { scope: 'col' }, t('summary.colWhen')),
           h('th', { scope: 'col' }, t('summary.colTime')), h('th', { scope: 'col' }, t('summary.colScoreShort')),
           h('th', { scope: 'col' }, h('span', { class: 'sr-only' }, t('summary.review'))))),
         h('tbody', null, recentBlocks.map((s) => h('tr', null,
-          h('td', null, whenLabel(s.startedAt)),
           h('th', { scope: 'row' }, s.goal || t('focus.noGoal')),
+          h('td', null, whenLabel(s.startedAt)),
           h('td', null, minutesText(Math.max(1, s.focusSec / 60))),
-          h('td', null, String(s.score ?? '–')),
-          h('td', null, h('a', { href: `#/review/${s.id}` }, t('summary.review'))))))));
+          h('td', { 'data-label': t('summary.colScoreShort') }, String(s.score ?? '–')),
+          h('td', null, preview ? null : h('a', { href: `#/review/${s.id}` }, t('summary.review'))))))));
 
     mount(body, sampleNote, ranges, tiles, recap, perDay,
       h('div', { class: 'two-col' }, kinds, timing), scenes, blocks,
