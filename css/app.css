@@ -835,3 +835,11 @@ h1[tabindex="-1"]:focus { outline: none; }
   .focus-steps input { appearance: auto; -webkit-appearance: auto; }
   .focus-steps input:checked::after { content: none; }
 }
+/* Review page: the facts are facts, not buttons */
+.facts { gap: 0.2rem 0; }
+.facts li { border: 0; background: none; padding: 0; border-radius: 0; }
+.facts li + li::before { content: "·"; margin: 0 0.55rem; color: var(--ink-3); }
+.break-remind { color: var(--ink-2); font-size: 0.95rem; padding: 0.3rem 0.2rem; }
+/* The reading list: twelve underlines in a column were heavy */
+.guide-list a { text-decoration-color: var(--rule-strong); text-underline-offset: 0.25em; }
+.guide-list a:hover { text-decoration-color: currentColor; }

@@ -201,7 +201,8 @@ export function reviewView(root, navigate, sessionId) {
     h('a', { class: unfinished ? 'btn btn-quiet' : 'btn btn-ink', href: '#/focus' }, t('review.another')),
     // A calendar entry for tomorrow, at the hour this block started
     h('button', {
-      type: 'button', class: 'btn btn-quiet',
+      // a quieter text button: it is the least likely of the five, and five equal buttons led nowhere
+      type: 'button', class: 'linklike break-remind',
       onclick: () => {
         const start = tomorrowAt(session.startedAt);
         downloadIcs(buildIcs({
