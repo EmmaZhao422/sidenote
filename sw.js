@@ -13,10 +13,10 @@ const CACHE = 'sidenote-offline-v2';
 // The files the app itself is made of. tests/sw.test.js checks this list
 // against the js/ and css/ folders, so a new file can't be forgotten.
 const SHELL = [
-  './', 'index.html', 'css/app.css', 'favicon.svg', 'manifest.webmanifest', 'icon-192.png',
+  './', 'index.html', 'css/app.css', 'css/hand-zh.css', 'favicon.svg', 'manifest.webmanifest', 'icon-192.png',
   'fonts/bricolage-grotesque-latin.woff2', 'fonts/caveat-latin.woff2',
-  'js/ads.js', 'js/ai.js', 'js/analytics.js', 'js/audio.js', 'js/backdrop.js', 'js/block.js', 'js/charts.js',
-  'js/classify.js', 'js/config.js', 'js/handoff.js', 'js/i18n.js', 'js/main.js', 'js/prompts.js', 'js/recap.js',
+  'js/ads.js', 'js/ai.js', 'js/analytics.js', 'js/audio.js', 'js/backdrop.js', 'js/block.js', 'js/breaktimer.js', 'js/charts.js',
+  'js/classify.js', 'js/config.js', 'js/handoff.js', 'js/i18n.js', 'js/ics.js', 'js/main.js', 'js/prompts.js', 'js/recap.js',
   'js/sample.js', 'js/scenes.js', 'js/score.js', 'js/site.js', 'js/store.js', 'js/theme.js', 'js/ui.js',
   'js/views/home.js', 'js/views/margin.js', 'js/views/note.js', 'js/views/scenes.js', 'js/views/session.js',
   'js/views/settings.js', 'js/views/summary.js',

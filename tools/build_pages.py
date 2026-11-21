@@ -510,9 +510,38 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from more_guides import MORE_GUIDES
 GUIDES += MORE_GUIDES
 
-for g in GUIDES:
-    page(f"guides/{g['slug']}.html", 'en', g['en']['title'], g['en']['desc'], g['en']['body'] + cta('en', '../'), f"zh/{g['slug']}.html", 1, ad=True)
-    page(f"guides/zh/{g['slug']}.html", 'zh', g['zh']['title'], g['zh']['desc'], g['zh']['body'] + cta('zh', '../../'), f"../{g['slug']}.html", 2, ad=True)
+import json
+PUBLISHED = '2026-11-21'
+
+def guide_extras(i, lang):
+    """Date line, three more guides to read, and Article data for search engines."""
+    g = GUIDES[i]
+    others = [GUIDES[(i + k) % len(GUIDES)] for k in (1, 2, 3)]
+    links = ''.join(f'<li><a href="{o["slug"]}.html">{o[lang]["title"]}</a></li>' for o in others)
+    head = '接着读' if lang == 'zh' else 'Keep reading'
+    url = SITE + ('guides/zh/' if lang == 'zh' else 'guides/') + g['slug'] + '.html'
+    data = {
+        '@context': 'https://schema.org', '@type': 'Article',
+        'headline': g[lang]['title'], 'description': g[lang]['desc'],
+        'datePublished': PUBLISHED, 'dateModified': PUBLISHED,
+        'inLanguage': 'zh-CN' if lang == 'zh' else 'en',
+        'author': {'@type': 'Organization', 'name': '走神本 Sidenote' if lang == 'zh' else 'Sidenote', 'url': SITE},
+        'publisher': {'@type': 'Organization', 'name': 'Sidenote', 'url': SITE},
+        'mainEntityOfPage': url,
+    }
+    return (f'\n    <h2>{head}</h2>\n    <ul>{links}</ul>\n'
+            f'    <script type="application/ld+json">{json.dumps(data, ensure_ascii=False)}</script>\n')
+
+def dated(body, lang):
+    if lang == 'zh':
+        for old in ('<p class="byline">走神本 · 学习方法</p>', '<p class="byline">走神本学习方法</p>'):
+            body = body.replace(old, f'<p class="byline">走神本 · 学习方法 · 发布于 {UPDATED["zh"]}</p>', 1)
+        return body
+    return body.replace('<p class="byline">A Sidenote study guide</p>', f'<p class="byline">A Sidenote study guide · Published {UPDATED["en"]}</p>', 1)
+
+for i, g in enumerate(GUIDES):
+    page(f"guides/{g['slug']}.html", 'en', g['en']['title'], g['en']['desc'], dated(g['en']['body'], 'en') + guide_extras(i, 'en') + cta('en', '../'), f"zh/{g['slug']}.html", 1, ad=True)
+    page(f"guides/zh/{g['slug']}.html", 'zh', g['zh']['title'], g['zh']['desc'], dated(g['zh']['body'], 'zh') + guide_extras(i, 'zh') + cta('zh', '../../'), f"../{g['slug']}.html", 2, ad=True)
 
 def index(lang):
     items = ''.join(f'<li><a href="{g["slug"]}.html">{g[lang]["title"]}</a><br><span class="byline">{g[lang]["desc"]}</span></li>' for g in GUIDES)

@@ -1,7 +1,7 @@
 // The Claude skill in /skill must agree with the website and stay packaged.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { writeFileSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
@@ -116,4 +116,25 @@ test('the script refuses files that are not backups', () => {
 
 test('skill/sidenote-coach.zip is up to date with the skill folder', () => {
   execFileSync('python3', [join(root, 'tools', 'package_skill.py'), '--check'], { encoding: 'utf8' });
+});
+
+test('three blocks with one sound are not enough to name a favourite, on the site or in the skill', () => {
+  const now = Date.now();
+  const sessions = [1, 2, 3].map((i) => ({ id: `s${i}`, startedAt: now - i * 3600000, focusSec: 1500, plannedMin: 25, scene: 'rain', score: 80, rating: 4, finished: 'yes', pauses: 0 }));
+  const js = recommendScene(sessions);
+  assert.equal(js.status, 'learning');
+  assert.equal(js.oneScene, true);
+  const file = join(mkdtempSync(join(tmpdir(), 'sidenote-')), 'one.json');
+  writeFileSync(file, JSON.stringify({ exportedAt: now, tzOffsetMinutes: 0, thoughts: [], sessions }));
+  const py = run(file, '--days', '0');
+  assert.equal(py.sceneRecommendation.status, 'not enough data');
+  assert.equal(py.sceneRecommendation.scenesTried, 1);
+});
+
+test('a damaged backup gives one plain line, not a traceback', () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'sidenote-')), 'bad.json');
+  writeFileSync(file, '{"thoughts":[{"text":"x","createdAt":1e300}],"sessions":[{"startedAt":1795000000000,"finished":["a"],"scene":["a"],"focusSec":"abc","score":150}],"exportedAt":1e20}');
+  const res = spawnSync('python3', [script, file, '--days', '0'], { encoding: 'utf8' });
+  assert.ok(!/Traceback/.test(res.stderr + res.stdout), res.stderr);
+  assert.ok(res.status === 0 || /Could not read this backup/.test(res.stderr));
 });

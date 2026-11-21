@@ -24,6 +24,7 @@ export function sessionView(root, navigate) {
   let heartbeat = 0;
   let backdrop = null;
   let offVisibility = null;
+  let offActivity = null;
   let yielded = false;   // true once another tab has taken this block over
   const baseTitle = document.title;
 
@@ -50,6 +51,8 @@ export function sessionView(root, navigate) {
     ticker = heartbeat = 0;
     offVisibility?.();
     offVisibility = null;
+    offActivity?.();
+    offActivity = null;
     backdrop?.destroy();
     backdrop = null;
     document.title = baseTitle;
@@ -158,11 +161,11 @@ export function sessionView(root, navigate) {
     const choices = h('span', { class: 'setup-choices' });
     const start = h('button', { type: 'submit', class: 'btn btn-ink btn-big' });
     function drawChoices() {
-      choices.textContent = [
+      choices.replaceChildren(...[
         sceneName(getScene(draft.scene), lang),
-        t(draft.mode === 'paper' ? 'setup.modePaper' : 'setup.modeScreen'),
+        t(draft.mode === 'paper' ? 'setup.modePaperLong' : 'setup.modeScreenLong'),
         draft.prep ? t('setup.prepShort', { n: draft.prep }) : t('setup.prepNone'),
-      ].join(' · ');
+      ].map((text) => h('span', null, text)));
       start.textContent = draft.prep ? t('setup.start') : t('setup.startNow');
     }
     drawChoices();
@@ -389,7 +392,7 @@ export function sessionView(root, navigate) {
     };
 
     const input = h('input', {
-      type: 'text', class: 'margin-input', maxlength: '500', autocomplete: 'off',
+      type: 'text', class: 'margin-input', maxlength: '500', autocomplete: 'off', dir: 'auto', enterkeyhint: 'done',
       placeholder: t('focus.parkPlaceholder'), 'aria-label': t('focus.parkLabel'),
     });
     const flash = h('span', { class: 'margin-flash', 'aria-live': 'polite' });
@@ -471,7 +474,7 @@ export function sessionView(root, navigate) {
 
     showStage(scene,
       h('header', { class: 'stage-head' },
-        h('p', { class: 'focus-goal' }, a.goal || ''),
+        h('p', { class: 'focus-goal', dir: 'auto' }, a.goal || ''),
         h('div', { class: 'stage-tools' }, volumeControl(), pauseBtn, endBtn)),
       h('div', { class: 'focus-center' }, timer, endsAt, pausedBanner, steps, lockNote),
       h('div', { class: 'margin' },
@@ -484,6 +487,21 @@ export function sessionView(root, navigate) {
     if (!a.pausedAt) audio.play(a.scene, 2);
 
     keepAwake();
+
+    // The margin dims after a few idle seconds and wakes at the first key or touch
+    const paper = root.querySelector('.margin');
+    let restTimer = 0;
+    const wake = () => {
+      paper.classList.remove('is-resting');
+      clearTimeout(restTimer);
+      restTimer = setTimeout(() => { if (!input.value) paper.classList.add('is-resting'); }, 8000);
+    };
+    ['keydown', 'pointerdown', 'pointermove'].forEach((ev) => window.addEventListener(ev, wake, { passive: true }));
+    wake();
+    offActivity = () => {
+      clearTimeout(restTimer);
+      ['keydown', 'pointerdown', 'pointermove'].forEach((ev) => window.removeEventListener(ev, wake));
+    };
 
     // Leaving the tab while studying on paper counts as drifting.
     const onVisibility = () => {
@@ -650,6 +668,7 @@ export function sessionView(root, navigate) {
     cleanupStage();
     // Walking away from a block mid-way pauses it rather than losing it.
     const cur = active();
+    if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) toast(t('focus.leftPaused'), 5000);
     if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) save({ pausedAt: Date.now(), pauses: cur.pauses + 1 });
     audio.stop(0.8);
   };

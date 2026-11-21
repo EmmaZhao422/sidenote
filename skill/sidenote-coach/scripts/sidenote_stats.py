@@ -88,7 +88,11 @@ def scene_report(sessions):
     total = sum(r["blocks"] for r in rows)
     tried = [r["id"] for r in rows]
     if total < MIN_BLOCKS_FOR_RECOMMENDATION:
-        rec = {"status": "not enough data", "ratedBlocksNeeded": MIN_BLOCKS_FOR_RECOMMENDATION - total}
+        rec = {"status": "not enough data", "ratedBlocksNeeded": MIN_BLOCKS_FOR_RECOMMENDATION - total, "scenesTried": len(rows)}
+    elif len(rows) < 2:
+        # every rated block used the same sound, so there is nothing to compare it with
+        rec = {"status": "not enough data", "ratedBlocksNeeded": 0, "scenesTried": 1,
+               "note": "Only one scene has been used. Try a second one for a couple of blocks before naming a favourite."}
     else:
         best = rows[0]
         base = SCENES.get(best["id"])
@@ -123,8 +127,15 @@ def main():
     ap.add_argument("file")
     ap.add_argument("--days", type=int, default=7, help="look back this many days (0 = everything)")
     ap.add_argument("--thoughts", action="store_true", help="only list the thoughts still waiting")
+    ap.add_argument("--all", action="store_true", help="with --thoughts: every thought in the --days window, dealt with or not")
     ap.add_argument("--include-samples", action="store_true", help="count the website's example data too")
     args = ap.parse_args()
+    args.days = min(args.days, 36500)
+    # Chinese text and emoji must print whatever code page the terminal uses
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
     try:
         with open(args.file, encoding="utf-8") as f:
@@ -152,6 +163,14 @@ def main():
         cjk = sum(1 for ch in text if "\u4e00" <= ch <= "\u9fff")
         LANG = "zh" if text and cjk > len(text) * 0.3 else "en"
 
+    for s in all_sessions:
+        s["focusSec"] = max(0, s["focusSec"]) if num(s.get("focusSec")) else 0
+        s["pauses"] = max(0, s["pauses"]) if num(s.get("pauses")) else 0
+        if not (num(s.get("score")) and 0 <= s["score"] <= 100):
+            s["score"] = None
+        for key in ("id", "scene", "goal", "finished"):
+            if not isinstance(s.get(key), str):
+                s[key] = None
     sessions = [s for s in all_sessions if args.include_samples or not s.get("sample")]
     thoughts = [t for t in all_thoughts if args.include_samples or not t.get("sample")]
     sample_blocks = len(all_sessions) - len(sessions)
@@ -160,7 +179,7 @@ def main():
 
     def describe(t):
         kind = t.get("category") if t.get("category") in CATEGORIES else "other"
-        out = {"text": str(t.get("text", "")), "kind": kind}
+        out = {"text": str(t.get("text", ""))[:500], "kind": kind}
         if num(t.get("createdAt")):
             out["parkedOn"] = local_day(t["createdAt"], tz)
         if goal_of.get(t.get("sessionId")):
@@ -180,13 +199,6 @@ def main():
         if not sessions and not thoughts:
             demo_note = "This file holds only the website's demo data, nothing the student did. " + demo_note
 
-    if args.thoughts:
-        out = {"language": LANG, "waitingThoughts": waiting, "count": len(waiting)}
-        if demo_note:
-            out["note"] = demo_note
-        print(json.dumps(out, ensure_ascii=False, indent=2))
-        return
-
     # "Last 7 days" means today plus the six calendar days before it, in the student's
     # own time zone: the same window the website's summary page uses.
     if args.days <= 0:
@@ -194,6 +206,28 @@ def main():
     else:
         today_start = ((now - tz * 60000) // 86400000) * 86400000 + tz * 60000
         since = today_start - (args.days - 1) * 86400000
+
+    if args.thoughts and args.all:
+        start = since
+        listed = []
+        for t in thoughts:
+            if num(t.get("createdAt")) and start <= t["createdAt"] <= now:
+                d = describe(t)
+                d["status"] = "dealt with" if t.get("status") == "done" else "waiting"
+                listed.append(d)
+        out = {"language": LANG, "thoughtsInPeriod": listed, "count": len(listed)}
+        if demo_note:
+            out["note"] = demo_note
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return
+
+    if args.thoughts:
+        out = {"language": LANG, "waitingThoughts": waiting, "count": len(waiting)}
+        if demo_note:
+            out["note"] = demo_note
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return
+
     waiting_now = len(waiting)
     sessions = [s for s in sessions if since <= s["startedAt"] <= now]
     thoughts = [t for t in thoughts if num(t.get("createdAt")) and since <= t["createdAt"] <= now]
@@ -220,7 +254,8 @@ def main():
 
     in_block = sum(1 for t in thoughts if t.get("sessionId"))
     planned = [s.get("plannedMin") for s in sessions if num(s.get("plannedMin"))]
-    usual_block = sorted(planned)[len(planned) // 2] if planned else None
+    # the middle planned length (the lower of the two middle ones when the count is even)
+    usual_block = sorted(planned)[(len(planned) - 1) // 2] if planned else None
     trend = None
     if len(scored) >= 4:
         ordered = sorted(scored, key=lambda s: s["startedAt"])
@@ -290,4 +325,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except SystemExit:
+        raise
+    except Exception as err:  # a hand-edited or damaged file: say so in one line, no traceback
+        sys.exit(f"Could not read this backup ({type(err).__name__}: {err}). "
+                 "It may have been edited by hand. Ask for a fresh backup from the website's Settings page.")

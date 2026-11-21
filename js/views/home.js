@@ -88,10 +88,10 @@ export function homeView(root, navigate) {
   }, h('strong', null, t('home.again')),
   h('span', null, t('home.againWhat', { goal: last.goal || t('focus.noGoal'), n: last.plannedMin }))) : null;
 
-  const hero = h('section', { class: 'hero' },
+  const hero = h('section', { class: real.length ? 'hero is-returning' : 'hero' },
     h('div', { class: 'hero-copy' },
       h('h1', { class: 'hero-title' }, t('home.title')),
-      h('p', { class: 'hero-sub' }, t('home.sub')),
+      h('p', { class: 'hero-sub' }, h('span', { class: 'only-wide' }, t('home.sub')), h('span', { class: 'only-narrow' }, t('home.subShort'))),
       h('div', { class: 'hero-cta' },
         h('a', { class: 'btn btn-ink btn-big', href: '#/focus' }, active ? t('home.resume') : t('home.start')),
         again,
@@ -101,6 +101,44 @@ export function homeView(root, navigate) {
       aiMode() === 'offline'
         ? h('p', { class: 'hint hero-ai' }, t('home.aiHint'), ' ', h('a', { href: '#/settings' }, t('home.aiLink'))) : null),
     demo);
+
+  // --- to-dos the student gave a day to: the reason to open the site tomorrow
+  const todo = h('section', { class: 'todo-strip' });
+  function drawTodo() {
+    const due = store.dueList();
+    todo.hidden = !due.length;
+    if (!due.length) return;
+    const groups = ['today', 'tomorrow', 'later'].map((when) => ({ when, items: due.filter((d) => d.when === when) })).filter((g) => g.items.length);
+    mount(todo,
+      h('h2', null, t('due.title')),
+      groups.map((g) => h('div', { class: 'todo-group' },
+        h('h3', null, t(`due.${g.when}Head`)),
+        h('ul', null, g.items.map(({ thought }) => {
+          const id = `due-${thought.id}`;
+          return h('li', null,
+            h('input', {
+              type: 'checkbox', id,
+              onchange: () => {
+                store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
+                toast(t('due.doneToast'));
+                drawTodo();
+                drawParked(false);
+              },
+            }),
+            h('label', { for: id, dir: 'auto' }, thought.note ? `${thought.text} — ${thought.note}` : thought.text));
+        })))));
+  }
+
+  // --- the date being worked toward, if the student set one in Settings
+  let countdown = null;
+  const dl = store.state.settings.deadline;
+  if (dl && dl.date) {
+    const days = Math.round((new Date(`${dl.date}T12:00`).getTime() - new Date(`${store.dayKey(0)}T12:00`).getTime()) / 86400000);
+    if (days >= 0) {
+      const name = dl.label || t('home.deadlineDefault');
+      countdown = h('p', { class: 'countdown' }, days === 0 ? t('home.deadlineToday', { name }) : t('home.deadline', { name, n: days }));
+    }
+  }
 
   // --- today and the streak, once there is something to show
   let today = null;
@@ -112,7 +150,8 @@ export function homeView(root, navigate) {
         h('h2', null, hb.todayBlocks
           ? t('home.today', { time: minutesText(hb.todayMinutes), n: hb.todayBlocks })
           : t('home.todayNone')),
-        h('p', null, hb.streak >= 2 ? t(hb.todayBlocks ? 'home.streakDone' : 'home.streak', { n: hb.streak }) : t('home.streakStart'))),
+        h('p', null, hb.streak >= 2 ? t(hb.todayBlocks ? 'home.streakDone' : 'home.streak', { n: hb.streak }) : t('home.streakStart')),
+        countdown),
       h('ol', { class: 'week', 'aria-label': t('home.weekLabel') }, hb.week.map((d) =>
         h('li', { title: `${dayLabel(d.day)}: ${minutesText(d.minutes)}` },
           h('span', { class: 'week-bar', style: `height:${Math.max(d.minutes ? 12 : 0, (d.minutes / peak) * 100)}%` }),
@@ -159,8 +198,9 @@ export function homeView(root, navigate) {
     h('ul', { class: 'guide-list' }, GUIDES.map((g) =>
       h('li', null, h('a', { href: `${guideBase}${g.slug}.html` }, lang === 'zh' ? g.zh : g.en)))));
 
-  mount(root, hero, today, install, how, sceneBand, adSlot('home'), guides);
+  mount(root, hero, todo, today || (countdown ? h('section', { class: 'today' }, h('div', { class: 'today-text' }, countdown)) : null), install, how, sceneBand, adSlot('home'), guides);
   drawParked(false);
+  drawTodo();
 
   // The miniature runs a slow, purely cosmetic countdown
   const backdrop = createBackdrop(canvas);

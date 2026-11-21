@@ -161,6 +161,19 @@ export function segmented(name, options, value, onChange) {
   return wrap;
 }
 
+// The Chinese "handwritten" face is a separate stylesheet, fetched only when
+// Chinese text is going to be shown (see css/hand-zh.css).
+let handZhLoaded = false;
+export function loadChineseHand() {
+  if (handZhLoaded || typeof document === 'undefined') return;
+  handZhLoaded = true;
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'css/hand-zh.css';
+  document.head.append(link);
+}
+export const hasChinese = (text) => /[\u3400-\u9fff]/.test(String(text || ''));
+
 // True on phones and tablets (a finger, not a mouse)
 export function isTouchDevice() {
   try { return window.matchMedia('(pointer: coarse)').matches; } catch { return false; }

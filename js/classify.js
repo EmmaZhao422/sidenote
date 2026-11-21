@@ -6,13 +6,16 @@
 export const CATEGORIES = ['question', 'todo', 'worry', 'idea', 'urge', 'other'];
 
 const RULES = {
+  // wanting something other than studying: phone, food, rest
   urge: [
-    /\b(my phone|instagram|insta|tiktok|youtube|netflix|twitter|reddit|snapchat|discord|video ?games?|gaming|play a game|snack|hungry|boba|nap|scroll)\b/i,
-    /(刷|手机|抖音|小红书|微信|朋友圈|微博|b站|B站|游戏|王者|原神|零食|奶茶|好饿|饿了|想吃|外卖|睡一会|追剧|短视频)/,
+    /\b(instagram|insta|tiktok|youtube|netflix|twitter|reddit|snapchat|discord|video ?games?|gaming|play a game|snack|hungry|starving|boba|nap|scroll|sleepy|so tired|exhausted|wanna|want to (go home|sleep|leave|quit|stop))\b/i,
+    /\b(check|grab|look at|pick up|get) my phone\b/i,
+    /(刷(手机|抖音|小红书|微博|视频|b站|B站|朋友圈)?|玩手机|(看|拿|摸).{0,3}手机|想.{0,4}手机|抖音|小红书|朋友圈|微博|b站|B站|(打|玩).{0,3}游戏|开黑|王者|原神|零食|奶茶|好饿|饿了|想吃|外卖|睡一会|想睡|好困|困死|好累|累死|追剧|短视频|想回家|不想学)/,
   ],
   worry: [
-    /\b(worried|worry|anxious|anxiety|afraid|scared|what if|stress|stressed|nervous|fail|failing|behind|overwhelmed|lonely|sad|tired of|hate|can't do|embarrass|regret|too late|not good enough|mad at me|annoyed with me)\b/i,
-    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我)/,
+    /\b(worried|worry|anxious|anxiety|afraid|scared|what if|stress|stressed|nervous|fail|failing|behind|overwhelmed|lonely|sad|tired of|hate|can't do|embarrass|regret|too late|not good enough|mad at me|annoyed with me|bad at|not cut out|not smart enough|too dumb|so stupid|give up|never going to|never gonna)\b/i,
+    /^why am i (so|like|always)\b/i,
+    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我|不适合|是不是不|学不会|听不懂|看不懂|太难了|我不行|好笨|没救)/,
   ],
   todo: [
     /^(i )?(need to|have to|must|gotta|should|remember to|don't forget|dont forget|todo|to-do)\b/i,
@@ -26,8 +29,9 @@ const RULES = {
   ],
   question: [
     /[?？]\s*$/,
-    /^(what|why|how|when|where|who|which|is|are|was|were|can|could|does|do|did|will|would)\b/i,
-    /(为什么|怎么|什么是|是什么|如何|是不是|多少|哪个|哪里|谁|能不能|吗$|呢$|区别)/,
+    /^(what|why|how|when|where|who|which|is|are|was|were|can|could|does|do|did|will|would|should)\b/i,
+    /^i wonder\b/i,
+    /(为什么|为啥|怎么|什么是|是什么|如何|是不是|多少|哪个|哪里|哪天|几点|几号|什么时候|多久|吃啥|吃什么|谁|能不能|要不要|吗$|呢$|区别)/,
   ],
 };
 
@@ -41,12 +45,16 @@ const TODO_OPENERS = [
 
 // Order matters: a line like "what if I fail?" is a worry before it is a question.
 const ORDER = ['urge', 'worry', 'todo', 'idea', 'question'];
+// A line that ends in a question mark is being asked, not planned: it can be an
+// urge, a worry or an idea, but never a to-do.
+const ORDER_WHEN_ASKED = ['urge', 'worry', 'idea', 'question'];
 
 export function classify(text) {
   const s = String(text || '').trim();
   if (!s) return 'other';
-  if (!/[?？]\s*$/.test(s) && TODO_OPENERS.some((re) => re.test(s))) return 'todo';
-  for (const cat of ORDER) {
+  const asked = /[?？]\s*$/.test(s);
+  if (!asked && TODO_OPENERS.some((re) => re.test(s))) return 'todo';
+  for (const cat of asked ? ORDER_WHEN_ASKED : ORDER) {
     if (RULES[cat].some((re) => re.test(s))) return cat;
   }
   return 'other';

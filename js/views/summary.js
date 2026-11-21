@@ -131,8 +131,7 @@ export function summaryView(root) {
       const b = breadthLabel(stats.breadth);
       kinds = h('section', { class: 'card' },
         h('h2', null, t('summary.kindsTitle')),
-        barList(rows),
-        b ? h('p', { class: 'hint' }, t(`recap.breadth.${b}`)) : null);
+        barList(rows));
 
       if (stats.timing.some((n) => n > 0)) {
         const lastUsed = Math.max(4, stats.timing.reduce((acc, n, i) => (n > 0 ? i : acc), 0));
@@ -156,9 +155,8 @@ export function summaryView(root) {
       h('td', { 'data-label': t('summary.colTime') }, minutesText(s.minutes))));
     const scenes = h('section', { class: 'card' },
       h('h2', null, t('summary.scenesTitle')),
-      h('p', null, rec.status === 'ready'
-        ? t(rec.confidence === 'solid' ? 'recap.sceneSolid' : 'recap.sceneEarly', { scene: sceneName(getScene(rec.best.id), lang), score: rec.best.avg })
-        : t('scenes.learning', { n: rec.need })),
+      // the favourite is already named in the written recap above; here only say when there is none yet
+      rec.status === 'ready' ? null : h('p', null, rec.oneScene ? t('scenes.oneScene') : t('scenes.learning', { n: rec.need })),
       rec.status === 'ready' && rec.similar.length
         ? h('p', { class: 'hint' }, t('scenes.similar', { scenes: rec.similar.map((id) => sceneName(getScene(id), lang)).join(lang === 'zh' ? '、' : ', ') })) : null,
       h('table', { class: 'table' },

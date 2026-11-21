@@ -2,14 +2,16 @@
 //   marginView  - everything you've parked, open or dealt with
 //   reviewView  - the thoughts from one study block, shown right after it ends
 
-import { h, mount, toast, clock, minutesText, dayLabel, segmented } from '../ui.js';
+import { h, mount, toast, clock, minutesText, dayLabel, timeLabel, segmented } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { noteCard, sortAll } from './note.js';
-import { audio } from '../audio.js';
 import { copyForClaudeButton } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
 import { startBlock } from '../block.js';
+import { breakTimer } from '../breaktimer.js';
+import { buildIcs, tomorrowAt, downloadIcs } from '../ics.js';
+import { CONFIG } from '../config.js';
 
 function sortAllButton(getIds, goalFor, refresh) {
   const btn = h('button', {
@@ -103,6 +105,7 @@ export function reviewView(root, navigate, sessionId) {
   const scoreCard = h('section', { class: 'score-card' },
     h('div', { class: 'score-big' },
       h('span', { class: 'score-num' }, String(session.score)),
+      h('span', { class: 'score-word' }, t(`review.word.${session.score >= 85 ? 'high' : session.score >= 70 ? 'good' : session.score >= 50 ? 'mid' : 'low'}`)),
       h('span', { class: 'score-of' }, t('review.outOf'))),
     h('div', { class: 'score-parts' },
       h('h2', null, t('review.scoreTitle')),
@@ -144,7 +147,6 @@ export function reviewView(root, navigate, sessionId) {
   }
 
   // --- a short break before the next block, timed here so the phone stays put
-  let breakTicker = 0;
   const breakBox = h('section', { class: 'break' });
   // What is left of this block's plan can roll straight into the next one
   const leftover = (session.steps || []).filter((x) => !x.done).map((x) => x.text);
@@ -159,35 +161,49 @@ export function reviewView(root, navigate, sessionId) {
       },
     }, t('review.again')) : null,
     h('a', { class: unfinished ? 'btn btn-quiet' : 'btn btn-ink', href: '#/focus' }, t('review.another')),
+    // A calendar entry for tomorrow, at the hour this block started
+    h('button', {
+      type: 'button', class: 'btn btn-quiet',
+      onclick: () => {
+        const start = tomorrowAt(session.startedAt);
+        downloadIcs(buildIcs({
+          title: session.goal ? t('ics.titleGoal', { goal: session.goal }) : t('ics.title'),
+          start, minutes: session.plannedMin, url: `${CONFIG.siteUrl}#/focus`,
+          note: leftover.length ? leftover.map((x) => `- ${x}`).join('\n') : '',
+        }));
+        toast(t('ics.saved', { time: timeLabel(start.getTime()) }), 6000);
+      },
+    }, t('ics.button')),
   ];
   function drawBreakChoice() {
-    clearInterval(breakTicker);
     mount(breakBox,
       h('h2', null, t('review.breakTitle')),
       h('div', { class: 'row' },
-        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => startBreak(5) }, t('review.break', { n: 5 })),
-        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => startBreak(15) }, t('review.break', { n: 15 })),
+        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => breakTimer.start(5) }, t('review.break', { n: 5 })),
+        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => breakTimer.start(15) }, t('review.break', { n: 15 })),
         nextButtons()));
   }
-  function startBreak(minutes) {
-    const endsAt = Date.now() + minutes * 60000;
-    const left = h('span', { class: 'break-clock', role: 'timer' }, clock(minutes * 60));
-    mount(breakBox,
-      h('h2', null, t('review.breakRunning'), ' ', left),
-      h('p', { class: 'hint' }, t('review.breakHint')),
-      h('button', { type: 'button', class: 'btn btn-quiet', onclick: drawBreakChoice }, t('review.breakSkip')));
-    clearInterval(breakTicker);
-    breakTicker = setInterval(() => {
-      const remaining = (endsAt - Date.now()) / 1000;
-      left.textContent = clock(remaining);
-      if (remaining > 0) return;
-      clearInterval(breakTicker);
-      if (store.state.settings.chime) audio.chime();
+  function drawBreakRunning(left) {
+    if (!breakBox.querySelector('.break-clock')) {
+      mount(breakBox,
+        h('h2', null, t('review.breakRunning'), ' ', h('span', { class: 'break-clock', role: 'timer' }, clock(left))),
+        h('p', { class: 'hint' }, t('review.breakHint')),
+        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => breakTimer.stop() }, t('review.breakSkip')));
+    } else {
+      breakBox.querySelector('.break-clock').textContent = clock(left);
+    }
+  }
+  // The break itself runs in js/breaktimer.js, so it keeps going on other pages
+  const stopWatching = breakTimer.watch((left, finished) => {
+    if (left > 0) return drawBreakRunning(left);
+    if (finished) {
       mount(breakBox,
         h('h2', null, t('review.breakOver')),
         h('div', { class: 'row' }, nextButtons()));
-    }, 500);
-  }
+    } else {
+      drawBreakChoice();
+    }
+  });
   drawBreakChoice();
   // A block worth keeping exists now: ask the browser not to clear this site's data on its own
   store.keepData();
@@ -195,12 +211,16 @@ export function reviewView(root, navigate, sessionId) {
   mount(root,
     h('header', { class: 'view-head' },
       h('h1', null, t('review.title')),
-      h('p', { class: 'lede' }, session.goal ? t('review.ledeGoal', { goal: session.goal }) : t('review.lede'))),
+      h('p', { class: 'lede' }, session.goal ? t('review.ledeGoal', { goal: session.goal }) : t('review.lede')),
+      // one sentence a person would say about the block, before any number
+      h('p', { class: 'takeaway' }, t(session.parkedCount ? 'review.takeaway' : 'review.takeawayNone', {
+        time: minutesText(Math.max(1, session.focusSec / 60)), n: session.parkedCount,
+      }))),
     scoreCard,
     h('ul', { class: 'facts' }, facts.map((f) => h('li', null, f))),
     body,
     breakBox,
     h('p', null, h('a', { href: '#/summary' }, t('review.toSummary'))));
   draw();
-  return () => clearInterval(breakTicker);
+  return stopWatching;
 }

@@ -12,4 +12,10 @@ The files come from the Fontsource packages `@fontsource-variable/bricolage-grot
 and `@fontsource-variable/caveat` (version 5.3.0). The licence text is at
 https://openfontlicense.org.
 
-Chinese text uses the fonts already on the visitor's device.
+| `wenkai/*.woff2` (97 files) | LXGW WenKai GB Screen, regular weight, by LXGW (https://github.com/lxgw/LxgwWenKai-Screen), derived from Klee One by Fontworks. Used for parked thoughts written in Chinese | SIL Open Font License 1.1 |
+
+The WenKai files come from the npm package `lxgw-wenkai-screen-webfont` 1.7.0 (packaging by Chawye Hsu, MIT).
+They are cut by character range, and `css/hand-zh.css` tells the browser which file holds which characters,
+so a visitor downloads only the few files their text needs. That stylesheet is loaded only when Chinese text is shown.
+
+All other Chinese text uses the fonts already on the visitor's device.

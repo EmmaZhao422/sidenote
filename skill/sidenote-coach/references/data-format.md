@@ -68,3 +68,8 @@ Scenes are ranked by average focus score, with small samples pulled toward the s
 - `parkedInPeriodStillWaiting` is about thoughts parked in the period; `waitingNow` is everything still waiting, whenever it was parked.
 - `thoughtRange` is `narrow` when one or two kinds dominate and `wide` when thoughts are spread across many kinds.
 - An unrated block is scored as if rated 3 (`feel` = 60).
+- `usualBlockLengthMinutes` is the middle planned length (the lower of the two middle ones when the count is even).
+- A block that runs past midnight counts on the day it started.
+- A scene recommendation needs three rated blocks and at least two different scenes; with one scene only, the status stays `not enough data`.
+- `--thoughts --all` lists every thought in the `--days` window with a `status` of `waiting` or `dealt with`.
+- Values the website never writes (negative durations, scores outside 0 to 100) are treated as missing.

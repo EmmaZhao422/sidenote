@@ -3,9 +3,10 @@
 
 import { store } from './store.js';
 import { t, getLang } from './i18n.js';
-import { toast } from './ui.js';
+import { toast, loadChineseHand, hasChinese } from './ui.js';
 import { CONFIG } from './config.js';
 import { applyTheme } from './theme.js';
+import { breakTimer } from './breaktimer.js';
 import { startAnalytics } from './analytics.js';
 import { connectClaudeApp, insideClaudeApp } from './ai.js';
 import { homeView } from './views/home.js';
@@ -91,6 +92,7 @@ function render() {
 document.getElementById('lang-toggle').addEventListener('click', () => {
   store.setSettings({ lang: getLang() === 'zh' ? 'en' : 'zh' });
   render();
+  wantChineseHand();
 });
 
 // Keep a copy of the site for when the connection drops (see sw.js)
@@ -112,6 +114,11 @@ if (insideClaudeApp()) {
 // Follow the device when it switches between light and dark
 window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyTheme(store.state.settings.theme));
 
+// Fetch the Chinese handwriting face once Chinese text is on screen
+function wantChineseHand() {
+  if (getLang() === 'zh' || store.state.thoughts.slice(-30).some((x) => hasChinese(x.text))) loadChineseHand();
+}
+
 // A link can ask for a language: ...?lang=zh (used by the Chinese landing page)
 try {
   const asked = new URLSearchParams(location.search).get('lang');
@@ -121,6 +128,7 @@ try {
 window.addEventListener('hashchange', render);
 store.subscribe((_, info) => {
   updateCount();
+  wantChineseHand();
   // Another tab changed something: show it here too, unless the student is mid-sentence.
   // (The study screens look after themselves.)
   if (!info?.external || route().name === 'focus') return;
@@ -130,4 +138,6 @@ store.subscribe((_, info) => {
 });
 store.onStorageFailure(() => toast(t('settings.storageFailed'), 9000));
 render();
+wantChineseHand();
+breakTimer.resume();
 startAnalytics();

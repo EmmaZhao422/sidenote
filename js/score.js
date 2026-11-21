@@ -260,6 +260,10 @@ export function recommendScene(sessions) {
   if (total < MIN_SESSIONS_FOR_RECOMMENDATION) {
     return { status: 'learning', need: MIN_SESSIONS_FOR_RECOMMENDATION - total, tryNext: untried[0] || null, stats };
   }
+  // Three blocks with the same sound say nothing about which sound is best
+  if (stats.length < 2) {
+    return { status: 'learning', oneScene: true, need: 0, tryNext: similarScenes(stats[0].id, tried, 1)[0] || untried[0] || null, stats };
+  }
   const best = stats[0];
   return {
     status: 'ready',

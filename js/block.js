@@ -4,10 +4,12 @@
 import { store, uid, TAB_ID } from './store.js';
 import { audio } from './audio.js';
 import { isTouchDevice } from './ui.js';
+import { breakTimer } from './breaktimer.js';
 
 // opts: { goal, minutes, scene, mode, prep, steps: [text] }
 // Anything left out falls back to the student's last choices.
 export function startBlock(opts = {}) {
+  breakTimer.stop();
   const s = store.state.settings;
   const minutes = opts.minutes ?? s.focusMin;
   const scene = opts.scene ?? s.scene;

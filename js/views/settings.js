@@ -27,6 +27,25 @@ export function settingsView(root, navigate, rerenderAll) {
       { value: 'dark', label: t('settings.theme.dark') },
     ], s.theme || 'auto', (v) => { store.setSettings({ theme: v }); applyTheme(v); }));
 
+  // ---- a date to work toward (an exam, a deadline): shown as a countdown on the home page
+  const dl = s.deadline || {};
+  const dlName = h('input', { type: 'text', class: 'field', id: 'dl-name', maxlength: '40', value: dl.label || '', placeholder: t('settings.deadline.namePlaceholder') });
+  const dlDate = h('input', { type: 'date', class: 'field', id: 'dl-date', value: dl.date || '', min: store.dayKey(0) });
+  const saveDeadline = () => {
+    store.setSettings({ deadline: dlDate.value ? { label: dlName.value.trim(), date: dlDate.value } : null });
+  };
+  dlName.addEventListener('change', saveDeadline);
+  dlDate.addEventListener('change', () => { saveDeadline(); if (dlDate.value) toast(t('settings.deadline.saved')); });
+  const deadline = h('section', { class: 'card' },
+    h('h2', null, t('settings.deadline')),
+    h('p', { class: 'hint' }, t('settings.deadline.hint')),
+    h('label', { class: 'label', for: 'dl-name' }, t('settings.deadline.name')), dlName,
+    h('label', { class: 'label', for: 'dl-date' }, t('settings.deadline.date')), dlDate,
+    h('div', { class: 'row' }, h('button', {
+      type: 'button', class: 'btn btn-quiet',
+      onclick: () => { dlName.value = ''; dlDate.value = ''; saveDeadline(); },
+    }, t('settings.deadline.clear'))));
+
   // ---- AI connection
   const status = h('p', { class: 'ai-status' });
   const drawStatus = () => { status.textContent = t(`settings.ai.status.${aiMode()}`); status.dataset.mode = aiMode(); };
@@ -171,7 +190,7 @@ export function settingsView(root, navigate, rerenderAll) {
 
   mount(root,
     h('header', { class: 'view-head' }, h('h1', null, t('settings.title'))),
-    language, appearance, ai, sound, data);
+    language, appearance, deadline, ai, sound, data);
   syncProvider();
   drawStatus();
 }

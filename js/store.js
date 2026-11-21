@@ -155,6 +155,22 @@ export const store = {
     try { navigator.storage?.persist?.().catch(() => {}); } catch { /* not supported */ }
   },
 
+  // Local calendar day as 'YYYY-MM-DD', n days from today
+  dayKey(offsetDays = 0, from = Date.now()) {
+    const d = new Date(from);
+    d.setDate(d.getDate() + offsetDays);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  },
+  // Open thoughts the student gave a day to, soonest first: [{ thought, when: 'today' | 'tomorrow' | 'later' }]
+  dueList(now = Date.now()) {
+    const today = this.dayKey(0, now);
+    const tomorrow = this.dayKey(1, now);
+    return state.thoughts
+      .filter((x) => x.status !== 'done' && x.due)
+      .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : a.createdAt - b.createdAt))
+      .map((thought) => ({ thought, when: thought.due <= today ? 'today' : thought.due === tomorrow ? 'tomorrow' : 'later' }));
+  },
+
   // Queue of steps for the next study block (to-dos sent there from the margin)
   addToNextPlan(text) {
     refresh();
@@ -185,7 +201,8 @@ export const store = {
 
   // ---- thoughts ----
   addThought(text, extra = {}) {
-    const clean = String(text || '').trim().slice(0, 500);
+    // cut by whole characters, so an emoji at the limit is never split in half
+    const clean = [...String(text || '').trim()].slice(0, 500).join('');
     if (!clean) return null;
     refresh();
     const thought = {

@@ -28,7 +28,7 @@ export function scenesView(root) {
     } else {
       mount(advice,
         h('h2', null, t('scenes.adviceTitle')),
-        h('p', null, t('scenes.learning', { n: rec.need })),
+        h('p', null, rec.oneScene ? t('scenes.oneScene') : t('scenes.learning', { n: rec.need })),
         h('p', { class: 'hint' }, t('scenes.how')));
     }
 
