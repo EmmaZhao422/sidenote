@@ -23,6 +23,8 @@ const GUIDES = [
   { slug: 'study-breaks', en: 'What to do in a five-minute study break', zh: '学习间隙的五分钟，做什么最好' },
   { slug: 'one-block-worked-example', en: 'One study block, start to finish: a worked example', zh: '一轮学习从头到尾：一个完整的例子' },
   { slug: 'test-yourself', en: 'Re-reading feels like studying. Testing yourself works better.', zh: '反复看书像在学习，自己考自己才更有效' },
+  { slug: 'music-with-lyrics', en: 'Can you study with music on? What lyrics do to reading', zh: '学习时能不能听歌？歌词对阅读做了什么' },
+  { slug: 'exam-week-plan', en: 'Planning an exam week in study blocks', zh: '考试周怎么排：按「轮」来计划' },
 ];
 
 export function homeView(root, navigate) {

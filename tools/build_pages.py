@@ -514,6 +514,8 @@ GUIDES = [
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from more_guides import MORE_GUIDES
 GUIDES += MORE_GUIDES
+from guides_3 import GUIDES_3
+GUIDES += GUIDES_3
 
 import json
 PUBLISHED = '2026-11-21'
@@ -555,8 +557,8 @@ def index(lang):
         return f'<h1>学习方法</h1><p>几篇短文，讲走神本背后的做法。每一篇都能在五分钟内读完，读完马上能用。</p><ul>{items}</ul>'
     return f'<h1>Study guides</h1><p>Short pieces on the ideas behind Sidenote. Each takes under five minutes to read, and you can use it the same day.</p><ul>{items}</ul>'
 
-page('guides/index.html', 'en', 'Study guides', 'Ten short, practical guides on studying with focus: parking stray thoughts, the five-minute start, block length, phones, background sound and breaks. Sources included.', index('en'), 'zh/', 1)
-page('guides/zh/index.html', 'zh', '学习方法', '十篇实用短文：学习时走神的念头怎么处理，开始前五分钟做什么，一轮学多久，手机放哪儿，背景声怎么选，休息时做什么。每篇五分钟读完，都附了研究出处。', index('zh'), '../', 2)
+page('guides/index.html', 'en', 'Study guides', 'Twelve short, practical guides on studying with focus: parking stray thoughts, the five-minute start, block length, phones, background sound and breaks. Sources included.', index('en'), 'zh/', 1)
+page('guides/zh/index.html', 'zh', '学习方法', '十二篇实用短文：学习时走神的念头怎么处理，开始前五分钟做什么，一轮学多久，手机放哪儿，背景声怎么选，休息时做什么。每篇五分钟读完，都附了研究出处。', index('zh'), '../', 2)
 
 # ----------------------------------------------------------------------------- Chinese landing page
 # A plain page in Chinese that search engines can read without running the app.
