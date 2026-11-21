@@ -167,6 +167,10 @@ export function reviewView(root, navigate, sessionId) {
       notes.append(h('h3', { class: 'notes-day' }, t('review.plannedTitle', { n: planned.length })));
       planned.forEach((x) => notes.append(card(x)));
     }
+    // The badge in the menu counts every waiting thought; this page lists only this
+    // block's. Say where the rest are, so the two numbers don't look like a mistake.
+    const elsewhere = store.state.thoughts.filter((x) => x.status !== 'done' && x.sessionId !== sessionId && !x.sample).length;
+    if (elsewhere) notes.append(h('p', { class: 'hint review-others' }, h('a', { href: '#/margin' }, t('review.others', { n: elsewhere }))));
     mount(body,
       h('div', { class: 'row row-between' },
         h('h2', null, t('review.thoughtsTitle', { n: undecided.length })),

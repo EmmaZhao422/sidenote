@@ -56,7 +56,7 @@ export function noteCard(thoughtId, opts = {}) {
             store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
             opts.onChange?.('status');
           },
-        }, t('note.done')),
+        }, t('note.didIt')),
         h('button', {
           type: 'button', class: 'btn btn-quiet note-change',
           onclick: () => { unfolded.add(thought.id); redraw('.note-when .chip[aria-pressed="true"]'); },
