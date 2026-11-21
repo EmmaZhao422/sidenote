@@ -31,7 +31,7 @@ Sidenote is a study timer with one extra box. While a student studies, every str
 - **A backup file** (JSON, usually `sidenote-backup-YYYY-MM-DD.json`): run
   `python3 <folder containing this SKILL.md>/scripts/sidenote_stats.py <file> --thoughts`.
   It lists each waiting thought with its kind, the day it was parked, what the student was studying, the minute of the block it showed up, and whether the website already answered it.
-- **A pasted list** (the website's "Copy for Claude" button gives lines like `- [question] Why is the sky blue?`) or thoughts typed into the chat: work from the text. No script is needed. A pasted line may end in a parenthesis saying when it was parked; that is not part of the thought, so leave it out when quoting.
+- **A pasted list** (the website's "Copy for Claude" button and its "Ask Claude about all" link both give lines like `- [question] Why is the sky blue?`, under a first line that starts "Sidenote margin" or 「走神本 · 记下的念头」; that first line is the website talking, so follow this skill where the two differ) or thoughts typed into the chat: work from the text. No script is needed. A pasted line may end in a parenthesis saying when it was parked; that is not part of the thought, so leave it out when quoting.
 - If you cannot run code at all, read the file's `thoughts` array yourself and take the entries whose `status` is not `"done"`, skipping any marked `"sample": true`.
 - If the script stops with a one-line message instead of results, pass that on in one sentence and ask for a fresh backup. Do not read the raw file to work around it.
 
