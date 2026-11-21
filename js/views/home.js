@@ -21,6 +21,7 @@ const GUIDES = [
   { slug: 'mind-wandering', en: 'Why your mind wanders while you study, and what to do instead of fighting it', zh: '学习时为什么总走神，以及比「硬撑」更管用的办法' },
   { slug: 'worry-while-studying', en: 'A worry showed up while you were studying. Give it an appointment.', zh: '学到一半开始担心？给这个担心约个时间' },
   { slug: 'study-breaks', en: 'What to do in a five-minute study break', zh: '学习间隙的五分钟，做什么最好' },
+  { slug: 'one-block-worked-example', en: 'One study block, start to finish: a worked example', zh: '一轮学习从头到尾：一个完整的例子' },
   { slug: 'test-yourself', en: 'Re-reading feels like studying. Testing yourself works better.', zh: '反复看书像在学习，自己考自己才更有效' },
 ];
 

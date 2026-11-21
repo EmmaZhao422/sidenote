@@ -301,4 +301,95 @@ MORE_GUIDES = [
       <li>Dunlosky, J., Rawson, K. A., Marsh, E. J., Nathan, M. J., &amp; Willingham, D. T. (2013). Improving students' learning with effective learning techniques: Promising directions from cognitive and educational psychology. <em>Psychological Science in the Public Interest</em>, 14(1), 4–58. <a href="https://doi.org/10.1177/1529100612453266">doi:10.1177/1529100612453266</a></li>
     </ul>
    ''')),
+ dict(slug='one-block-worked-example',
+  en=dict(title='One study block, start to finish: a worked example',
+   desc='A 45-minute block followed minute by minute: the plan, the five stray thoughts that showed up, what was done with each one afterwards, and what the record showed.',
+   body="""
+    <h1>One study block, start to finish: a worked example</h1>
+    <p class="byline">A Sidenote study guide</p>
+    <p>Advice about focus is easy to agree with and hard to picture. So here is one ordinary block, written out. The student is made up, and so are her thoughts, but every step is one you can copy tonight. She has a statistics problem set due on Friday and forty-five minutes before dinner.</p>
+
+    <h2>Before: five minutes</h2>
+    <p>She writes the goal first. Her first version is "work on stats", which gives her nothing to aim at. She changes it to something she can check:</p>
+    <div class="callout">
+      <p><strong>Goal:</strong> Problem set 5, questions 1 to 3, written up.</p>
+      <p><strong>Steps:</strong> 1. Re-read the worked example on confidence intervals. 2. Do questions 1 and 2. 3. Do question 3, then check all three against the notes.</p>
+    </div>
+    <p>Then she empties her head. Two things are already nagging: she owes her landlord a call about the heating, and she is not sure when the lab report is due. Both go on the list before the timer starts, so they don't get to interrupt later. Her phone goes in her bag, on the other side of the room. She spends the last two minutes breathing slowly and looking at step one.</p>
+
+    <h2>During: forty-five minutes</h2>
+    <p>The timer starts. She has a background sound on, and one box open for stray thoughts. This is what the block looked like from the inside:</p>
+    <ul>
+      <li><strong>Minute 4.</strong> "Is the heating thing going to cost me money?" It is the landlord again, and it is already on the list. She doesn't write it twice. Back to the worked example.</li>
+      <li><strong>Minute 11.</strong> Halfway through question 1: "Why do we divide by n minus 1?" She is curious, and it feels relevant. But answering it now means opening a tab. She types the question in one line and goes on with the formula as given.</li>
+      <li><strong>Minute 17.</strong> "I want to check my phone." She types exactly that. Writing it down takes four seconds, and getting up to fetch the phone would take longer.</li>
+      <li><strong>Minute 26.</strong> Question 2 goes badly. "Everyone else finds this easy. What if I fail the midterm?" This one stings. She writes it down as it came and puts her pen back on the line where she stopped. It returns a minute later. She doesn't write it again.</li>
+      <li><strong>Minute 38.</strong> "A shared sheet of worked examples for the whole study group?" It is a nice idea and has nothing to do with question 3. One line.</li>
+    </ul>
+    <p>When the timer ends she has finished questions 1 and 2 and half of question 3.</p>
+
+    <h2>After: ten minutes</h2>
+    <p>First she rates the block: 3 out of 5 for focus, plan partly finished. Then she goes through the list, top to bottom, and gives each line an ending.</p>
+    <ul>
+      <li><strong>Call the landlord.</strong> A to-do. It takes two minutes, and offices close at six. She calls now. Done.</li>
+      <li><strong>When is the lab report due?</strong> A question only her course page can answer. She looks: next Wednesday. It goes in her calendar. Done.</li>
+      <li><strong>Why n minus 1?</strong> A real question. She writes her guess first ("something about the sample being smaller than the population?"), then looks it up. The short answer: dividing by n would underestimate the spread, because the sample mean sits closer to the sample's own points than the true mean does. Her guess was half right, which is why she will remember it.</li>
+      <li><strong>Check my phone.</strong> The block is over, so she can. She sets a ten-minute timer first.</li>
+      <li><strong>What if I fail the midterm?</strong> A worry. She asks the only useful question: is there one thing I can do? There is. Question 2 went badly because she doesn't understand one step, so she writes: "Ask about question 2 in office hours on Thursday." The worry has turned into a to-do with a day on it.</li>
+      <li><strong>Shared sheet of worked examples.</strong> An idea. Three lines: what it is, who would want it, the cheapest test. The test is one message to the group chat. She sends it.</li>
+    </ul>
+    <p>The half-finished question 3 goes at the top of tomorrow's block.</p>
+
+    <h2>What the record showed</h2>
+    <p>One block doesn't make a pattern. After a week of them, hers showed three things. Most of her stray thoughts were errands, so she now spends five minutes on admin before she studies. They clustered between minutes 10 and 20, so a wobble at minute 15 no longer feels like a sign that she can't concentrate. And her blocks with rain in the background scored a little higher than her blocks in silence, which she would not have guessed.</p>
+    <p>She did not get rid of the stray thoughts in that block. All five showed up, and each cost her about five seconds.</p>
+
+    <h2>Try it</h2>
+    <p>You can do all of this with a sheet of paper and a kitchen timer. Sidenote does the same thing with a timer, a box for the stray thoughts, and the record at the end. If you want the reasoning behind each step, read <a href="five-minute-start.html">the five-minute start</a>, <a href="parking-lot-method.html">the parking lot method</a> and <a href="worry-while-studying.html">what to do with a worry</a>.</p>
+   """),
+  zh=dict(title='一轮学习从头到尾：一个完整的例子',
+   desc='把一轮 45 分钟的学习一分钟一分钟写出来：计划是什么，中途冒出来的五个念头，学完之后每一个是怎么处理的，以及记录说明了什么。',
+   body="""
+    <h1>一轮学习从头到尾：一个完整的例子</h1>
+    <p class="byline">走神本 · 学习方法</p>
+    <p>讲专注的建议，听着都对，但很难想象具体怎么做。所以这里把普通的一轮学习完整写出来。这个学生是虚构的，她的念头也是，但每一步你今晚就能照着做。她周五要交一份统计作业，离晚饭还有四十五分钟。</p>
+
+    <h2>开始前：五分钟</h2>
+    <p>她先写目标。第一版是「做统计」，这等于没有目标。她改成了能检查的：</p>
+    <div class="callout">
+      <p><strong>目标：</strong>第 5 次作业的第 1 到 3 题，写完。</p>
+      <p><strong>步骤：</strong>1. 重看一遍置信区间的例题。2. 做第 1、2 题。3. 做第 3 题，然后对着笔记把三道题检查一遍。</p>
+    </div>
+    <p>然后她把脑子里的事倒出来。已经有两件事在惦记：暖气的事要给房东打电话，还有实验报告不确定哪天交。计时开始之前，这两件先记到清单上，等会儿它们就没机会来打扰。手机放进包里，包放在房间另一头。最后两分钟，她慢慢呼吸，看着第一步。</p>
+
+    <h2>学习中：四十五分钟</h2>
+    <p>计时开始。她开着背景声，留着一个记念头的输入框。这一轮从里面看是这样的：</p>
+    <ul>
+      <li><strong>第 4 分钟。</strong>「暖气这事会不会要我出钱？」还是房东那件事，已经在清单上了，她没有再写一遍。回到例题。</li>
+      <li><strong>第 11 分钟。</strong>第 1 题做到一半：「为什么要除以 n 减 1？」她很好奇，而且感觉跟题目有关。但现在去查就得开一个新标签页。她用一行字把问题记下，先按公式往下做。</li>
+      <li><strong>第 17 分钟。</strong>「想看一眼手机。」她原样打了这几个字。写下来只要四秒，站起来去拿手机要更久。</li>
+      <li><strong>第 26 分钟。</strong>第 2 题做得很不顺。「别人都觉得很简单。期中挂了怎么办？」这个念头有点疼。她照原样写下来，把笔放回刚才停下的那一行。一分钟后它又来了，她没有再写。</li>
+      <li><strong>第 38 分钟。</strong>「给学习小组做一份共享的例题文档？」主意不错，但和第 3 题没有关系。一行字。</li>
+    </ul>
+    <p>计时结束时，第 1、2 题做完了，第 3 题做了一半。</p>
+
+    <h2>结束后：十分钟</h2>
+    <p>她先给这一轮打分：专注程度 3 分（满分 5），计划完成了一部分。然后把清单从上到下过一遍，每一行给一个结局。</p>
+    <ul>
+      <li><strong>给房东打电话。</strong>待办。两分钟的事，而且对方六点下班。她现在就打。搞定。</li>
+      <li><strong>实验报告哪天交？</strong>只有课程页面能回答的问题。她查了：下周三。记进日历。搞定。</li>
+      <li><strong>为什么是 n 减 1？</strong>一个真问题。她先写下自己的猜测（「是不是因为样本比总体小？」），再去查。简单说：除以 n 会低估数据的离散程度，因为样本均值离样本里这些点，比真实均值离它们更近。她猜对了一半，所以会记得住。</li>
+      <li><strong>看手机。</strong>这一轮结束了，可以看。她先定了一个十分钟的计时。</li>
+      <li><strong>期中挂了怎么办？</strong>担心。她只问一个有用的问题：有没有一件我能做的事？有。第 2 题不顺是因为有一步没懂，于是她写下：「周四答疑时间去问第 2 题。」担心变成了一件有日子的待办。</li>
+      <li><strong>共享的例题文档。</strong>点子。写三行：它是什么，谁会想要，最省事的试法。试法就是在群里发一条消息。她发了。</li>
+    </ul>
+    <p>没做完的第 3 题，排在明天那一轮的最前面。</p>
+
+    <h2>记录说明了什么</h2>
+    <p>一轮看不出规律。这样做了一周之后，她的记录说明了三件事。走神的念头大多是杂事，所以她现在学习前先花五分钟处理杂事。念头集中在第 10 到 20 分钟，所以第 15 分钟晃一下神，不再让她觉得自己专注不了。还有，开着雨声的那几轮，专注分比不放声音的略高，这是她自己猜不到的。</p>
+    <p>这一轮里她并没有消灭走神的念头。五个念头都来了，每个大约花了她五秒钟。</p>
+
+    <h2>试一试</h2>
+    <p>一张纸加一个厨房计时器就能做完上面所有的事。走神本做的是同一件事：一个计时器，一个记念头的输入框，以及最后的记录。想知道每一步背后的道理，可以读<a href="five-minute-start.html">开始前的五分钟</a>、<a href="parking-lot-method.html">念头停车场</a>和<a href="worry-while-studying.html">学到一半开始担心怎么办</a>。</p>
+   """)),
 ]
