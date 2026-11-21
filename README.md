@@ -11,8 +11,8 @@ Live site: https://emmazhao422.github.io/sidenote/
 ## What it does
 
 - **Five minutes to get ready.** Name the goal, split it into up to three steps, empty your head, then a short breathing guide while the sound fades in.
-- **Park stray thoughts.** One input box during the block. Type, press Enter, back to work.
-- **Deal with them afterwards.** Each thought ends in something to do: a to-do gets a day (and stays on the home page until it is done) or goes into the next block's plan, a question gets your own guess and then the answer, a worry gets one next step, an urge gets a ten-minute break on the clock.
+- **Park stray thoughts.** One input box during the block. Type, press Enter, back to work. The count beside it opens a list of what you have parked, in case of a typo.
+- **Deal with them afterwards.** Each thought ends in something to do: a to-do gets a day (and stays on the home page until it is done) or goes into the next block's plan, a question gets your own guess and then the answer, a worry gets one next step, an urge gets a ten-minute break on the clock. Anything given a day folds away under "Planned", so the list shows what is still undecided.
 - **Summary.** Focus time per day, a focus score per block, what your stray thoughts were about, and the minute of a block they tend to show up.
 - **Ten scenes, generated in the browser.** Rain, waves, fireplace, forest, summer night, night train, quiet library, and brown, pink and white noise. No audio files.
 - **Scene recommendation.** After three rated blocks on at least two scenes it shows which one you focus best with and suggests untried scenes with a similar character.
@@ -43,7 +43,7 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/charts.js`, `js/recap.js`, `js/sample.js` | Charts, the written recap, and example data for the summary page |
 | `js/breaktimer.js`, `js/ics.js`, `js/sharecard.js`, `js/csv.js`, `js/handoff.js` | The break timer, the calendar reminder, the picture to share, the spreadsheet export, and "Copy for Claude" |
 | `worker/` | The Cloudflare Worker that keeps the API key off the website |
-| `guides/`, `about.html`, `privacy.html`, `terms.html`, `claude.html`, `zh/` | Articles and plain pages. They are generated: the text lives in `tools/build_pages.py` and `tools/more_guides.py` |
+| `guides/`, `about.html`, `privacy.html`, `terms.html`, `claude.html`, `zh/`, `sitemap.xml` | Articles and plain pages. They are generated: the text lives in `tools/build_pages.py`, `tools/more_guides.py` and `tools/guides_3.py` |
 | `fonts/` | The two typefaces, served from the site itself |
 | `skill/` | `sidenote-coach`, a Claude skill that sorts parked thoughts and reviews study sessions with the visitor's own Claude plan |
 | `tools/` | Scripts that build the plain pages and package the skill |
@@ -96,7 +96,7 @@ No open-source licence has been chosen yet, so all rights are reserved for now. 
 ### 功能
 
 - **五分钟准备：** 写目标、拆两三步、把脑子里的事先倒出来，再跟着呼吸进入状态
-- **记下走神的念头：** 学习时只有一个输入框，打字、回车、继续
+- **记下走神的念头：** 学习时只有一个输入框，打字、回车、继续；旁边的「已记 N 条」可以点开看一眼刚才记了什么
 - **学完再处理：** 每条念头最后都落到一件能做的事上：待办定个日子（没做完会一直显示在首页）或排进下一轮；问题先写猜测再看答案；担心的事写一件能做的；想摸鱼给一个 10 分钟的休息计时
 - **总结：** 每天专注多久、每轮的专注分、走神时在想什么、一般在第几分钟走神
 - **十个场景：** 全部在浏览器里实时生成，没有音频文件
