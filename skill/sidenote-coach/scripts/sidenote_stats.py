@@ -122,6 +122,16 @@ def local_day(ts_ms, tz_offset_min):
     return time.strftime("%Y-%m-%d", time.gmtime(ts_ms / 1000 - tz_offset_min * 60))
 
 
+def trim(out, key, limit):
+    """Keep a very long list readable: the newest `limit` entries, with a count of what was left out."""
+    items = out[key]
+    if limit and limit > 0 and len(items) > limit:
+        out[key] = items[-limit:]
+        out["showing"] = limit
+        out["omitted"] = len(items) - limit
+        out["omittedNote"] = "Only the newest thoughts are listed. Say how many were left out and offer to go through the rest next."
+
+
 def main():
     ap = argparse.ArgumentParser(description="Print the numbers from a Sidenote backup as JSON.")
     ap.add_argument("file")
@@ -129,6 +139,7 @@ def main():
     ap.add_argument("--thoughts", action="store_true", help="only list the thoughts still waiting")
     ap.add_argument("--all", action="store_true", help="with --thoughts: every thought in the --days window, dealt with or not")
     ap.add_argument("--include-samples", action="store_true", help="count the website's example data too")
+    ap.add_argument("--limit", type=int, default=60, help="with --thoughts: list at most this many, newest first kept (0 = all)")
     args = ap.parse_args()
     args.days = min(args.days, 36500)
     # Chinese text and emoji must print whatever code page the terminal uses
@@ -140,8 +151,11 @@ def main():
     try:
         with open(args.file, encoding="utf-8") as f:
             data = json.load(f)
-    except (OSError, ValueError) as err:
-        sys.exit(f"Could not read {args.file}: {err}")
+    except OSError as err:
+        sys.exit(f"Could not open {args.file}: {err.strerror or err}")
+    except ValueError:
+        sys.exit("This file looks cut off or damaged, so it cannot be read as a Sidenote backup. "
+                 "Ask for a fresh backup from the website's Settings page.")
     if not isinstance(data, dict) or not isinstance(data.get("thoughts"), list) or not isinstance(data.get("sessions"), list):
         sys.exit("This does not look like a Sidenote backup (it needs 'thoughts' and 'sessions' lists).")
 
@@ -221,6 +235,7 @@ def main():
                 d["status"] = "dealt with" if t.get("status") == "done" else "waiting"
                 listed.append(d)
         out = {"language": LANG, "thoughtsInPeriod": listed, "count": len(listed)}
+        trim(out, "thoughtsInPeriod", args.limit)
         if demo_note:
             out["note"] = demo_note
         print(json.dumps(out, ensure_ascii=False, indent=2))
@@ -228,6 +243,7 @@ def main():
 
     if args.thoughts:
         out = {"language": LANG, "waitingThoughts": waiting, "count": len(waiting)}
+        trim(out, "waitingThoughts", args.limit)
         if demo_note:
             out["note"] = demo_note
         print(json.dumps(out, ensure_ascii=False, indent=2))
@@ -327,7 +343,7 @@ def main():
         if age_days >= 2:
             out["notes"].append(f"This backup was saved {age_days} days ago, so the period ends on {local_day(now, tz)}, not today.")
     if not sessions:
-        out["notes"].append("No study blocks in this period." + ("" if args.days <= 0 else " Try --days 0 for everything."))
+        out["notes"].append("No study blocks in this period." + ("" if args.days <= 0 or (demo_note and demo_note.startswith("This file holds only")) else " Try --days 0 for everything."))
     elif len(scored) < 3:
         out["notes"].append("Fewer than 3 rated blocks: treat every average here as a first impression.")
     print(json.dumps(out, ensure_ascii=False, indent=2))
@@ -338,6 +354,8 @@ if __name__ == "__main__":
         main()
     except SystemExit:
         raise
+    except BrokenPipeError:  # the reader stopped early (for example `| head`): not a bad backup
+        sys.exit(0)
     except Exception as err:  # a hand-edited or damaged file: say so in one line, no traceback
         sys.exit(f"Could not read this backup ({type(err).__name__}: {err}). "
                  "It may have been edited by hand. Ask for a fresh backup from the website's Settings page.")

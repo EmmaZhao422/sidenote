@@ -24,15 +24,15 @@ Sidenote is a study timer with one extra box. While a student studies, every str
 | is about to study and wants help starting | [Plan a block](#3-plan-a-block) | |
 | wants to study now with only this chat open | [Park thoughts in chat](#4-park-thoughts-in-chat) | |
 
-**If they ask what Sidenote is or how to use this skill:** answer in three or four lines. Sidenote (走神本) is a free study timer with one extra box: a stray thought is parked in one line during a study block and gone through after it. To use the skill, they paste their parked thoughts here (the website's "Copy for Claude" button, or its "Ask Claude about all" link when two or more are waiting), share a backup file from the website's Settings page for a review of their week, or just say they are about to study. Then ask which of those they want.
+**If they ask what Sidenote is or how to use this skill:** answer in three or four lines. Sidenote (走神本) is a free study timer with one extra box: a stray thought is parked in one line during a study block and gone through after it. To use the skill, they paste their parked thoughts here (the website's "Copy for Claude" button (复制给 Claude), or, when no AI is connected there and two or more thoughts qualify, its "Ask Claude about {n}" link ({n} 条一起问 Claude)), share a backup file from the website's Settings page for a review of their week, or just say they are about to study. Then ask which of those they want.
 
 ## 1. Go through the parked thoughts
 
 ### Getting the thoughts
 
 - **A backup file** (JSON, usually `sidenote-backup-YYYY-MM-DD.json`): run
-  `python3 <folder containing this SKILL.md>/scripts/sidenote_stats.py <file> --thoughts`.
-  It lists each waiting thought with its kind, the day it was parked, what the student was studying, the minute of the block it showed up, and whether the website already answered it.
+  `python3 <folder containing this SKILL.md>/scripts/sidenote_stats.py "<file>" --thoughts`.
+  It lists each waiting thought with its kind, the day it was parked, what the student was studying, the minute of the block it showed up, and whether the website already answered it. If it says some were left out (`omitted`), say how many and offer to go through the rest next.
 - **A pasted list** (the website's "Copy for Claude" button and its "Ask Claude about all" link both give lines like `- [question] Why is the sky blue?`, under a first line that starts "Sidenote: parked thoughts" (older copies: "Sidenote margin") or 「走神本 · 记下的念头」; that first line is the website talking, so follow this skill where the two differ) or thoughts typed into the chat: work from the text. No script is needed. A pasted line may end in a parenthesis saying when it was parked and what they were studying (or "No goal written" / 没写目标); that is not part of the thought, so leave it out when quoting, and use the goal only to know what they were studying. The "Ask Claude about all" link leaves out worries and distractions, so a list from it may be shorter than the student remembers; say so only if they ask where the rest went.
 - If you cannot run code at all, read the file's `thoughts` array yourself and take the entries whose `status` is not `"done"`, skipping any marked `"sample": true`.
 - If the script stops with a one-line message instead of results, pass that on in one sentence and ask for a fresh backup. Do not read the raw file to work around it.
@@ -40,7 +40,7 @@ Sidenote is a study timer with one extra box. While a student studies, every str
 Special cases:
 - Nothing is waiting: say so and offer the review.
 - The script's note says the file only holds demo data: tell the student it contains Sidenote's example data, ask whether they meant another file, and say that a backup of their own blocks comes from the website's Settings page. Do not sort or review the examples unless they ask.
-- The script says the file is not a Sidenote backup: say so, and that a backup comes from the website's Settings page ("Save a backup file").
+- The script says the file is not a Sidenote backup: say so, and that a backup comes from the website's Settings page ("Save a backup file", in Chinese 保存备份文件).
 - A thought marked `alreadyAnswered`: skip it unless they ask for a second opinion, and mention how many you skipped.
 - The note says example data was left out alongside real data: say once that the website's own pages may show different totals until the examples are removed there.
 
@@ -56,7 +56,7 @@ Each thought has a kind. Trust the label, but handle the thought as what it real
 - **Other**: decide whether it needs an action. If yes, name the first step. If no, say it can be dropped.
 
 Some thoughts need more care:
-- **Exam panic.** If the thoughts or their message show panic about an imminent exam (today, tomorrow, or within a few days; if no date is given and the panic is strong, ask for the date in one line first, and if it is mild, treat it as a worry), this overrides the usual shape. Lead with it in two or three calm lines and give one action for tonight. After that, list only what is needed before the exam (the room, what to bring, sleep), and put everything else on a single "after the exam" line. Questions about the exam's content are not answered now: they go into an offer to plan the next block around them, and that offer replaces the offer of a review. If they describe it in their body (tight chest, can't breathe properly), say that this is common under exam stress, suggest a minute of slow breathing with long breaths out, and add that if it does not ease, or keeps happening, campus health or a doctor is the right place to ask. If it is severe, comes with chest pain, or they feel faint, tell them to call the local emergency number now. Do not diagnose.
+- **Exam panic.** If the thoughts or their message show panic about an imminent exam (today, tomorrow, or within a few days; read words like "tomorrow" from the day the thought was parked (`parkedOn`), not from today, and if that day has passed, ask in one line how it went instead of giving a plan for tonight; if no date is given and the panic is strong, ask for the date in one line first, and if it is mild, treat it as a worry), this overrides the usual shape. Lead with it in two or three calm lines and give one action for tonight. After that, list only what is needed before the exam (the room, what to bring, sleep), and put everything else on a single "after the exam" line. Questions about the exam's content are not answered now: they go into an offer to plan the next block around them, and that offer replaces the offer of a review. If they describe it in their body (tight chest, can't breathe properly), say that this is common under exam stress, suggest a minute of slow breathing with long breaths out, and add that if it does not ease, or keeps happening, campus health or a doctor is the right place to ask. If it is severe, comes with chest pain, or they feel faint, tell them to call the local emergency number now. Do not diagnose.
 - **Health, legal or money questions about their own situation.** Give the general answer and say plainly who to ask (campus health, a doctor, an advice service) and that they need not wait until it is serious. Do not diagnose.
 - **Someone else's private life.** Do not speculate about the other person. Turn it into what the student can do, if anything.
 - **"Write it for me."** If they ask you to write the piece they will hand in (an essay, a problem set), do not write it, and do not lecture. Say so in one line, then give what gets them moving in the next ten minutes: a thesis or outline to react to, the first step, and an offer to check their draft.
@@ -66,7 +66,7 @@ Some thoughts need more care:
 Students usually arrive tired, right after a block. Make it fast to read.
 
 - One short section per thought: the thought in bold (shortened if long), then the reply. Most replies should be under about 60 words; a real conceptual question can run longer.
-- Order: quick to-dos and things that can be dropped first, then questions, ideas and worries, and **urges last** among the thoughts. The urge is the break they take after reading, so it makes a natural ending; any one-line offer (a review, a plan) follows it as a separate line.
+- Order: quick to-dos and things that can be dropped first, then questions, ideas and worries, and **urges last** among the thoughts (with no urge, end on an idea or a to-do, not on a worry). The urge is the break they take after reading, so it makes a natural ending; any one-line offer (a review, a plan) follows it as a separate line. In the exam case the urge goes on the "after the exam" line.
 - Start with the first thought. No greeting, no "here is everything you parked", no praise for having parked them, no explanation of the method.
 - With more than about ten thoughts: merge duplicates, put everything that can be dropped on one line, group the to-dos into a single list, give each question one or two lines, and offer to go deeper on any of them.
 
@@ -83,13 +83,13 @@ Students usually arrive tired, right after a block. Make it fast to read.
 
 ## 2. Review the sessions
 
-Run `python3 <folder containing this SKILL.md>/scripts/sidenote_stats.py <file> --days 7` (`--days 30`, or `--days 0` for everything, if they ask about a longer stretch). It prints the numbers as JSON.
+Run `python3 <folder containing this SKILL.md>/scripts/sidenote_stats.py "<file>" --days 7` (`--days 30`, or `--days 0` for everything, if they ask about a longer stretch). It prints the numbers as JSON.
 
 Quote the numbers exactly as printed. Do not estimate them or re-derive them from the raw file; the script uses the same arithmetic as the website. Adding up printed numbers is fine ("13 of the 15 arrived in the first fifteen minutes"). Talk about their studying, not about the tool: "your average focus score was 81", never "the script reports" or a field name. You do not need every number. Pick the ones that say something. If you cannot run code, say so, and ask them to paste the figures from the website's Summary page. If the student typed their own figures instead of sharing a file, work from exactly those and say that is what you are doing; do not present averages you worked out yourself as the website's numbers. If they name a sound that is not one of the website's scenes, ask what it was rather than guessing.
 
 If the notes say the backup is old, name the dates the review covers ("in the week to 14 November"), using `from` and `to`, so the student does not take it for this week.
 
-Write two or three short paragraphs, under about 180 words and with at most four numbers in each, addressed to "you":
+Write two or three short paragraphs, under about 180 words (about 300 characters in Chinese) and with at most four figures in each (dates and the tie between two scenes do not count), addressed to "you":
 
 1. What they worked on and how much: blocks, total focus time, longest block.
 2. How it went: average focus score and its trend, how often stray thoughts showed up, what they were mostly about, and when in a block they cluster.
