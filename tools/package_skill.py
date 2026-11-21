@@ -7,7 +7,8 @@
 Claude expects the zip to contain the skill folder itself at the top level
 (sidenote-coach/SKILL.md), and the folder name to match the name in SKILL.md.
 File dates inside the zip are fixed so that rebuilding without changes gives
-the same bytes.
+the same bytes on one machine. The check compares the files inside the zip,
+because the compressed bytes can differ from one machine to the next.
 """
 import hashlib
 import io
@@ -45,12 +46,21 @@ def build():
     return buf.getvalue()
 
 
+def contents(zip_bytes):
+    try:
+        with zipfile.ZipFile(io.BytesIO(zip_bytes)) as z:
+            return {i.filename: hashlib.sha256(z.read(i)).hexdigest() for i in z.infolist()}
+    except zipfile.BadZipFile:
+        return None
+
+
 def main():
     target = os.path.join(ROOT, NAME + '.zip')
     data = build()
     if '--check' in sys.argv:
-        current = open(target, 'rb').read() if os.path.exists(target) else b''
-        if hashlib.sha256(current).hexdigest() != hashlib.sha256(data).hexdigest():
+        # Compare what is inside, not the bytes: two machines' zlib can compress
+        # the same files to different bytes, and that is not "out of date".
+        if not os.path.exists(target) or contents(open(target, 'rb').read()) != contents(data):
             sys.exit('skill/sidenote-coach.zip is out of date. Run: python3 tools/package_skill.py')
         print('skill zip is up to date')
         return
