@@ -3,7 +3,7 @@
 // screen and in the margin list.
 
 import { h, renderText, toast, whenLabel, dayLabel } from '../ui.js';
-import { t } from '../i18n.js';
+import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { CATEGORIES, looksLikeCrisis } from '../classify.js';
 import { resolveThought, offlineReply, aiMode, askPrompt } from '../ai.js';
@@ -92,19 +92,27 @@ export function noteCard(thoughtId, opts = {}) {
   if (reply) {
     if (reply.source === 'ai') replyBox.append(h('div', { class: 'note-reply-from' }, t('note.fromAi')));
     replyBox.append(renderText(reply.text));
+    // One visible action per card: a search for questions, and "Ask an AI", which
+    // opens to the student's choice of Claude, ChatGPT, or a copy for any other AI.
     const links = h('div', { class: 'note-links' });
-    (reply.links || []).forEach((l) => {
-      if (!/^https:\/\//.test(String(l.url))) return; // stored data never gets to choose another kind of link
-      links.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer', title: t('offline.linkHint') }, l.label));
-    });
-    // ...or copy the same request, to paste into whichever AI app the student uses
-    if (reply.source === 'offline' && (reply.links || []).length) {
-      links.append(h('button', {
+    const linkTo = (l) => h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer', title: t('offline.linkHint') }, l.label);
+    const safe = (reply.links || []).filter((l) => /^https:\/\//.test(l.url));
+    const ai = safe.filter((l) => l.kind === 'ai');
+    safe.filter((l) => l.kind !== 'ai').forEach((l) => links.append(linkTo(l)));
+    if (reply.source === 'offline' && ai.length) {
+      const copy = h('button', {
         type: 'button', class: 'btn btn-quiet note-link',
         onclick: async () => {
           try { await navigator.clipboard.writeText(askPrompt(thought.text)); toast(t('offline.copied')); } catch { toast(t('offline.copyFailed')); }
         },
-      }, t('offline.copy')));
+      }, t('offline.copy'));
+      // Claude and ChatGPT are not reachable everywhere Chinese is read, so the copy comes first there
+      const choices = getLang() === 'zh' ? [copy, ...ai.map(linkTo)] : [...ai.map(linkTo), copy];
+      links.append(h('details', { class: 'ask-menu' },
+        h('summary', { class: 'btn btn-quiet note-link' }, t('offline.askAi')),
+        h('div', { class: 'ask-menu-list' }, choices)));
+    } else {
+      ai.forEach((l) => links.append(linkTo(l)));
     }
     if (links.children.length) replyBox.append(links);
     card.append(replyBox);

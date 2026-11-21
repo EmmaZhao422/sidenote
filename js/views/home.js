@@ -11,6 +11,7 @@ import { getScene, sceneName } from '../scenes.js';
 import { createBackdrop } from '../backdrop.js';
 import { startBlock } from '../block.js';
 import { aiMode } from '../ai.js';
+import { noteCard } from './note.js';
 
 const GUIDES = [
   { slug: 'parking-lot-method', en: 'The parking lot method: what to do with a thought that shows up mid-study', zh: '「念头停车场」：学到一半冒出来的想法，该拿它怎么办' },
@@ -44,12 +45,31 @@ export function homeView(root, navigate) {
       h('span', { class: 'demo-margin-title' }, t('focus.marginTitle')),
       demoList));
 
+  // --- and what becomes of the thoughts afterwards: three examples, no AI needed
+  const after = h('div', { class: 'hero-after', 'aria-label': t('home.afterTitle') },
+    h('p', { class: 'hero-after-title' }, t('home.afterTitle')),
+    h('ul', null, ['todo', 'question', 'urge'].map((k) => h('li', null,
+      h('span', { class: 'hero-after-thought' }, t(`home.after.${k}`)),
+      h('span', { class: 'hero-after-kind' }, t(`cat.${k}`)),
+      h('span', { class: 'hero-after-what' }, t(`home.after.${k}What`))))));
+
   // --- hero: park a thought right here
   const input = h('input', {
     type: 'text', id: 'hero-park', class: 'hero-input', maxlength: '500', autocomplete: 'off', enterkeyhint: 'done',
     placeholder: t('home.placeholder'), 'aria-label': t('home.inputLabel'),
   });
   const openLink = h('a', { class: 'hero-open', href: '#/margin' });
+  // A thought parked here is shown dealt-with straight away: this is the half of
+  // the idea a visitor would otherwise only meet after a whole study block.
+  const parkedBox = h('div', { class: 'hero-parked', hidden: true });
+  function showParked(id) {
+    const thought = store.state.thoughts.find((x) => x.id === id);
+    if (!thought || thought.status === 'done') { parkedBox.hidden = true; mount(parkedBox); return; }
+    mount(parkedBox,
+      h('p', { class: 'hero-parked-head' }, t(real.length ? 'home.parkedHeadBack' : 'home.parkedHead')),
+      noteCard(id, { onChange: (what) => { drawParked(false); drawTodo(); if (what === 'status') showParked(id); } }));
+    parkedBox.hidden = false;
+  }
 
   function drawParked(justAdded) {
     const open = openThoughts();
@@ -67,10 +87,11 @@ export function homeView(root, navigate) {
     class: 'hero-form',
     onsubmit: (e) => {
       e.preventDefault();
-      if (!store.addThought(input.value)) { input.focus(); return; }
+      const added = store.addThought(input.value);
+      if (!added) { input.focus(); return; }
       input.value = '';
       drawParked(true);
-      toast(t('home.parkedToast'));
+      showParked(added.id);
     },
   }, input, h('button', { type: 'submit', class: 'btn btn-ink' }, t('park.button')));
 
@@ -98,12 +119,22 @@ export function homeView(root, navigate) {
       h('div', { class: 'hero-cta' },
         h('a', { class: 'btn btn-ink btn-big', href: '#/focus' }, active ? t('home.resume') : t('home.start')),
         again,
+        // First visit: a short block with no warm-up, so the "after" half is ten minutes away
+        real.length || active ? null : h('button', {
+          type: 'button', class: 'btn btn-quiet btn-big',
+          onclick: () => {
+            const { focusMin, prepMin } = store.state.settings;
+            startBlock({ goal: '', minutes: 10, prep: 0 });
+            store.setSettings({ focusMin, prepMin }); // a trial does not become the default
+            navigate('#/focus');
+          },
+        }, t('home.try')),
         real.length ? null : h('span', { class: 'hint' }, t('home.startHint'))),
       h('label', { class: 'hero-park-label', for: 'hero-park' }, t('home.parkLabel')),
-      form, openLink,
+      form, parkedBox, openLink,
       aiMode() === 'offline'
         ? h('p', { class: 'hint hero-ai' }, t('home.aiHint'), ' ', h('a', { href: '#/settings' }, t('home.aiLink'))) : null),
-    demo);
+    h('div', { class: 'hero-side' }, demo, real.length ? null : after));
 
   // --- to-dos the student gave a day to: the reason to open the site tomorrow
   const todo = h('section', { class: 'todo-strip' });

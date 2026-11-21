@@ -681,3 +681,27 @@ body.is-immersed .view { padding: 0; max-width: none; }
 @media (max-width: 22.5rem) {
   .nav a { font-size: 0.66rem; letter-spacing: -0.01em; }
 }
+
+/* beside the hero: the miniature study screen, then what becomes of the thoughts afterwards */
+.hero-side { align-self: start; display: grid; gap: 1rem; min-width: 0; }
+.hero-after { border: 1px solid var(--rule); border-left: 4px solid var(--margin); border-radius: 0 12px 12px 0; background: var(--sheet); padding: 0.7rem 1rem 0.8rem; }
+.hero-after-title { font-family: var(--display); font-weight: 800; font-size: 0.85rem; margin: 0 0 0.3rem; }
+.hero-after ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.45rem; }
+.hero-after li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 0 0.6rem; }
+.hero-after-thought { grid-column: 1 / -1; font-family: var(--hand); font-size: 1.2rem; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hero-after-kind { font-size: 0.78rem; color: var(--ink-3); }
+.hero-after-what { font-size: 0.8rem; font-weight: 600; color: var(--on-hl); background: var(--hl); border-radius: 999px; padding: 0.05rem 0.6rem; white-space: nowrap; }
+/* a thought parked on the home page, shown dealt-with straight away */
+.hero-parked { margin-top: 1rem; max-width: 44rem; }
+.hero-parked-head { font-size: 0.92rem; color: var(--ink-2); margin: 0 0 0.5rem; }
+@media (max-width: 52rem) { .hero.is-returning .hero-side { display: none; } }
+
+/* "Ask an AI" opens to a short row of choices */
+.ask-menu { display: inline-block; }
+.ask-menu > summary { list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
+.ask-menu > summary::-webkit-details-marker { display: none; }
+.ask-menu > summary::after { content: "▾"; font-size: 0.8em; color: var(--ink-3); }
+.ask-menu[open] > summary::after { content: "▴"; }
+.ask-menu[open] { display: block; }
+.ask-menu-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; padding-left: 0.6rem; border-left: 2px solid var(--rule-strong); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

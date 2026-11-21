@@ -235,3 +235,19 @@ test('the home page HTML itself lists every guide, and the sitemap has every pag
     assert.ok(sitemap.includes(`/guides/zh/${g}<`), `sitemap has zh/${g}`);
   }
 });
+
+test('a standing reminder repeats, and starts at the next time the clock shows that hour', async () => {
+  const { nextAt } = await import('../js/ics.js');
+  const daily = buildIcs({ title: 'Study', start: new Date(2026, 10, 23, 19, 0), minutes: 25, url: 'https://example.com/', repeat: 'daily' });
+  assert.match(daily, /\r\nRRULE:FREQ=DAILY\r\n/);
+  const weekdays = buildIcs({ title: 'Study', start: new Date(2026, 10, 23, 19, 0), minutes: 25, url: 'https://example.com/', repeat: 'weekdays' });
+  assert.match(weekdays, /RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR/);
+  const once = buildIcs({ title: 'Study', start: new Date(2026, 10, 23, 19, 0), minutes: 25, url: 'https://example.com/' });
+  assert.doesNotMatch(once, /RRULE/);
+  // Saturday 21 Nov 2026, 20:00: "19:00" is tomorrow; on weekdays-only it is Monday
+  const sat = new Date(2026, 10, 21, 20, 0);
+  assert.equal(nextAt('19:00', 'daily', sat).getDate(), 22);
+  assert.equal(nextAt('19:00', 'weekdays', sat).getDate(), 23);
+  assert.equal(nextAt('21:30', 'daily', sat).getDate(), 21);
+  assert.equal(nextAt('', 'daily', sat).getHours(), 19);
+});

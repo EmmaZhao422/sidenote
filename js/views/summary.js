@@ -4,7 +4,7 @@
 import { h, mount, renderText, toast, minutesText, dayLabel, whenLabel, segmented } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
-import { aggregate, rangeFor, recommendScene, breadthLabel } from '../score.js';
+import { aggregate, rangeFor, recommendScene, breadthLabel, habit } from '../score.js';
 import { CATEGORIES } from '../classify.js';
 import { columnChart, barList } from '../charts.js';
 import { getScene, sceneName } from '../scenes.js';
@@ -199,8 +199,10 @@ export function summaryView(root) {
           h('td', null, preview ? null : h('a', { href: `#/review/${s.id}` }, t('summary.review'))))))));
 
     // a picture of these numbers to share (numbers only: no goals, no thoughts)
-    const [shareBtn, sharePreview] = preview ? [] : shareCardButton(() => ({ stats, rec, rangeLabel: t(`summary.${rangeKey}`) }));
-    const share = preview ? null : h('div', { class: 'share-row' },
+    // (offered once there are three blocks to show: a picture of one five-minute block is nothing to post)
+    const canShare = !preview && stats.sessionCount >= 3;
+    const [shareBtn, sharePreview] = canShare ? shareCardButton(() => ({ stats, rec, rangeLabel: t(`summary.${rangeKey}`), streak: habit(store.state.sessions.filter((x) => !x.sample)).streak })) : [];
+    const share = !canShare ? null : h('div', { class: 'share-row' },
       h('div', { class: 'row' }, shareBtn, h('span', { class: 'hint' }, t('share.hint'))),
       sharePreview);
 

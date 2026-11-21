@@ -155,15 +155,15 @@ export function offlineReply(thought) {
   if (category === 'question') {
     // Bing is reachable where Google is not, so Chinese-language visitors get that
     const engine = getLang() === 'zh' ? 'https://cn.bing.com/search?q=' : 'https://www.google.com/search?q=';
-    links.push({ label: t('offline.search'), url: engine + encodeURIComponent(thought.text) });
+    links.push({ label: t('offline.search'), url: engine + encodeURIComponent(thought.text), kind: 'search' });
   }
   // No AI connected here, but most students have one a tap away. These links open
   // it with the thought already typed in, on the student's own account.
   // (not for errands or urges: "text Jess back" needs doing, not asking)
   if (category !== 'urge' && category !== 'todo') {
     const ask = encodeURIComponent(askPrompt(thought.text));
-    links.push({ label: t('offline.askClaude'), url: `https://claude.ai/new?q=${ask}` });
-    links.push({ label: t('offline.askChatgpt'), url: `https://chatgpt.com/?q=${ask}` });
+    links.push({ label: t('offline.askClaude'), url: `https://claude.ai/new?q=${ask}`, kind: 'ai' });
+    links.push({ label: t('offline.askChatgpt'), url: `https://chatgpt.com/?q=${ask}`, kind: 'ai' });
   }
   return { text: t(`offline.${category}`), source: 'offline', category, links };
 }

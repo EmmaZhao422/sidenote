@@ -17,7 +17,8 @@ const HL = '#FFE566';
 const RULE = '#D5DDF0';
 
 // stats: from aggregate(); rec: from recommendScene(); rangeLabel: "7 days"
-export async function drawShareCard(stats, rec, rangeLabel) {
+// extra.streak: days in a row, shown from two up
+export async function drawShareCard(stats, rec, rangeLabel, extra = {}) {
   const lang = getLang();
   const display = '"Bricolage Grotesque", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif';
   const body = 'system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif';
@@ -80,14 +81,22 @@ export async function drawShareCard(stats, rec, rangeLabel) {
     wrapText(g, label, x, 690, 250, 38);
   });
 
+  // what the parked thoughts were: kinds and counts only, never the words
+  const kinds = Object.entries(stats.byCategory || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  if (kinds.length) {
+    g.fillStyle = INK;
+    g.font = `600 32px ${body}`;
+    g.fillText(kinds.map(([k, n]) => `${t(`cat.${k}`)} ×${n}`).join('  ·  '), left, 822, W - left - 70);
+  }
+
   // minutes per day
   const days = stats.byDay.slice(-7);
   if (days.length > 1) {
     const peak = Math.max(25, ...days.map((d) => d.minutes));
-    const baseY = 1010;
+    const baseY = 1030;
     const colW = (W - left - 110) / days.length;
     days.forEach((d, i) => {
-      const hgt = d.minutes ? Math.max(10, (d.minutes / peak) * 190) : 0;
+      const hgt = d.minutes ? Math.max(10, (d.minutes / peak) * 150) : 0;
       const x = left + i * colW;
       g.fillStyle = d.minutes === Math.max(...days.map((q) => q.minutes)) ? MARGIN : INK;
       if (hgt) roundRect(g, x, baseY - hgt, colW - 26, hgt, 8);
@@ -99,12 +108,14 @@ export async function drawShareCard(stats, rec, rangeLabel) {
     g.fillRect(left, baseY, W - left - 110, 3);
   }
 
-  // the scene, if there is a favourite
-  if (rec && rec.status === 'ready') {
-    g.fillStyle = INK;
-    g.font = `600 40px ${display}`;
-    g.fillText(t('share.scene', { scene: sceneName(getScene(rec.best.id), lang) }), left, 1150, W - left - 70);
-  }
+  // the scene, if there is a favourite, and the streak, if there is one
+  const lines = [
+    rec && rec.status === 'ready' ? t('share.scene', { scene: sceneName(getScene(rec.best.id), lang) }) : null,
+    extra.streak >= 2 ? t('share.streak', { n: extra.streak }) : null,
+  ].filter(Boolean);
+  g.fillStyle = INK;
+  g.font = `600 38px ${display}`;
+  lines.forEach((line, i) => g.fillText(line, left, 1150 + i * 54, W - left - 70));
 
   // where it came from
   g.fillStyle = INK2;
@@ -151,8 +162,8 @@ export function shareCardButton(getData) {
     onclick: async () => {
       btn.disabled = true;
       try {
-        const { stats, rec, rangeLabel } = getData();
-        const canvas = await drawShareCard(stats, rec, rangeLabel);
+        const { stats, rec, rangeLabel, streak } = getData();
+        const canvas = await drawShareCard(stats, rec, rangeLabel, { streak });
         const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
         const file = new File([blob], 'sidenote-week.png', { type: 'image/png' });
         if (navigator.canShare?.({ files: [file] })) {

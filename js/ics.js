@@ -13,8 +13,10 @@ function esc(text) {
   return String(text).replace(/\\/g, '\\\\').replace(/[,;]/g, (m) => `\\${m}`).replace(/\r\n|\r|\n/g, '\\n');
 }
 
-// { title, start: Date, minutes, url, note }
-export function buildIcs({ title, start, minutes, url, note }) {
+// { title, start: Date, minutes, url, note, repeat }
+// repeat: 'daily' or 'weekdays' makes it a standing reminder (the calendar repeats it)
+export function buildIcs({ title, start, minutes, url, note, repeat }) {
+  const rrule = repeat === 'daily' ? 'RRULE:FREQ=DAILY' : repeat === 'weekdays' ? 'RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR' : null;
   const end = new Date(start.getTime() + minutes * 60000);
   const now = new Date();
   const utc = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}T${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}Z`;
@@ -27,6 +29,7 @@ export function buildIcs({ title, start, minutes, url, note }) {
     `DTSTAMP:${utc}`,
     `DTSTART:${stamp(start)}`,
     `DTEND:${stamp(end)}`,
+    rrule,
     `SUMMARY:${esc(title)}`,
     `DESCRIPTION:${esc(note ? `${note}\n${url}` : url)}`,
     `URL:${url}`,
@@ -37,7 +40,7 @@ export function buildIcs({ title, start, minutes, url, note }) {
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
-  ].map(fold).join('\r\n') + '\r\n';
+  ].filter(Boolean).map(fold).join('\r\n') + '\r\n';
 }
 
 // Calendar files may not have lines longer than 75 bytes: longer ones continue on
@@ -76,4 +79,15 @@ export function downloadIcs(text, filename = 'study-block.ics') {
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// The next time the clock shows hh:mm: later today if that is still ahead, otherwise
+// tomorrow. For 'weekdays' it also skips Saturday and Sunday.
+export function nextAt(hhmm, repeat, now = new Date()) {
+  const [hh, mm] = String(hhmm).split(':').map((n) => parseInt(n, 10));
+  const d = new Date(now);
+  d.setHours(Number.isFinite(hh) ? hh : 19, Number.isFinite(mm) ? mm : 0, 0, 0);
+  if (d <= now) d.setDate(d.getDate() + 1);
+  if (repeat === 'weekdays') while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+  return d;
 }

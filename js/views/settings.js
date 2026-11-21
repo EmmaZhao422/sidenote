@@ -7,6 +7,7 @@ import { aiMode, testConnection, DEFAULT_ANTHROPIC_MODEL } from '../ai.js';
 import { CONFIG } from '../config.js';
 import { applyTheme } from '../theme.js';
 import { sessionsToCsv } from '../csv.js';
+import { buildIcs, nextAt, downloadIcs } from '../ics.js';
 
 export function settingsView(root, navigate, rerenderAll) {
   const s = store.state.settings;
@@ -27,6 +28,33 @@ export function settingsView(root, navigate, rerenderAll) {
       { value: 'light', label: t('settings.theme.light') },
       { value: 'dark', label: t('settings.theme.dark') },
     ], s.theme || 'auto', (v) => { store.setSettings({ theme: v }); applyTheme(v); }));
+
+  // ---- a standing reminder to study. The site cannot notify anyone while it is closed,
+  // so the student's own calendar does it: a repeating event, added from a file.
+  const lastBlock = store.state.sessions.filter((x) => !x.sample).slice(-1)[0];
+  const guess = lastBlock ? new Date(lastBlock.startedAt) : null;
+  const two = (n) => String(n).padStart(2, '0');
+  const remTime = h('input', { type: 'time', class: 'field field-date', id: 'rem-time', step: '300', value: guess ? `${two(guess.getHours())}:${two(Math.floor(guess.getMinutes() / 15) * 15)}` : '19:00' });
+  const remDays = h('select', { class: 'field field-date', id: 'rem-days' },
+    h('option', { value: 'daily' }, t('settings.reminder.daily')),
+    h('option', { value: 'weekdays' }, t('settings.reminder.weekdays')));
+  const reminder = h('section', { class: 'card' },
+    h('h2', null, t('settings.reminder')),
+    h('p', { class: 'hint' }, t('settings.reminder.hint')),
+    h('div', { class: 'row' },
+      h('label', { class: 'label', for: 'rem-time' }, t('settings.reminder.time')), remTime,
+      h('label', { class: 'visually-hidden', for: 'rem-days' }, t('settings.reminder.days')), remDays),
+    h('div', { class: 'row' }, h('button', {
+      type: 'button', class: 'btn btn-quiet',
+      onclick: () => {
+        const start = nextAt(remTime.value || '19:00', remDays.value);
+        downloadIcs(buildIcs({
+          title: t('ics.title'), start, minutes: s.focusMin || 25, url: `${CONFIG.siteUrl}#/focus`,
+          note: t('settings.reminder.note'), repeat: remDays.value,
+        }), 'study-reminder.ics');
+        toast(t('settings.reminder.saved'), 6000);
+      },
+    }, t('settings.reminder.add'))));
 
   // ---- a date to work toward (an exam, a deadline): shown as a countdown on the home page
   const dl = s.deadline || {};
@@ -206,7 +234,7 @@ export function settingsView(root, navigate, rerenderAll) {
 
   mount(root,
     h('header', { class: 'view-head' }, h('h1', null, t('settings.title'))),
-    language, appearance, deadline, ai, sound, data);
+    language, appearance, deadline, reminder, ai, sound, data);
   syncProvider();
   drawStatus();
 }
