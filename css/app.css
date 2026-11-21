@@ -780,3 +780,5 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
 .test-result { margin: 0.8rem 0 0; font-weight: 600; }
 .test-result.is-bad { color: var(--danger); }
 h1[tabindex="-1"]:focus { outline: none; }
+/* the ring sits inside a chosen option, on its fill: pink reads on both the dark and the light fill */
+.seg-btn[aria-checked="true"]:focus-visible { outline-color: #F2678B; }
