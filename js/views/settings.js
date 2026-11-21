@@ -65,8 +65,10 @@ export function settingsView(root, navigate, rerenderAll) {
   };
   provider.addEventListener('change', syncProvider);
 
+  const remember = h('input', { type: 'checkbox', id: 'ai-remember', checked: Boolean(s.ai.remember) });
   const saveAi = () => store.setAiSettings({
     provider: provider.value, key: key.value.trim(), baseUrl: baseUrl.value.trim(), model: model.value.trim(),
+    remember: remember.checked,
   });
 
   const testBtn = h('button', {
@@ -98,6 +100,8 @@ export function settingsView(root, navigate, rerenderAll) {
       h('p', { class: 'hint' }, t('settings.ai.keyHint')),
       h('label', { class: 'label', for: 'ai-provider' }, t('settings.ai.provider')), provider,
       h('label', { class: 'label', for: 'ai-key' }, t('settings.ai.key')), key,
+      h('div', { class: 'check' }, remember, h('label', { for: 'ai-remember' }, t('settings.ai.remember'))),
+      h('p', { class: 'hint' }, t('settings.ai.rememberHint')),
       baseRow,
       h('label', { class: 'label', for: 'ai-model' }, t('settings.ai.model')), model,
       h('div', { class: 'row' },

@@ -65,7 +65,10 @@ function updateCount() {
   badge.hidden = !n;
 }
 
-function render() {
+// quiet = a redraw the student did not ask for (another tab saved something):
+// stay where they are on the page and do not move keyboard focus
+function render(quiet = false) {
+  const keepY = quiet === true ? window.scrollY : null;
   destroy?.();
   destroy = null;
   applyTheme(store.state.settings.theme);
@@ -82,9 +85,13 @@ function render() {
   else destroy = (ROUTES[name] || homeView)(view, navigate, render) || null;
 
   updateCount();
-  if (!firstRender) {
+  if (keepY !== null) {
+    window.scrollTo(0, keepY);
+  } else if (!firstRender) {
     window.scrollTo(0, 0);
-    view.focus({ preventScroll: true }); // so keyboard and screen-reader users land on the new screen
+    // Keyboard and screen-reader users land on the new screen: on the field the screen
+    // itself put the cursor in, if it did, and otherwise on the screen as a whole.
+    if (!view.contains(document.activeElement) || document.activeElement === view) view.focus({ preventScroll: true });
   }
   firstRender = false;
 }
@@ -107,7 +114,7 @@ if (insideClaudeApp()) {
   document.body.classList.add('in-claude-app');
   connectClaudeApp(() => {
     // Redraw so buttons and status reflect the connection, unless a study block is on screen
-    if (route().name !== 'focus') render();
+    if (route().name !== 'focus') render(true);
   });
 }
 
@@ -125,18 +132,59 @@ try {
   if ((asked === 'zh' || asked === 'en') && !store.state.settings.lang) store.setSettings({ lang: asked });
 } catch { /* no query string support: carry on */ }
 
-window.addEventListener('hashchange', render);
+window.addEventListener('hashchange', () => render());
 store.subscribe((_, info) => {
   updateCount();
   wantChineseHand();
   // Another tab changed something: show it here too, unless the student is mid-sentence.
   // (The study screens look after themselves.)
-  if (!info?.external || route().name === 'focus') return;
+  // The summary is left alone (it would lose the chosen range); it catches up on the next visit.
+  if (!info?.external || ['focus', 'summary', 'settings'].includes(route().name)) return;
   const el = document.activeElement;
-  const typing = el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.value;
-  if (!typing) render();
+  const busy = el && view.contains(el) && ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
+  if (!busy) render(true);
 });
-store.onStorageFailure(() => toast(t('settings.storageFailed'), 9000));
+
+// A message that stays on screen until dismissed, for things a passing toast would hide
+function banner(id, text, action) {
+  if (document.getElementById(id)) return;
+  const el = document.createElement('div');
+  el.id = id;
+  el.className = 'banner';
+  el.setAttribute('role', 'alert');
+  const p = document.createElement('p');
+  p.textContent = text;
+  el.append(p);
+  if (action) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-paper';
+    btn.textContent = action.label;
+    btn.addEventListener('click', action.run);
+    el.append(btn);
+  }
+  document.body.prepend(el);
+}
+function downloadBackup() {
+  const blob = new Blob([store.exportJSON()], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `sidenote-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+store.onStorageFailure(() => banner('storage-banner', t('settings.storageFailed'), { label: t('settings.export'), run: downloadBackup }));
+if (store.foundUnreadable) banner('unreadable-banner', t('settings.unreadable'));
+
+// A page left open overnight: when the student comes back on a new day, "today" has moved
+let shownDay = store.dayKey(0);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || shownDay === store.dayKey(0)) return;
+  shownDay = store.dayKey(0);
+  if (route().name === '') render(true);
+});
 render();
 wantChineseHand();
 breakTimer.resume();

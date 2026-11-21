@@ -150,6 +150,11 @@ def main():
     tz = tz if num(tz) else 0
     now = data.get("exportedAt") if num(data.get("exportedAt")) else time.time() * 1000
 
+    # Newer backups give every record its own offset (the clocks may have changed since)
+    def tz_of(record):
+        own = record.get("tzOffsetMinutes")
+        return own if num(own) and abs(own) <= 900 else tz
+
     global LANG
     settings = data.get("settings") if isinstance(data.get("settings"), dict) else {}
     all_thoughts = [t for t in data["thoughts"] if isinstance(t, dict)]
@@ -181,7 +186,7 @@ def main():
         kind = t.get("category") if t.get("category") in CATEGORIES else "other"
         out = {"text": str(t.get("text", ""))[:500], "kind": kind}
         if num(t.get("createdAt")):
-            out["parkedOn"] = local_day(t["createdAt"], tz)
+            out["parkedOn"] = local_day(t["createdAt"], tz_of(t))
         if goal_of.get(t.get("sessionId")):
             out["whileStudying"] = goal_of[t["sessionId"]]
         if num(t.get("offsetSec")):
@@ -229,6 +234,7 @@ def main():
         return
 
     waiting_now = len(waiting)
+    all_real_sessions = sessions
     sessions = [s for s in sessions if since <= s["startedAt"] <= now]
     thoughts = [t for t in thoughts if num(t.get("createdAt")) and since <= t["createdAt"] <= now]
 
@@ -252,7 +258,8 @@ def main():
             timing[min(9, max(0, int(t["offsetSec"] // 300)))] += 1
     timing_labels = [f"{i * 5}-{i * 5 + 5} min" for i in range(9)] + ["45+ min"]
 
-    in_block = sum(1 for t in thoughts if t.get("sessionId"))
+    # only thoughts parked while the clock was running (not before the block or during a pause)
+    in_block = sum(1 for t in thoughts if t.get("sessionId") and num(t.get("offsetSec")))
     planned = [s.get("plannedMin") for s in sessions if num(s.get("plannedMin"))]
     # the middle planned length (the lower of the two middle ones when the count is even)
     usual_block = sorted(planned)[(len(planned) - 1) // 2] if planned else None
@@ -265,7 +272,7 @@ def main():
 
     per_day = OrderedDict()
     for s in sorted(sessions, key=lambda s: s["startedAt"]):
-        d = per_day.setdefault(local_day(s["startedAt"], tz), {"minutes": 0.0, "blocks": 0})
+        d = per_day.setdefault(local_day(s["startedAt"], tz_of(s)), {"minutes": 0.0, "blocks": 0})
         d["minutes"] += (s.get("focusSec") or 0) / 60
         d["blocks"] += 1
     for d in per_day.values():
@@ -276,7 +283,8 @@ def main():
         if s.get("goal") and s["goal"] not in goals and len(goals) < 6:
             goals.append(s["goal"])
 
-    scene_rows, rec = scene_report(sessions)
+    # scenes are ranked over every rated block, not only this period: the same as the website
+    scene_rows, rec = scene_report(all_real_sessions)
     finished = {"yes": 0, "partly": 0, "no": 0}
     for s in sessions:
         if s.get("finished") in finished:
@@ -308,6 +316,7 @@ def main():
         ("waitingNow", waiting_now),
         ("focusMinutesPerDay", per_day),
         ("scenes", scene_rows),
+        ("scenesCover", "every rated block, not only this period"),
         ("sceneRecommendation", rec),
         ("notes", []),
     ])

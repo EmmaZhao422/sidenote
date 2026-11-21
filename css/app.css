@@ -183,6 +183,10 @@ body.in-claude-app .foot nav, body.in-claude-app .guides-band { display: none; }
 details > summary { cursor: pointer; font-weight: 650; margin: 0.8rem 0 0.2rem; }
 select.field { appearance: auto; }
 
+.banner { position: relative; z-index: 70; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0.5rem 1rem; padding: 0.7rem 1rem; background: var(--danger); color: #fff; font-weight: 600; text-align: center; }
+.banner p { margin: 0; max-width: 50rem; }
+.banner .btn { padding: 0.35rem 0.8rem; font-size: 0.9rem; }
+
 .toast {
   position: fixed; left: 50%; bottom: 1.5rem; transform: translate(-50%, 1rem); z-index: 60;
   background: var(--ink); color: var(--paper); padding: 0.65rem 1.1rem; border-radius: var(--radius);
@@ -399,7 +403,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 /* the margin strip: the one piece of paper on the dark screen */
 .margin { width: 100%; max-width: 46rem; margin: 0 auto; background: var(--paper); color: var(--ink); border-left: 4px solid var(--margin); border-radius: 0 12px 0 0; padding: 0.85rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom)) 1.2rem; transition: opacity 1.2s, filter 1.2s; }
 /* after a few idle seconds the paper dims, so it is not a bright rectangle beside your book at night */
-.margin.is-resting { opacity: 0.5; filter: saturate(0.6); }
+.margin.is-resting { opacity: 0.78; filter: saturate(0.7); }
 .margin-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.3rem; min-width: 0; }
 .margin-title { font-family: var(--display); font-weight: 800; white-space: nowrap; }
 .margin-count { font-size: 0.88rem; color: var(--ink-3); white-space: nowrap; flex: none; margin-left: auto; }
@@ -413,6 +417,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 
 /* wrap-up */
 .wrap-card { grid-row: 1 / -1; align-self: center; justify-self: center; width: 100%; max-width: 36rem; background: var(--paper); color: var(--ink); border-left: 4px solid var(--margin); border-radius: 0 14px 14px 0; padding: 2rem 2rem 1.6rem; margin: 1.5rem 0; }
+.wrap-card h1:focus { outline: none; box-shadow: none; }
 .wrap-card .btn-big { margin-top: 1.8rem; width: 100%; }
 .wrap-links { display: flex; flex-wrap: wrap; gap: 0.4rem 1.4rem; margin-top: 1rem; font-size: 0.92rem; }
 
@@ -577,6 +582,8 @@ body.is-immersed .view { padding: 0; max-width: none; }
   .hero-cta .btn { flex: 1 1 100%; max-width: none; text-align: center; }
   .hero-cta .btn-again { text-align: left; }
   .foot nav a { padding: 0.45rem 0; display: inline-block; }
+  .table a, .view > p > a { display: inline-block; padding: 0.25rem 0; }
+  .note-kind { min-height: 1.6rem; }
   .break-pill { bottom: calc(4.6rem + env(safe-area-inset-bottom)); }
   .setup-more summary { align-items: flex-start; }
   .steps { grid-template-columns: 1fr; }
@@ -625,4 +632,6 @@ body.is-immersed .view { padding: 0; max-width: none; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .breath-ring { transform: scale(0.85); }
+  /* the "Parked" confirmation fades by animation; without motion it must simply show */
+  .margin-flash.is-on { animation: none; opacity: 1; }
 }

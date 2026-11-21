@@ -33,7 +33,7 @@ export function noteCard(thoughtId, opts = {}) {
       : whenLabel(thought.createdAt)));
   if (thought.due && thought.status !== 'done') {
     const today = store.dayKey(0);
-    const label = thought.due <= today ? t('due.today') : thought.due === store.dayKey(1) ? t('due.tomorrow') : t('due.by', { day: dayLabel(new Date(`${thought.due}T12:00`).getTime()) });
+    const label = thought.due < today ? t('due.overdue') : thought.due === today ? t('due.today') : thought.due === store.dayKey(1) ? t('due.tomorrow') : t('due.by', { day: dayLabel(new Date(`${thought.due}T12:00`).getTime()) });
     meta.append(h('span', { class: 'note-due' }, label));
   }
   card.append(meta);
@@ -52,6 +52,7 @@ export function noteCard(thoughtId, opts = {}) {
     replyBox.append(renderText(reply.text));
     const links = h('div', { class: 'note-links' });
     (reply.links || []).forEach((l) => {
+      if (!/^https:\/\//.test(String(l.url))) return; // stored data never gets to choose another kind of link
       links.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
     });
     // ...or copy the same request, to paste into whichever AI app the student uses
@@ -124,7 +125,8 @@ export function noteCard(thoughtId, opts = {}) {
   let whenRow = null;
   // (worries and "other" thoughts can be given a day too: "look at this again tonight")
   if (['todo', 'worry', 'other'].includes(thought.category) && thought.status !== 'done') {
-    const sunday = () => { const d = new Date(); return store.dayKey(((7 - d.getDay()) % 7) || 7); };
+    // "this week" runs to Sunday; on a Sunday that is today
+    const sunday = () => store.dayKey((7 - new Date().getDay()) % 7);
     const choices = [
       { key: 'today', due: () => store.dayKey(0) },
       { key: 'tomorrow', due: () => store.dayKey(1) },
@@ -142,20 +144,28 @@ export function noteCard(thoughtId, opts = {}) {
           opts.onChange?.('due');
         },
       }, t(`due.pick.${c.key}`))),
+      // "Next block": the to-do becomes a step of the next block's plan. It stays in the
+      // list until that step is ticked off, so nothing is marked done that was not done.
       thought.category !== 'todo' ? null : h('button', {
-        type: 'button', class: 'chip',
+        type: 'button', class: 'chip', 'aria-pressed': String(Boolean(thought.queued)),
         onclick: () => {
-          if ((store.state.nextPlan || []).length >= 3) { toast(t('note.nextFull')); return; }
-          store.addToNextPlan(thought.text);
-          store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
-          toast(t('note.nextAdded'));
-          opts.onChange?.('status');
+          if (thought.queued) {
+            store.removeFromNextPlan(thought.text);
+            store.updateThought(thought.id, { queued: false });
+          } else {
+            if ((store.state.nextPlan || []).length >= 6) { toast(t('note.nextFull')); return; }
+            store.addToNextPlan(thought.text);
+            store.updateThought(thought.id, { queued: true });
+            toast(t('note.nextAdded'));
+          }
+          redraw();
+          opts.onChange?.('due');
         },
       }, t('note.next')));
   }
 
   // An urge gets what it asked for, with an end: a ten-minute break on the clock
-  const breakBtn = thought.category === 'urge' && thought.status !== 'done' ? h('button', {
+  const breakBtn = thought.category === 'urge' && thought.status !== 'done' && !store.state.active ? h('button', {
     type: 'button', class: 'btn btn-quiet',
     onclick: () => {
       breakTimer.start(10);

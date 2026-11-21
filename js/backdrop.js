@@ -149,7 +149,7 @@ export function createBackdrop(canvas) {
         g.fill();
       }
     }
-    if (!still && !document.hidden) raf = requestAnimationFrame(frame);
+    if (!still && !document.hidden && !idle) raf = requestAnimationFrame(frame);
     else raf = 0;
   }
 
@@ -161,7 +161,8 @@ export function createBackdrop(canvas) {
     frame(); // with reduced motion this draws one still frame and stops
   }
 
-  const onVisible = () => { if (!document.hidden && !raf && !still) raf = requestAnimationFrame(frame); };
+  let idle = false; // true while the canvas is scrolled out of view
+  const onVisible = () => { if (!document.hidden && !raf && !still && !idle) raf = requestAnimationFrame(frame); };
   const onResize = () => start();
   document.addEventListener('visibilitychange', onVisible);
   window.addEventListener('resize', onResize);
@@ -173,6 +174,11 @@ export function createBackdrop(canvas) {
       canvas.parentElement.style.setProperty('--sky-a', scene.sky[0]);
       canvas.parentElement.style.setProperty('--sky-b', scene.sky[1]);
       start();
+    },
+    // stop drawing while nobody can see it, and pick up again when they can
+    setRunning(on) {
+      idle = !on;
+      onVisible();
     },
     destroy() {
       cancelAnimationFrame(raf);

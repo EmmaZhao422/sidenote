@@ -3,8 +3,11 @@
 // leaves their device unless they ask the AI to look at a thought.
 
 import { classify } from './classify.js';
+import { computeFocusScore } from './score.js';
 
 const KEY = 'sidenote.v1';
+const BEAT_KEY = 'sidenote.beat';   // the running block's heartbeat, kept apart so it never triggers redraws
+const KEY_KEY = 'sidenote.key';     // the visitor's own API key, for this browser session only
 
 const DEFAULTS = {
   version: 1,
@@ -18,7 +21,8 @@ const DEFAULTS = {
     studyMode: 'paper',  // 'paper' = leaving this tab counts as drifting; 'screen' = it doesn't
     chime: true,
     notify: false,       // system notification when a block ends in a background tab
-    ai: { provider: 'anthropic', key: '', baseUrl: '', model: '' },
+    // remember: false = the key lives only until the browser is closed (the default)
+    ai: { provider: 'anthropic', key: '', baseUrl: '', model: '', remember: false },
   },
   thoughts: [],
   sessions: [],
@@ -45,18 +49,63 @@ function normalise(raw) {
   if (raw && typeof raw === 'object') {
     Object.assign(data.settings, raw.settings || {});
     data.settings.ai = Object.assign(clone(DEFAULTS.settings.ai), (raw.settings && raw.settings.ai) || {});
-    if (Array.isArray(raw.thoughts)) data.thoughts = raw.thoughts;
-    if (Array.isArray(raw.sessions)) data.sessions = raw.sessions;
+    // a key saved by an older version stays remembered, so nothing stops working
+    if (data.settings.ai.key && raw.settings.ai.remember === undefined) data.settings.ai.remember = true;
+    if (Array.isArray(raw.thoughts)) data.thoughts = raw.thoughts.filter((t) => t && typeof t === 'object').map(fixThought);
+    if (Array.isArray(raw.sessions)) data.sessions = raw.sessions.filter((x) => x && typeof x === 'object').map(fixSession);
     if (raw.active && typeof raw.active === 'object') data.active = raw.active;
-    if (Array.isArray(raw.nextPlan)) data.nextPlan = raw.nextPlan.slice(0, 3);
+    if (Array.isArray(raw.nextPlan)) data.nextPlan = raw.nextPlan.filter((x) => typeof x === 'string').slice(0, 6);
   }
   return data;
+}
+
+const isNum = (x) => typeof x === 'number' && Number.isFinite(x);
+
+// Records from an older version, or edited by hand, may lack fields the screens read
+function fixThought(t) {
+  const text = typeof t.text === 'string' ? t.text : String(t.text ?? '');
+  return {
+    ...t,
+    id: typeof t.id === 'string' ? t.id : uid(),
+    text,
+    createdAt: isNum(t.createdAt) ? t.createdAt : Date.now(),
+    status: t.status === 'done' ? 'done' : 'open',
+    category: typeof t.category === 'string' ? t.category : classify(text),
+    sessionId: typeof t.sessionId === 'string' ? t.sessionId : null,
+    offsetSec: isNum(t.offsetSec) ? t.offsetSec : null,
+    reply: t.reply && typeof t.reply === 'object' && typeof t.reply.text === 'string' ? t.reply : null,
+  };
+}
+
+function fixSession(x) {
+  const s = {
+    ...x,
+    id: typeof x.id === 'string' ? x.id : uid(),
+    startedAt: isNum(x.startedAt) ? x.startedAt : Date.now(),
+    focusSec: isNum(x.focusSec) && x.focusSec > 0 ? x.focusSec : 0,
+    plannedMin: isNum(x.plannedMin) && x.plannedMin > 0 ? x.plannedMin : Math.max(1, Math.round((isNum(x.focusSec) ? x.focusSec : 0) / 60)),
+    pauses: isNum(x.pauses) && x.pauses > 0 ? x.pauses : 0,
+    awaySec: isNum(x.awaySec) && x.awaySec > 0 ? x.awaySec : 0,
+    parkedCount: isNum(x.parkedCount) && x.parkedCount > 0 ? x.parkedCount : 0,
+    goal: typeof x.goal === 'string' ? x.goal : '',
+    scene: typeof x.scene === 'string' ? x.scene : 'silence',
+    steps: Array.isArray(x.steps) ? x.steps.filter((st) => st && typeof st.text === 'string') : [],
+  };
+  if (!isNum(s.score) || !s.parts || typeof s.parts !== 'object') {
+    s.parts = computeFocusScore(s);
+    s.score = s.parts.score;
+  }
+  return s;
 }
 
 let lastWritten = null;      // the exact text this tab last read or wrote
 let storageFailed = false;   // true once a save could not reach localStorage
 
+let unreadable = false;      // true if the saved data could not be read at start-up
+
 function readRaw() {
+  // Once a save has failed, the newest copy is the one in memory, not the one on disk
+  if (storageFailed) return memoryFallback;
   const s = storage();
   try {
     return s ? s.getItem(KEY) : memoryFallback;
@@ -65,12 +114,30 @@ function readRaw() {
   }
 }
 
-function load() {
+// The API key is kept out of the saved data unless the visitor asked for it to be remembered
+function sessionKey(value) {
   try {
-    const text = readRaw();
+    if (value === undefined) return sessionStorage.getItem(KEY_KEY) || '';
+    if (value) sessionStorage.setItem(KEY_KEY, value); else sessionStorage.removeItem(KEY_KEY);
+  } catch { /* no session storage: the key lasts until the page is closed */ }
+  return value || '';
+}
+
+function hydrate(data) {
+  if (!data.settings.ai.key) data.settings.ai.key = sessionKey();
+  return data;
+}
+
+function load() {
+  let text = null;
+  try {
+    text = readRaw();
     lastWritten = text;
-    return normalise(text ? JSON.parse(text) : null);
+    return hydrate(normalise(text ? JSON.parse(text) : null));
   } catch {
+    // Damaged data is set aside, never overwritten: it can often be repaired by hand
+    unreadable = true;
+    try { if (text) storage().setItem(`${KEY}.unreadable-${Date.now()}`, text); } catch { /* no room for a copy */ }
     return normalise(null);
   }
 }
@@ -84,18 +151,25 @@ function refresh() {
   const text = readRaw();
   if (text === lastWritten) return;
   try {
+    const key = state.settings.ai.key;
     state = normalise(text ? JSON.parse(text) : null);
+    if (!state.settings.ai.key) state.settings.ai.key = key;
     lastWritten = text;
   } catch { /* unreadable: keep what we have */ }
 }
 
 function persist() {
-  const text = JSON.stringify(state);
+  const ai = state.settings.ai;
+  sessionKey(ai.key);
+  // what goes to disk: everything, minus the key unless it is to be remembered
+  const text = JSON.stringify(ai.remember ? state : { ...state, settings: { ...state.settings, ai: { ...ai, key: '' } } });
   const s = storage();
   try {
-    if (s) s.setItem(KEY, text); else memoryFallback = text;
+    if (!s) throw new Error('no storage');
+    s.setItem(KEY, text);
+    storageFailed = false; // room again (or storage is back): saving has recovered
   } catch {
-    // Storage is full or blocked: keep working for this visit, and say so once
+    // Storage is full or blocked: keep working from memory for this visit, and say so
     memoryFallback = text;
     if (!storageFailed) {
       storageFailed = true;
@@ -144,9 +218,22 @@ export const store = {
     return () => listeners.delete(fn);
   },
 
-  // Called once if saving to the browser stops working (storage full or blocked)
+  // Called if saving to the browser stops working (storage full or blocked).
+  // Called straight away if it is already not working.
   onStorageFailure(fn) {
     failListeners.add(fn);
+    if (storageFailed || (typeof window !== 'undefined' && !storage())) fn();
+  },
+  get savingWorks() { return !storageFailed && Boolean(storage()); },
+  // True if the saved data was damaged when the page opened (a copy was set aside)
+  get foundUnreadable() { return unreadable; },
+
+  // ---- the running block's heartbeat: { tab, at }, written every few seconds ----
+  beat() {
+    try { storage()?.setItem(BEAT_KEY, JSON.stringify({ tab: TAB_ID, at: Date.now() })); } catch { /* not vital */ }
+  },
+  lastBeat() {
+    try { return JSON.parse(storage()?.getItem(BEAT_KEY) || 'null') || { tab: '', at: 0 }; } catch { return { tab: '', at: 0 }; }
   },
 
   // Asks the browser not to clear this site's data when space runs low.
@@ -161,30 +248,37 @@ export const store = {
     d.setDate(d.getDate() + offsetDays);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   },
-  // Open thoughts the student gave a day to, soonest first: [{ thought, when: 'today' | 'tomorrow' | 'later' }]
+  // Open thoughts the student gave a day to, soonest first: [{ thought, when: 'overdue' | 'today' | 'tomorrow' | 'later' }]
   dueList(now = Date.now()) {
     const today = this.dayKey(0, now);
     const tomorrow = this.dayKey(1, now);
     return state.thoughts
       .filter((x) => x.status !== 'done' && x.due)
       .sort((a, b) => (a.due < b.due ? -1 : a.due > b.due ? 1 : a.createdAt - b.createdAt))
-      .map((thought) => ({ thought, when: thought.due <= today ? 'today' : thought.due === tomorrow ? 'tomorrow' : 'later' }));
+      .map((thought) => ({ thought, when: thought.due < today ? 'overdue' : thought.due === today ? 'today' : thought.due === tomorrow ? 'tomorrow' : 'later' }));
   },
 
   // Queue of steps for the next study block (to-dos sent there from the margin)
   addToNextPlan(text) {
     refresh();
     const list = state.nextPlan || [];
-    if (!list.includes(text) && list.length < 3) list.push(text);
+    if (!list.includes(text) && list.length < 6) list.push(text);
     state.nextPlan = list;
     persist();
     return list.length;
   },
-  takeNextPlan() {
+  removeFromNextPlan(text) {
+    refresh();
+    state.nextPlan = (state.nextPlan || []).filter((x) => x !== text);
+    persist();
+  },
+  // Hands over at most `room` queued steps; anything that does not fit stays queued
+  takeNextPlan(room = 3) {
     refresh();
     const list = state.nextPlan || [];
-    if (list.length) { state.nextPlan = []; persist(); }
-    return list;
+    const taken = list.slice(0, Math.max(0, room));
+    if (taken.length) { state.nextPlan = list.slice(taken.length); persist(); }
+    return taken;
   },
 
   // ---- settings ----
@@ -258,8 +352,13 @@ export const store = {
   // ---- import / export / reset ----
   exportJSON() {
     const copy = clone(state);
-    copy.settings.ai.key = ''; // never write an API key into a backup file
+    // never write an API key, or where it is sent, into a backup file
+    copy.settings.ai = { provider: 'anthropic', key: '', baseUrl: '', model: '', remember: false };
     copy.active = null;
+    // each record carries its own time-zone offset, so a reader can find its local day
+    // even when the clocks have changed since
+    copy.sessions.forEach((x) => { x.tzOffsetMinutes = new Date(x.startedAt).getTimezoneOffset(); });
+    copy.thoughts.forEach((x) => { x.tzOffsetMinutes = new Date(x.createdAt).getTimezoneOffset(); });
     // Extra facts for anything that reads the file later (the Claude skill in /skill)
     copy.app = 'sidenote';
     copy.exportedAt = Date.now();
@@ -279,9 +378,11 @@ export const store = {
     if (!parsed || !Array.isArray(parsed.thoughts) || !Array.isArray(parsed.sessions)) {
       throw new Error('not a Sidenote backup');
     }
-    const key = state.settings.ai.key;
+    // The AI connection never comes from a file. Otherwise a backup someone sends
+    // could point this browser's saved key at a server of their choosing.
+    const keepAi = clone(state.settings.ai);
     state = normalise(parsed);
-    state.settings.ai.key = key;
+    state.settings.ai = keepAi;
     state.active = null;
     persist();
   },

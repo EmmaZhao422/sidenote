@@ -8,7 +8,8 @@
 import { h, toast, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store, TAB_ID } from '../store.js';
-import { startBlock, heldElsewhere } from '../block.js';
+import { startBlock, heldElsewhere, settleCarried } from '../block.js';
+import { breakTimer } from '../breaktimer.js';
 import { SCENES, getScene, sceneName, sceneBlurb } from '../scenes.js';
 import { audio } from '../audio.js';
 import { createBackdrop } from '../backdrop.js';
@@ -17,6 +18,9 @@ import { aiMode, suggestSteps } from '../ai.js';
 
 const SETTLE_SHARE = 0.4;      // the last 40% of prep is for breathing, not planning
 const HEARTBEAT_MS = 5000;
+// Browsers slow a hidden tab's timers to as little as one tick a minute, so only a
+// longer silence than that is taken to mean the computer itself was asleep.
+const SLEEP_GAP_MS = 120000;
 const MIN_BLOCK_MS = 60000;     // shorter than this is not saved as a study block
 
 export function sessionView(root, navigate) {
@@ -29,6 +33,10 @@ export function sessionView(root, navigate) {
   const baseTitle = document.title;
 
   const active = () => store.state.active;
+  // One rule for "parked during this block" on every screen: everything with this block's id
+  const parkedIn = (id) => store.state.thoughts.filter((x) => x.sessionId === id);
+  // When this tab last proved it was alive (used to date a pause after a reload or a crash)
+  const lastAlive = (a) => { const b = store.lastBeat(); return Math.max(b.tab === TAB_ID ? b.at : 0, a.lastSeenAt || 0, a.focusStartedAt || 0) || Date.now(); };
   const save = (patch) => store.patchActive(patch);
 
   // Phones lock their screen after a minute or so, which would stop the sound and
@@ -233,10 +241,12 @@ export function sessionView(root, navigate) {
     const countdown = h('span', { class: 'prep-clock' }, clock(totalMs / 1000));
     const body = h('div', { class: 'prep-body' });
 
+    breakTimer.stop(); // a break left running would chime in the middle of the block
     const beginFocus = () => {
       // Read whatever is in the step boxes before leaving
       savePlan();
       save({ stage: 'focus', focusStartedAt: Date.now(), lastSeenAt: Date.now() });
+      store.beat();
       render();
     };
 
@@ -300,7 +310,12 @@ export function sessionView(root, navigate) {
       },
     }, dump, h('button', { type: 'submit', class: 'btn btn-ghost' }, t('park.button')));
 
-    const planPhase = h('div', { class: 'prep-plan', oninput: () => { lastTyped = Date.now(); } },
+    // What is typed is saved shortly after each keystroke, so a reload loses nothing
+    let saveSoon = 0;
+    // ...and at once if the page is being closed or reloaded
+    window.addEventListener('pagehide', savePlan);
+    offActivity = () => window.removeEventListener('pagehide', savePlan);
+    const planPhase = h('div', { class: 'prep-plan', oninput: () => { lastTyped = Date.now(); clearTimeout(saveSoon); saveSoon = setTimeout(savePlan, 300); } },
       h('div', { class: 'prep-col' },
         h('h2', null, t('prep.planTitle')),
         a.goal ? goalLine : goal,
@@ -347,7 +362,12 @@ export function sessionView(root, navigate) {
     audio.play(a.scene, 3); // already playing after "Get ready"; this covers a reload
     if (!active().settling && !isTouchDevice()) (a.goal ? stepInputs.find((el) => !el.value) || stepInputs[0] : goal).focus();
 
+    let lastTick = Date.now();
     ticker = setInterval(() => {
+      // The laptop was asleep: the get-ready time did not really pass, so push its start forward
+      const gap = Date.now() - lastTick;
+      lastTick = Date.now();
+      if (gap > SLEEP_GAP_MS) save({ prepStartedAt: active().prepStartedAt + gap });
       const left = totalMs - (Date.now() - active().prepStartedAt);
       countdown.textContent = clock(left / 1000);
       // 4 seconds in, 6 seconds out
@@ -359,7 +379,8 @@ export function sessionView(root, navigate) {
       if (!active().settling && left <= settleMs && (idle || left <= 20000)) { savePlan(); save({ settling: true }); drawPhase(); }
       if (left <= 0) beginFocus();
     }, 250);
-    heartbeat = setInterval(() => { if (active()?.owner === TAB_ID) save({ lastSeenAt: Date.now() }); }, HEARTBEAT_MS);
+    store.beat();
+    heartbeat = setInterval(() => { if (active()?.owner === TAB_ID) store.beat(); }, HEARTBEAT_MS);
   }
 
   // ------------------------------------------------------------------ focus
@@ -369,6 +390,7 @@ export function sessionView(root, navigate) {
   }
 
   function renderFocus() {
+    breakTimer.stop();
     const a = active();
     const scene = getScene(a.scene);
     const plannedMs = a.plannedMin * 60000;
@@ -398,7 +420,7 @@ export function sessionView(root, navigate) {
 
     // the margin: where stray thoughts go
     // Only a count is shown while studying: reading the list back would be its own distraction.
-    const mine = () => store.state.thoughts.filter((x) => x.sessionId === a.id);
+    const mine = () => parkedIn(a.id);
     const count = h('span', { class: 'margin-count' });
     const drawMargin = () => {
       const n = mine().length;
@@ -447,6 +469,7 @@ export function sessionView(root, navigate) {
       const cur = active();
       if (cur.pausedAt) {
         save({ pausedMs: cur.pausedMs + (Date.now() - cur.pausedAt), pausedAt: null, lastSeenAt: Date.now() });
+        store.beat();
         audio.play(cur.scene, 1.5);
       } else {
         save({ pausedAt: Date.now(), pauses: cur.pauses + 1, awaySince: null });
@@ -462,6 +485,7 @@ export function sessionView(root, navigate) {
       if (elapsedMs(cur) < MIN_BLOCK_MS) {
         store.state.thoughts.filter((x) => x.sessionId === cur.id)
           .forEach((x) => store.updateThought(x.id, { sessionId: null, offsetSec: null }));
+        settleCarried(cur.carried);
         store.setActive(null);
         audio.stop(0.8);
         cleanupStage();
@@ -471,6 +495,11 @@ export function sessionView(root, navigate) {
       }
       const patch = { stage: 'wrap', endedAt: Date.now(), focusMs: elapsedMs(cur) };
       if (cur.pausedAt) { patch.pausedMs = cur.pausedMs + (Date.now() - cur.pausedAt); patch.pausedAt = null; }
+      // If the timer was noticed late (a throttled background tab), the extra seconds are
+      // not study time: count them as paused, so the clock and the record agree.
+      const paused = patch.pausedMs ?? cur.pausedMs;
+      const over = (patch.endedAt - cur.focusStartedAt - paused) - patch.focusMs;
+      if (over > 0) patch.pausedMs = paused + over;
       if (cur.awaySince) { patch.awayMs = cur.awayMs + (Date.now() - cur.awaySince); patch.awaySince = null; }
       save(patch);
       audio.stop(2.5);
@@ -533,14 +562,29 @@ export function sessionView(root, navigate) {
     document.addEventListener('visibilitychange', onVisibility);
     offVisibility = () => document.removeEventListener('visibilitychange', onVisibility);
 
+    let lastTick = Date.now();
     ticker = setInterval(() => {
       const cur = active();
       if (!cur || cur.stage !== 'focus') return;
+      // No tick for two minutes means the computer was asleep (lid closed). That time
+      // was not studied: the block is paused from the moment the ticks stopped.
+      const now = Date.now();
+      const gap = now - lastTick;
+      lastTick = now;
+      if (gap > SLEEP_GAP_MS && !cur.pausedAt) {
+        save({ pausedAt: now - gap, autoPauses: (cur.autoPauses || 0) + 1, awaySince: null });
+        audio.stop(0.3);
+        drawPause();
+        drawTimer();
+        toast(t('focus.sleptPaused'), 6000);
+        return;
+      }
       drawTimer();
       if (!cur.pausedAt && elapsedMs(cur) >= plannedMs) finish();
     }, 250);
+    store.beat();
     heartbeat = setInterval(() => {
-      if (active()?.owner === TAB_ID && !active().pausedAt) save({ lastSeenAt: Date.now() });
+      if (active()?.owner === TAB_ID && !active().pausedAt) store.beat();
     }, HEARTBEAT_MS);
   }
 
@@ -549,7 +593,7 @@ export function sessionView(root, navigate) {
     const a = active();
     const scene = getScene(a.scene);
     const focusSec = Math.round((a.focusMs ?? elapsedMs(a)) / 1000);
-    const parked = store.state.thoughts.filter((x) => x.sessionId === a.id && typeof x.offsetSec === 'number').length;
+    const parked = parkedIn(a.id).length;
     const answers = { rating: null, finished: null };
 
     const rating = segmented(t('wrap.ratingLabel'),
@@ -576,6 +620,7 @@ export function sessionView(root, navigate) {
         plannedMin: cur.basePlannedMin ?? cur.plannedMin,
         focusSec,
         pauses: cur.pauses,
+        autoPauses: cur.autoPauses || 0, // reloads, a closed lid, leaving the screen: recorded, never scored
         pausedSec: Math.round(cur.pausedMs / 1000),
         awaySec: Math.round(cur.awayMs / 1000),
         awayCount: cur.awayCount,
@@ -591,6 +636,7 @@ export function sessionView(root, navigate) {
       session.score = parts.score;
       session.parts = parts;
       store.addSession(session);
+      settleCarried(cur.carried, cur.steps);
       store.setActive(null);
       cleanupStage();
       navigate(`#/review/${session.id}`);
@@ -602,9 +648,12 @@ export function sessionView(root, navigate) {
         const cur = active();
         // Carry on: ten more minutes on the same clock
         // basePlannedMin remembers the original plan, so extra time isn't scored as "stopped early"
+        // Everything on the wall clock that was not counted as focus becomes "paused", so the
+        // timer picks up exactly where the block stopped and the next ten minutes are a full ten.
+        const done = cur.focusMs ?? 0;
         save({ stage: 'focus', basePlannedMin: cur.basePlannedMin ?? cur.plannedMin,
-          plannedMin: Math.ceil((cur.focusMs ?? 0) / 60000) + 10, endedAt: null, focusMs: null,
-          pausedMs: cur.pausedMs + (Date.now() - (cur.endedAt || Date.now())), lastSeenAt: Date.now() });
+          plannedMin: Math.ceil(done / 60000) + 10, endedAt: null, focusMs: null,
+          pausedMs: Date.now() - cur.focusStartedAt - done, lastSeenAt: Date.now() });
         audio.play(cur.scene, 1.5);
         render();
       },
@@ -618,20 +667,24 @@ export function sessionView(root, navigate) {
         // The parked thoughts are kept; only the block itself is thrown away.
         store.state.thoughts.filter((x) => x.sessionId === a.id)
           .forEach((x) => store.updateThought(x.id, { sessionId: null, offsetSec: null }));
+        settleCarried(active().carried);
         store.setActive(null);
         cleanupStage();
         navigate('#/');
       },
     }, t('wrap.discard'));
 
+    const wrapTitle = h('h1', { tabindex: '-1', role: 'status', 'aria-live': 'polite' }, t('wrap.title'));
     showStage(scene,
       h('div', { class: 'wrap-card' },
-        h('h1', null, t('wrap.title')),
+        // focus lands here, and screen readers announce it: the chime alone is not enough
+        wrapTitle,
         h('p', { class: 'lede' }, t('wrap.summary', { min: Math.max(1, Math.round(focusSec / 60)), n: parked })),
         h('div', { class: 'label' }, t('wrap.ratingLabel')), rating, ratingWord,
         h('div', { class: 'label' }, t('wrap.finishedLabel')), finished,
         saveBtn, need,
         h('p', { class: 'wrap-links' }, more, discard)));
+    wrapTitle.focus({ preventScroll: true });
   }
 
   // ----------------------------------------------------------------- router
@@ -639,9 +692,9 @@ export function sessionView(root, navigate) {
     const a = active();
     if (!a) return;
     const patch = { owner: TAB_ID, lastSeenAt: Date.now() };
-    if (a.stage === 'prep') Object.assign(patch, { prepStartedAt: Date.now(), settling: false });
+    if (a.stage === 'prep') Object.assign(patch, { prepStartedAt: Date.now() });
     // The time since the other tab last touched the block is treated as a pause
-    else if (a.stage === 'focus' && !a.pausedAt) Object.assign(patch, { pausedAt: a.lastSeenAt || Date.now(), pauses: a.pauses + 1, awaySince: null });
+    else if (a.stage === 'focus' && !a.pausedAt) Object.assign(patch, { pausedAt: Math.min(Date.now(), Math.max(store.lastBeat().at, a.lastSeenAt || 0, a.focusStartedAt || 0) || Date.now()), autoPauses: (a.autoPauses || 0) + 1, awaySince: null });
     save(patch);
   }
 
@@ -661,10 +714,11 @@ export function sessionView(root, navigate) {
   const a = active();
   if (a && (a.owner === TAB_ID || !a.owner)) {
     if (a.stage === 'prep') {
-      save({ owner: TAB_ID, prepStartedAt: Date.now(), settling: false });
+      // the get-ready clock carries on from where it was, in the same phase
+      save({ owner: TAB_ID, prepStartedAt: Date.now() - Math.min(a.prepMin * 60000, Math.max(0, lastAlive(a) - a.prepStartedAt)) });
     } else if (a.stage === 'focus' && !a.pausedAt) {
       // The time the page was closed is treated as a pause, starting at the last heartbeat.
-      save({ owner: TAB_ID, pausedAt: a.lastSeenAt || Date.now(), pauses: a.pauses + 1, awaySince: null });
+      save({ owner: TAB_ID, pausedAt: lastAlive(a), autoPauses: (a.autoPauses || 0) + 1, awaySince: null });
     }
   }
   render();
@@ -684,7 +738,7 @@ export function sessionView(root, navigate) {
     // Walking away from a block mid-way pauses it rather than losing it.
     const cur = active();
     if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) toast(t('focus.leftPaused'), 5000);
-    if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) save({ pausedAt: Date.now(), pauses: cur.pauses + 1 });
+    if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) save({ pausedAt: Date.now(), autoPauses: (cur.autoPauses || 0) + 1, awaySince: null });
     audio.stop(0.8);
   };
 }

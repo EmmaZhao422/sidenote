@@ -17,11 +17,11 @@ export function startBlock(opts = {}) {
   const prep = opts.prep ?? s.prepMin;
   store.setSettings({ focusMin: minutes, scene, studyMode: mode, prepMin: prep });
 
-  // To-dos the student sent "to the next block" become its first steps
-  const carried = store.takeNextPlan();
-  const steps = [...(opts.steps || []), ...carried]
-    .map((text) => String(text).trim()).filter(Boolean).slice(0, 3)
-    .map((text) => ({ text, done: false }));
+  // To-dos the student sent "to the next block" come first; whatever does not fit
+  // in three steps stays queued for the block after.
+  const own = (opts.steps || []).map((text) => String(text).trim()).filter(Boolean);
+  const carried = store.takeNextPlan(3);
+  const steps = [...carried, ...own].slice(0, 3).map((text) => ({ text, done: false }));
 
   const now = Date.now();
   store.setActive({
@@ -30,6 +30,7 @@ export function startBlock(opts = {}) {
     stage: prep > 0 ? 'prep' : 'focus',
     goal: String(opts.goal || '').trim(),
     steps,
+    carried,              // the queued to-dos this block took on (see settleCarried)
     plannedMin: minutes,
     prepMin: prep,
     scene,
@@ -49,8 +50,24 @@ export function startBlock(opts = {}) {
   audio.play(scene, 4);
 }
 
-// Another tab is "holding" the block if it wrote to it in the last few seconds
+// Another tab is "holding" the block if its heartbeat was seen in the last few seconds
 export function heldElsewhere(active, now = Date.now()) {
-  return Boolean(active && active.owner && active.owner !== TAB_ID
-    && active.stage !== 'wrap' && !active.pausedAt && now - (active.lastSeenAt || 0) < 15000);
+  if (!active || !active.owner || active.owner === TAB_ID || active.stage === 'wrap' || active.pausedAt) return false;
+  const beat = store.lastBeat();
+  return beat.tab === active.owner && now - beat.at < 15000;
+}
+
+// When a block ends, the queued to-dos it took on are settled: a step that was
+// ticked marks its thought done; one that was not goes back in the queue.
+// With steps = null (the block was thrown away) everything goes back.
+export function settleCarried(carried = [], steps = null) {
+  carried.forEach((text) => {
+    const done = steps && steps.some((s) => s.text === text && s.done);
+    const thought = store.state.thoughts.find((x) => x.queued && x.text === text && x.status !== 'done');
+    if (done) {
+      if (thought) store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
+    } else {
+      store.addToNextPlan(text);
+    }
+  });
 }

@@ -731,7 +731,8 @@ page('privacy.html', 'en', 'Privacy', 'What Sidenote stores, what it sends, and 
       <li><strong>Fonts:</strong> the typefaces are files on this site. No request goes to a font service.</li>
       <li><strong>"Search the web", "Ask Claude" and "Ask ChatGPT":</strong> these buttons open the other site in a new tab with the text of that one thought in the link. Nothing is sent unless you press the button, and what happens next is covered by that site's own privacy policy.</li>
     </ul>
-    <p>Sidenote doesn't run its own analytics or tracking scripts.</p>
+    <p>Sidenote doesn't run tracking scripts. The site can count visits with Cloudflare Web Analytics, which uses no cookies and does not see what you write; that counter is switched off unless this page says otherwise. If you open Sidenote inside the Claude app, a thought you ask to have dealt with is sent to Claude there, under your own Claude account.</p>
+    <p>If you paste in your own AI key, it is kept only until you close the browser, unless you tick "Remember the key on this device". It is sent only to the provider you chose, and it is never written into a backup file.</p>
 
     <h2>Children</h2>
     <p>Sidenote is not directed at children under 13, and we don't knowingly collect personal information from them.</p>
@@ -773,7 +774,8 @@ page('zh/privacy.html', 'zh', '隐私', '走神本存了什么，发送了什么
       <li><strong>字体：</strong>字体文件就放在本站，不会向任何字体服务发请求。</li>
       <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
     </ul>
-    <p>走神本自己不运行任何统计或追踪脚本。</p>
+    <p>走神本不运行追踪脚本。网站可以用 Cloudflare Web Analytics 统计访问量，它不使用 cookie，也看不到你写的内容；除非本页另有说明，这个统计是关闭的。如果你是在 Claude 应用里打开走神本，你要求处理的念头会在那里发给 Claude，用的是你自己的 Claude 账号。</p>
+    <p>如果你填了自己的 AI key，它只保留到浏览器关闭为止，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
 
     <h2>儿童</h2>
     <p>走神本不面向 13 岁以下的儿童，我们也不会有意收集他们的个人信息。</p>

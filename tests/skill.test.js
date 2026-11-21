@@ -138,3 +138,29 @@ test('a damaged backup gives one plain line, not a traceback', () => {
   assert.ok(!/Traceback/.test(res.stderr + res.stdout), res.stderr);
   assert.ok(res.status === 0 || /Could not read this backup/.test(res.stderr));
 });
+
+test('the skill ranks scenes over every rated block, like the website, whatever --days says', () => {
+  const now = Date.now();
+  const { sessions, thoughts } = buildSample('en', now);
+  sessions.forEach((s) => delete s.sample);
+  thoughts.forEach((t) => delete t.sample);
+  const file = join(mkdtempSync(join(tmpdir(), 'sidenote-')), 'all.json');
+  writeFileSync(file, JSON.stringify({ settings: { lang: 'en' }, exportedAt: now, tzOffsetMinutes: new Date().getTimezoneOffset(), thoughts, sessions }));
+  const js = recommendScene(sessions);
+  for (const days of ['2', '7', '30']) {
+    const py = run(file, '--days', days);
+    assert.equal(py.sceneRecommendation.best, SCENES.find((s) => s.id === js.best.id).en, `--days ${days}`);
+  }
+});
+
+test('a block keeps its own local day even if the clocks changed before the backup was made', () => {
+  // 00:30 local time on a summer-time day (UTC-4), exported later in winter time (UTC-5)
+  const startedAt = Date.UTC(2026, 9, 26, 4, 30);
+  const file = join(mkdtempSync(join(tmpdir(), 'sidenote-')), 'dst.json');
+  writeFileSync(file, JSON.stringify({
+    exportedAt: Date.UTC(2026, 10, 20, 15, 0), tzOffsetMinutes: 300, thoughts: [],
+    sessions: [{ id: 'a', startedAt, tzOffsetMinutes: 240, focusSec: 1500, plannedMin: 25, score: 80, scene: 'rain', goal: 'x' }],
+  }));
+  const py = run(file, '--days', '0');
+  assert.deepEqual(Object.keys(py.focusMinutesPerDay), ['2026-10-26']);
+});

@@ -68,6 +68,9 @@ Scenes are ranked by average focus score, with small samples pulled toward the s
 - `parkedInPeriodStillWaiting` is about thoughts parked in the period; `waitingNow` is everything still waiting, whenever it was parked.
 - `thoughtRange` is `narrow` when one or two kinds dominate and `wide` when thoughts are spread across many kinds.
 - An unrated block is scored as if rated 3 (`feel` = 60).
+- `scenes` and `sceneRecommendation` are worked out over every rated block in the file, whatever `--days` says, because that is what the website shows.
+- `strayThoughtsDuringBlocksPer25Minutes` counts only thoughts parked while the clock was running.
+- Each session and thought in a newer backup has its own `tzOffsetMinutes`; the script uses it to find the record's local day.
 - `usualBlockLengthMinutes` is the middle planned length (the lower of the two middle ones when the count is even).
 - A block that runs past midnight counts on the day it started.
 - A scene recommendation needs three rated blocks and at least two different scenes; with one scene only, the status stays `not enough data`.

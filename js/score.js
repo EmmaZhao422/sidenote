@@ -63,11 +63,17 @@ export function startOfDay(ts) {
 }
 
 export function rangeFor(key, now = Date.now()) {
-  const today = startOfDay(now);
-  const day = 86400000;
-  if (key === 'today') return { from: today, to: now, days: 1 };
-  if (key === '7d') return { from: today - 6 * day, to: now, days: 7 };
-  if (key === '30d') return { from: today - 29 * day, to: now, days: 30 };
+  // Midnight n calendar days ago. Counting calendar days (not 24-hour steps) keeps
+  // the range right in the weeks when the clocks change.
+  const back = (n) => {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - n);
+    return d.getTime();
+  };
+  if (key === 'today') return { from: back(0), to: now, days: 1 };
+  if (key === '7d') return { from: back(6), to: now, days: 7 };
+  if (key === '30d') return { from: back(29), to: now, days: 30 };
   return { from: 0, to: now, days: 0 };
 }
 
@@ -128,8 +134,11 @@ export function aggregate(state, range) {
     if (typeof t.offsetSec === 'number') timing[Math.min(9, Math.floor(t.offsetSec / 300))] += 1;
   });
 
-  const inSession = thoughts.filter((t) => t.sessionId).length;
-  const wanderPer25 = focusSec > 0 ? inSession * 1500 / focusSec : null;
+  // How often the mind wandered: only thoughts parked while the clock was running count
+  // (not the ones emptied out before the block, or typed during a pause), and under
+  // ten minutes of focus is too little to make a rate of.
+  const duringFocus = thoughts.filter((t) => t.sessionId && typeof t.offsetSec === 'number').length;
+  const wanderPer25 = focusSec >= 600 ? duringFocus * 1500 / focusSec : null;
 
   // Is the score going up or down across the range?
   let trend = null;

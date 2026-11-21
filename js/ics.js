@@ -10,7 +10,7 @@ function stamp(d) {
 
 // Calendar text needs commas, semicolons, backslashes and line breaks escaped
 function esc(text) {
-  return String(text).replace(/\\/g, '\\\\').replace(/[,;]/g, (m) => `\\${m}`).replace(/\r?\n/g, '\\n');
+  return String(text).replace(/\\/g, '\\\\').replace(/[,;]/g, (m) => `\\${m}`).replace(/\r\n|\r|\n/g, '\\n');
 }
 
 // { title, start: Date, minutes, url, note }
@@ -37,8 +37,24 @@ export function buildIcs({ title, start, minutes, url, note }) {
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
-    '',
-  ].join('\r\n');
+  ].map(fold).join('\r\n') + '\r\n';
+}
+
+// Calendar files may not have lines longer than 75 bytes: longer ones continue on
+// the next line after a space. Cut between characters, never inside one.
+function fold(line) {
+  const bytes = (ch) => new TextEncoder().encode(ch).length;
+  const out = [];
+  let cur = '';
+  let size = 0;
+  for (const ch of line) {
+    const n = bytes(ch);
+    if (size + n > (out.length ? 74 : 75)) { out.push(cur); cur = ''; size = 0; }
+    cur += ch;
+    size += n;
+  }
+  out.push(cur);
+  return out.join('\r\n ');
 }
 
 // Tomorrow at the time this block started, rounded to the quarter hour
@@ -46,7 +62,8 @@ export function tomorrowAt(startedAt) {
   const d = new Date(startedAt);
   const t = new Date();
   t.setDate(t.getDate() + 1);
-  t.setHours(d.getHours(), Math.round(d.getMinutes() / 15) * 15, 0, 0);
+  // rounded down to the quarter hour, so 23:53 stays 23:45 tomorrow and never rolls into the day after
+  t.setHours(d.getHours(), Math.floor(d.getMinutes() / 15) * 15, 0, 0);
   return t;
 }
 

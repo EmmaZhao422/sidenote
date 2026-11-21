@@ -109,7 +109,7 @@ export function homeView(root, navigate) {
     const due = store.dueList();
     todo.hidden = !due.length;
     if (!due.length) return;
-    const groups = ['today', 'tomorrow', 'later'].map((when) => ({ when, items: due.filter((d) => d.when === when) })).filter((g) => g.items.length);
+    const groups = ['overdue', 'today', 'tomorrow', 'later'].map((when) => ({ when, items: due.filter((d) => d.when === when) })).filter((g) => g.items.length);
     mount(todo,
       h('h2', null, t('due.title')),
       groups.map((g) => h('div', { class: 'todo-group' },
@@ -221,6 +221,12 @@ export function homeView(root, navigate) {
   // The miniature runs a slow, purely cosmetic countdown
   const backdrop = createBackdrop(canvas);
   backdrop.setScene(scene);
+  // ...and only while it can be seen: no drawing for a picture that is scrolled away
+  let watcher = null;
+  if ('IntersectionObserver' in window) {
+    watcher = new IntersectionObserver(([entry]) => backdrop.setRunning(entry.isIntersecting));
+    watcher.observe(demo);
+  }
   let left = store.state.settings.focusMin * 60;
   const tick = setInterval(() => {
     left = left > 1 ? left - 1 : store.state.settings.focusMin * 60;
@@ -228,6 +234,7 @@ export function homeView(root, navigate) {
   }, 1000);
 
   return () => {
+    watcher?.disconnect();
     clearInterval(tick);
     backdrop.destroy();
   };

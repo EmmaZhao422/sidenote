@@ -4,11 +4,11 @@
 // - On the first visit it saves the whole app, so even a visitor who only saw
 //   the home page can run a study block offline afterwards.
 // - After that the rule is "network first": every request goes to the network,
-//   and the saved copy is used only if the network fails or takes more than
-//   three seconds. So visitors get the newest version whenever they are
+//   and the saved copy is used only if the network fails (or, for the page itself,
+//   takes more than three seconds). So visitors get the newest version whenever they are
 //   online, and nobody is stuck on an old one after you push a change.
 
-const CACHE = 'sidenote-offline-v2';
+const CACHE = 'sidenote-offline-v3';
 
 // The files the app itself is made of. tests/sw.test.js checks this list
 // against the js/ and css/ folders, so a new file can't be forgotten.
@@ -26,7 +26,8 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
       // One missing file must not stop the rest from being saved
-      .then((cache) => Promise.all(SHELL.map((url) => cache.add(url).catch(() => {}))))
+      // 'reload' skips the browser's own cache, so the saved copy is the newest one
+      .then((cache) => Promise.all(SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })).catch(() => {}))))
       .then(() => self.skipWaiting()),
   );
 });
@@ -53,11 +54,19 @@ self.addEventListener('fetch', (event) => {
     return response;
   });
 
-  // On a connection that hangs (weak wifi), fall back to the saved copy after 3 seconds
+  // Scripts and styles: the network, and the saved copy only if the network fails
+  // outright. They are never raced against a timer, because a page built from some
+  // new files and some old ones does not run at all.
+  if (request.mode !== 'navigate') {
+    event.respondWith(fresh.catch(() => saved().then((hit) => hit || Response.error())));
+    return;
+  }
+
+  // Opening the page itself: on a connection that hangs (weak wifi), show the saved
+  // page after 3 seconds instead of a blank tab.
   const slow = new Promise((resolve) => {
     setTimeout(() => saved().then((hit) => { if (hit) resolve(hit); }), 3000);
   });
-
   event.respondWith(
     Promise.race([fresh, slow]).catch(() => saved().then((hit) => hit || Response.error())),
   );
