@@ -88,6 +88,11 @@ document.getElementById('lang-toggle').addEventListener('click', () => {
   render();
 });
 
+// Keep a copy of the site for when the connection drops (see sw.js)
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* offline copy is a bonus, not a requirement */ });
+}
+
 window.addEventListener('hashchange', render);
 store.subscribe(updateCount);
 render();

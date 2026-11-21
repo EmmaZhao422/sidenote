@@ -12,6 +12,8 @@ const GUIDES = [
   { slug: 'parking-lot-method', en: 'The parking lot method: what to do with a thought that shows up mid-study', zh: '「念头停车场」：学到一半冒出来的想法，该拿它怎么办' },
   { slug: 'five-minute-start', en: 'Five minutes before you study: a short plan beats a long warm-up', zh: '开始学习前的五分钟：短计划比长热身管用' },
   { slug: 'background-sound', en: 'Rain, brown noise or silence: finding the sound you focus with', zh: '雨声、棕噪音还是安静：找到适合你专注的声音' },
+  { slug: 'study-block-length', en: '25 minutes or 45? How long a study block should be', zh: '25 分钟还是 45 分钟？一轮学习该多长' },
+  { slug: 'phone-while-studying', en: 'Where should your phone be while you study?', zh: '学习的时候，手机该放哪儿？' },
 ];
 
 export function homeView(root, navigate) {

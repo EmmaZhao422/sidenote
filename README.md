@@ -37,8 +37,9 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/ads.js` | Ad placements (off until configured) |
 | `worker/` | The Cloudflare Worker that keeps the API key off the website |
 | `guides/`, `about.html`, `privacy.html`, `terms.html`, `zh/` | Articles and plain pages |
+| `sw.js` | Keeps a copy of the site so it still opens when the connection drops |
 | `tests/` | Unit tests |
-| `docs/` | Setup notes (in Chinese) |
+| `docs/` | Setup notes, monetization plan and roadmap (in Chinese) |
 
 ## Run it on your computer
 
@@ -107,3 +108,7 @@ No open-source licence has been chosen yet, so all rights are reserved for now. 
 ### 开通 AI 和广告
 
 见 [docs/SETUP-AI.md](docs/SETUP-AI.md) 和 [docs/MONETIZATION.md](docs/MONETIZATION.md)。
+
+### 接下来做什么
+
+见 [docs/ROADMAP.md](docs/ROADMAP.md)：哪些事适合自己动手改，改哪个文件。
