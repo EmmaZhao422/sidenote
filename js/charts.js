@@ -69,6 +69,7 @@ function niceCeil(x) {
   const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
   const candidate = step * pow;
   // prefer a tighter ceiling when there is a lot of headroom
-  if (candidate >= x * 1.6 && pow >= 10) return Math.ceil(x / (pow / 2)) * (pow / 2);
+  // (fifths of the power of ten: 105 -> 120, not 150 or 200; always even, so the half-way label is whole)
+  if (candidate >= x * 1.6 && pow >= 10) return Math.ceil(x / (pow / 5)) * (pow / 5);
   return candidate;
 }

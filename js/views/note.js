@@ -273,8 +273,9 @@ export function noteCard(thoughtId, opts = {}) {
       onclick: () => { store.updateThought(thought.id, { status: 'open', doneAt: null }); opts.onChange?.('status'); },
     }, t('note.reopen')));
   } else {
+    // one filled button per card: "help me" while an AI can still be asked, otherwise Done
     const doneBtn = h('button', {
-      type: 'button', class: 'btn btn-quiet',
+      type: 'button', class: canAsk && !reply ? 'btn btn-quiet' : 'btn btn-ink',
       onclick: () => {
         if (thought.queued) store.removeFromNextPlan(thought.text);
         store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });

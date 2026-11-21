@@ -805,3 +805,33 @@ h1[tabindex="-1"]:focus { outline: none; }
     background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F3F5FB' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9.5v5h3.5L12 18.5v-13L7.5 9.5zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11'/%3E%3C/svg%3E");
   }
 }
+
+/* ---- From a visual review ---- */
+/* Study screen: the strip for parked thoughts was the brightest thing on it. It sits back
+   a little now, so the timer leads. */
+.stage .margin { background: color-mix(in srgb, var(--paper) 92%, #2A3454); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.28); }
+.stage .margin-count { color: var(--ink-2); }
+/* The timer: a notch lighter, with a colon that separates rather than competes */
+.timer { font-weight: 700; letter-spacing: -0.03em; }
+.timer-colon { opacity: 0.38; font-weight: 400; translate: 0 -0.04em; }
+/* Step tick boxes drawn to match the scene instead of the browser's white squares */
+.focus-steps input { appearance: none; -webkit-appearance: none; border: 1.5px solid rgba(255, 255, 255, 0.6); border-radius: 4px; background: transparent; display: inline-grid; place-content: center; cursor: pointer; }
+.focus-steps input:checked { background: var(--hl); border-color: var(--hl); }
+.focus-steps input:checked::after { content: ""; width: 0.32rem; height: 0.58rem; border: solid var(--on-hl); border-width: 0 2px 2px 0; rotate: 45deg; translate: 0 -0.06rem; }
+/* Charts: fuller day bars, and a track that ties each row's bar to its number */
+.col-bar { width: min(56%, 2.75rem); border-radius: 6px 6px 0 0; }
+.bar-track { background: var(--rule); border-radius: 0 4px 4px 0; }
+.bar-fill { opacity: 1; }
+.bar-value { font-weight: 600; color: var(--ink-2); }
+/* Dark theme: near-white bars and rules glared on navy */
+:root[data-theme="dark"] .bar-fill, :root[data-theme="dark"] .col-bar, :root[data-theme="dark"] .week-bar { background: var(--blue); opacity: 0.9; }
+:root[data-theme="dark"] .week li:last-child .week-bar, :root[data-theme="dark"] .col:hover .col-bar, :root[data-theme="dark"] .col:focus-visible .col-bar { background: var(--margin); opacity: 1; }
+:root[data-theme="dark"] .today, :root[data-theme="dark"] .band, :root[data-theme="dark"] .break, :root[data-theme="dark"] .tile { border-top-color: var(--rule-strong); }
+/* A card's buttons: Delete steps back and to the far side, so Done leads */
+.note-actions .btn-danger { border-color: transparent; background: none; margin-left: auto; }
+.note-actions .btn-danger:hover, .note-actions .btn-danger:focus-visible { border-color: var(--rule-strong); }
+.scene-best { font-size: 0.78rem; padding: 0.1em 0.5em; line-height: 1.5; align-self: center; }
+@media (forced-colors: active) {
+  .focus-steps input { appearance: auto; -webkit-appearance: auto; }
+  .focus-steps input:checked::after { content: none; }
+}
