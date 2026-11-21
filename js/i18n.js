@@ -81,7 +81,9 @@ const en = {
   'note.deleteSure': 'Delete for good?',
 
   'handoff.button': 'Copy for Claude',
-  'handoff.header': 'Sidenote margin. These are thoughts I parked while studying; please sort them out one by one (use the sidenote-coach skill if you have it).',
+  'handoff.askAll': 'Ask Claude about all {n}',
+  'handoff.askAllHint': 'Opens Claude in a new tab with these thoughts typed in',
+  'handoff.header': 'Sidenote margin. These are thoughts I parked while studying. Please deal with them one by one, briefly: answer the questions, give the to-dos a first step, take a calmer second look at the worries, and say the cheapest way to try the ideas. (Use the sidenote-coach skill if you have it.)',
   'handoff.when': 'parked {n} min into "{goal}"',
   'handoff.copied': 'Copied. Paste it into a Claude chat.',
   'handoff.manual': 'Select the text below and copy it.',
@@ -558,7 +560,9 @@ const zh = {
   'note.deleteSure': '确定删掉？',
 
   'handoff.button': '复制给 Claude',
-  'handoff.header': '走神本 · 记下的念头。这些是我学习时先记下的念头，请帮我逐条处理（如果有 sidenote-coach 这个 skill，就调用它）。',
+  'handoff.askAll': '{n} 条一起问 Claude',
+  'handoff.askAllHint': '会在新标签页打开 Claude，并把这些念头填进去',
+  'handoff.header': '走神本 · 记下的念头。这些是我学习时先记下的念头，请逐条简短处理：问题直接回答，待办给第一步，担心的事帮我冷静地再看一眼，点子告诉我最省事的试法。（如果有 sidenote-coach 这个 skill，就调用它。）',
   'handoff.when': '「{goal}」学到第 {n} 分钟时记的',
   'handoff.copied': '已复制。粘贴到 Claude 的对话里就行。',
   'handoff.manual': '选中下面的文字，手动复制。',

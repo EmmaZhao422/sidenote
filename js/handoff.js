@@ -44,3 +44,17 @@ export function copyForClaudeButton(getThoughts) {
   }, t('handoff.button'));
   return btn;
 }
+
+// "Ask Claude about all of them": the same list, already typed into a new Claude
+// chat. It runs on the student's own Claude account. A very long list would not
+// fit in a link, so past that size the button is not offered and Copy is used.
+const MAX_LINK = 6000;
+export function askAllLink(getThoughts) {
+  const url = () => `https://claude.ai/new?q=${encodeURIComponent(marginAsText(getThoughts()))}`;
+  const list = getThoughts();
+  if (list.length < 2 || url().length > MAX_LINK) return null;
+  return h('a', {
+    class: 'btn btn-ink', href: url(), target: '_blank', rel: 'noopener noreferrer', title: t('handoff.askAllHint'),
+    onclick: (e) => { e.currentTarget.href = url(); },
+  }, t('handoff.askAll', { n: list.length }));
+}

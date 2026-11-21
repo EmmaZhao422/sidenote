@@ -7,7 +7,7 @@ import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { noteCard, sortAll, isPlanned } from './note.js';
 import { aiMode } from '../ai.js';
-import { copyForClaudeButton } from '../handoff.js';
+import { copyForClaudeButton, askAllLink } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
 import { startBlock } from '../block.js';
 import { breakTimer } from '../breaktimer.js';
@@ -70,6 +70,7 @@ export function marginView(root) {
       h('div', { class: 'row' },
         tab === 'open' && unanswered.length >= 2 && aiMode() !== 'offline'
           ? sortAllButton(() => unanswered.map((x) => x.id), goalOf, draw) : null,
+        tab === 'open' && aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null,
         tab === 'open' && open.length
           ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null));
 
@@ -156,6 +157,7 @@ export function reviewView(root, navigate, sessionId) {
         h('h2', null, t('review.thoughtsTitle', { n: undecided.length })),
         h('div', { class: 'row' },
           unanswered.length >= 2 && aiMode() !== 'offline' ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
+          aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done' && !isPlanned(x))) : null,
           open.length ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done')) : null)),
       notes);
     if (focusId) {

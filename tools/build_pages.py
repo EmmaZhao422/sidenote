@@ -738,7 +738,7 @@ page('privacy.html', 'en', 'Privacy', 'What Sidenote stores, what it sends, and 
       <li><strong>Hosting:</strong> the site is served by GitHub Pages, which logs technical information such as IP addresses.</li>
       <li><strong>Fonts:</strong> the typefaces are files on this site. No request goes to a font service.</li>
       <li><strong>Offline copy:</strong> your browser keeps a copy of the site's own files so it can open without a connection. That copy holds no notes.</li>
-      <li><strong>"Search the web", "Ask Claude" and "Ask ChatGPT":</strong> these buttons open the other site in a new tab with the text of that one thought (up to 500 characters) in the link. Nothing is sent unless you press the button, and what happens next is covered by that site's own privacy policy.</li>
+      <li><strong>"Search the web", "Ask Claude" and "Ask ChatGPT":</strong> these buttons open the other site in a new tab with the text of that one thought (up to 500 characters) in the link. "Ask Claude about all" does the same with every thought that is still waiting. Nothing is sent unless you press the button, and what happens next is covered by that site's own privacy policy.</li>
     </ul>
     <p>Sidenote doesn't run tracking scripts. The site is able to count visits with Cloudflare Web Analytics, which uses no cookies and does not see what you write. As of the date above, that counter is switched off. If you open Sidenote inside the Claude app, a thought you ask to have dealt with is sent to Claude there, under your own Claude account.</p>
 
@@ -781,7 +781,7 @@ page('zh/privacy.html', 'zh', '隐私说明', '走神本不用注册，你写的
       <li><strong>托管：</strong>网站由 GitHub Pages 提供访问，它会记录 IP 地址等技术信息。</li>
       <li><strong>字体：</strong>字体文件就放在本站，不会向任何字体服务发请求。</li>
       <li><strong>离线副本：</strong>浏览器会保存一份本站自己的文件，这样没有网络也能打开。这份副本里没有你记下的内容。</li>
-      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字（最多 500 个字符）带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
+      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字（最多 500 个字符）带在链接里。「一起问 Claude」也是这样，只是带上的是所有还没处理的念头。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
     </ul>
     <p>走神本不运行追踪脚本。网站可以接入 Cloudflare Web Analytics 来统计访问量，它不使用 cookie，也看不到你写的内容。截至上面的日期，这个统计是关闭的。如果你是在 Claude 应用里打开走神本，你要求处理的念头会在那里发给 Claude，用的是你自己的 Claude 账号。</p>
 
