@@ -6,6 +6,7 @@ import { h, mount, toast, clock, minutesText, dayLabel, timeLabel, segmented } f
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { noteCard, sortAll } from './note.js';
+import { aiMode } from '../ai.js';
 import { copyForClaudeButton } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
 import { startBlock } from '../block.js';
@@ -67,7 +68,7 @@ export function marginView(root) {
     const unanswered = open.filter((x) => !x.reply);
     const tools = h('div', { class: 'row row-between' }, tabs,
       h('div', { class: 'row' },
-        tab === 'open' && unanswered.length >= 2
+        tab === 'open' && unanswered.length >= 2 && aiMode() !== 'offline'
           ? sortAllButton(() => unanswered.map((x) => x.id), goalOf, draw) : null,
         tab === 'open' && open.length
           ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null));
@@ -141,7 +142,7 @@ export function reviewView(root, navigate, sessionId) {
       h('div', { class: 'row row-between' },
         h('h2', null, t('review.thoughtsTitle', { n: open.length })),
         h('div', { class: 'row' },
-          unanswered.length >= 2 ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
+          unanswered.length >= 2 && aiMode() !== 'offline' ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
           open.length ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done')) : null)),
       notes);
   }

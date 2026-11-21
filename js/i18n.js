@@ -257,7 +257,7 @@ const en = {
 
   // margin
   'margin.title': 'Parked thoughts',
-  'margin.lede': 'Everything you\'ve parked. Press "Sort it out" on any thought to get an answer or a next step.',
+  'margin.lede': 'Everything you\'ve parked. Give each one an ending: an answer, a day, a next step, or let it go.',
   'margin.tabOpen': 'Waiting ({n})',
   'margin.tabDone': 'Dealt with ({n})',
   'margin.sortAll': 'Sort everything out',
@@ -712,7 +712,7 @@ const zh = {
   'wrap.discardSure': '确定不保存？记下的念头会留着。',
 
   'margin.title': '记下的念头',
-  'margin.lede': '你记下的所有念头。点「帮我处理」，给答案或下一步。',
+  'margin.lede': '你记下的所有念头。给每一条一个结局：一个答案、一个日子、一个下一步，或者放下它。',
   'margin.tabOpen': '待处理（{n}）',
   'margin.tabDone': '已处理（{n}）',
   'margin.sortAll': '全部帮我处理',

@@ -24,7 +24,7 @@ export function noteCard(thoughtId, opts = {}) {
   // --- kind + when
   const kind = h('select', {
     class: 'note-kind', 'aria-label': t('note.kindLabel'), title: t('note.kindHint'),
-    onchange: (e) => { store.updateThought(thought.id, { category: e.target.value }); opts.onChange?.('kind'); },
+    onchange: (e) => { store.updateThought(thought.id, { category: e.target.value }); redraw(); opts.onChange?.('kind'); },
   }, CATEGORIES.map((c) => h('option', { value: c, selected: c === thought.category }, t(`cat.${c}`))));
   // Parked during a block: say which minute of the block. Otherwise: the time of day.
   const meta = h('div', { class: 'note-meta' }, kind,
@@ -39,35 +39,44 @@ export function noteCard(thoughtId, opts = {}) {
   card.append(meta);
 
   // --- reply
+  // An AI answer is kept and shown. With no AI connected there is nothing to wait
+  // for, so what the built-in helper offers is shown straight away, for the kind
+  // the thought has right now.
+  const offline = aiMode() === 'offline';
+  const reply = thought.reply && thought.reply.source === 'ai' ? thought.reply
+    : offline && thought.status !== 'done' ? offlineReply(thought)
+      : thought.reply;
   const replyBox = h('div', { class: 'note-reply' });
-  if (thought.reply) {
-    replyBox.append(h('div', { class: 'note-reply-from' }, thought.reply.source === 'ai' ? t('note.fromAi') : t('note.fromOffline')));
-    // Without an AI, the useful thing for a question is the search link, so it goes first
-    (thought.reply.links || []).forEach((l) => {
-      replyBox.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
+  if (reply) {
+    if (reply.source === 'ai') replyBox.append(h('div', { class: 'note-reply-from' }, t('note.fromAi')));
+    replyBox.append(renderText(reply.text));
+    const links = h('div', { class: 'note-links' });
+    (reply.links || []).forEach((l) => {
+      links.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
     });
     // ...or copy the same request, to paste into whichever AI app the student uses
-    if (thought.reply.source === 'offline' && thought.category !== 'urge') {
-      replyBox.append(h('button', {
+    if (reply.source === 'offline' && thought.category !== 'urge') {
+      links.append(h('button', {
         type: 'button', class: 'btn btn-quiet note-link',
         onclick: async () => {
           try { await navigator.clipboard.writeText(askPrompt(thought.text)); toast(t('offline.copied')); } catch { toast(t('offline.copyFailed')); }
         },
       }, t('offline.copy')));
     }
-    replyBox.append(renderText(thought.reply.text));
-    if (thought.reply.source === 'offline' && aiMode() === 'offline' && thought.category === 'question') {
-      replyBox.append(h('p', { class: 'hint' }, t('note.connectHint'), ' ', h('a', { href: '#/settings' }, t('note.connectLink'))));
-    }
+    if (links.children.length) replyBox.append(links);
     card.append(replyBox);
+  }
+  if (looksLikeCrisis(thought.text)) {
+    card.append(h('p', { class: 'note-care' }, t('note.care')));
   }
 
   // --- the student's own line: a guess, a next step, the idea in three lines.
   // Writing it is the "dealing with it", so it is offered as soon as the thought is opened up.
-  const wantsLine = thought.status !== 'done' && thought.category !== 'urge' && (thought.reply || thought.note);
+  const wantsLine = thought.status !== 'done' && thought.category !== 'urge' && (reply || thought.note);
   if (wantsLine) {
     const line = h('textarea', {
-      class: 'field note-line', rows: '2', maxlength: '400', dir: 'auto',
+      class: 'field note-line', rows: '1', maxlength: '400', dir: 'auto',
+      oninput: (e) => { e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight + 2}px`; },
       placeholder: t(`line.${thought.category}`), 'aria-label': t('line.label'),
       onchange: (e) => { store.updateThought(thought.id, { note: e.target.value.trim() }); },
     });
@@ -75,9 +84,6 @@ export function noteCard(thoughtId, opts = {}) {
     card.append(line);
   } else if (thought.note) {
     card.append(h('p', { class: 'note-line-done', dir: 'auto' }, thought.note));
-  }
-  if (looksLikeCrisis(thought.text)) {
-    card.append(h('p', { class: 'note-care' }, t('note.care')));
   }
 
   // --- buttons
@@ -107,11 +113,11 @@ export function noteCard(thoughtId, opts = {}) {
   }
 
   const sortBtn = h('button', {
-    type: 'button', class: thought.reply ? 'btn btn-quiet' : 'btn btn-ink',
+    type: 'button', class: reply ? 'btn btn-quiet' : 'btn btn-ink',
     onclick: () => sortOut(false),
-  }, thought.reply ? t('note.again') : t('note.sort'));
+  }, reply ? t('note.again') : t('note.sort'));
   // The built-in helper always says the same thing, so asking it again is pointless
-  const canAsk = !thought.reply || aiMode() !== 'offline';
+  const canAsk = !offline;
 
   // A to-do gets a "when": today, tomorrow, this week, or straight into the next study block.
   // Dated to-dos show on the home page until they are done.
