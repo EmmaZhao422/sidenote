@@ -626,7 +626,10 @@ export function sessionView(root, navigate) {
     // a last heartbeat as the page goes away, so a reload costs no study time
     const onHide = () => { const cur = active(); if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) store.beat(true); };
     window.addEventListener('pagehide', onHide);
-    offVisibility = () => { document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('pagehide', onHide); };
+    // the long hint doesn't fit a phone held upright: re-pick it when the window turns or shrinks
+    const fitHint = () => { input.placeholder = t(window.innerWidth < 560 ? 'focus.parkPlaceholderShort' : 'focus.parkPlaceholder'); };
+    window.addEventListener('resize', fitHint);
+    offVisibility = () => { document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('pagehide', onHide); window.removeEventListener('resize', fitHint); };
 
     let lastTick = Date.now();
     ticker = setInterval(() => {

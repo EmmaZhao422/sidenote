@@ -10,12 +10,12 @@ const RULES = {
   urge: [
     /\b(instagram|insta|tiktok|youtube|netflix|twitter|reddit|snapchat|discord|video ?games?|gaming|play a game|snack|hungry|starving|boba|nap|scroll|sleepy|so tired|exhausted|wanna|want to (go home|sleep|leave|quit|stop))\b/i,
     /\b(check|grab|look at|pick up|get) my phone\b/i,
-    /(刷(手机|抖音|小红书|微博|视频|b站|B站|朋友圈)?|玩手机|(看|拿|摸).{0,3}手机|想.{0,4}手机|抖音|小红书|朋友圈|微博|b站|B站|(打|玩).{0,3}游戏|开黑|王者|原神|零食|奶茶|好饿|饿了|想吃|外卖|睡一会|想睡|好困|困死|好累|累死|追剧|短视频|想回家|不想学)/,
+    /(刷(手机|抖音|小红书|微博|视频|短视频|剧|b站|B站|朋友圈|一会|会儿|一下)|玩手机|(看|拿|摸).{0,3}手机|想.{0,4}手机|抖音|小红书|朋友圈|微博|b站|B站|(打|玩).{0,3}游戏|开黑|王者|原神|零食|奶茶|好饿|饿了|想吃|外卖|睡一会|想睡|好困|困死|好累|累死|追剧|短视频|想回家|不想学)/,
   ],
   worry: [
     /\b(worried|worry|anxious|anxiety|afraid|scared|what if|stress|stressed|nervous|fail|failing|behind|overwhelmed|lonely|sad|tired of|hate|can't do|embarrass|regret|too late|not good enough|mad at me|annoyed with me|bad at|not cut out|not smart enough|too dumb|so stupid|give up|never going to|never gonna)\b/i,
     /^why am i (so|like|always)\b/i,
-    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|考不上|考不过|过不了|上不了岸|没戏|没希望|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我|不适合|是不是不|学不会|听不懂|看不懂|太难了|我不行|好笨|没救)/,
+    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|要挂|挂了|挂掉|会挂|考不好|考不上|考不过|过不了|上不了岸|没戏|没希望|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我|不适合|是不是不|学不会|听不懂|看不懂|太难了|我不行|好笨|没救)/,
   ],
   todo: [
     /^(i )?(need to|have to|must|gotta|should|remember to|don't forget|dont forget|todo|to-do)\b/i,
@@ -53,6 +53,8 @@ export function classify(text) {
   const s = String(text || '').trim();
   if (!s) return 'other';
   const asked = /[?？]\s*$/.test(s);
+  // "Idea: …" / "点子：…" says what it is; believe the label over the words after it.
+  if (/^(idea|点子|想法|灵感)\s*[:：]/i.test(s)) return 'idea';
   if (!asked && TODO_OPENERS.some((re) => re.test(s))) return 'todo';
   for (const cat of asked ? ORDER_WHEN_ASKED : ORDER) {
     if (RULES[cat].some((re) => re.test(s))) return cat;

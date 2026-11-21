@@ -784,3 +784,8 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
 h1[tabindex="-1"]:focus { outline: none; }
 /* the ring sits inside a chosen option, on its fill: pink reads on both the dark and the light fill */
 .seg-btn[aria-checked="true"]:focus-visible { outline-color: #F2678B; }
+
+/* The heading over the parked list can be longer than a narrow phone: let the row wrap. */
+@media (max-width: 26rem) {
+  .margin-top { flex-wrap: wrap; row-gap: 0; }
+}

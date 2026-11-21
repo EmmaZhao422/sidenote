@@ -49,6 +49,7 @@ const ZH = [
   ['想喝奶茶', 'urge'], ['看一眼手机', 'urge'], ['想回家', 'urge'], ['点个外卖', 'urge'],
   // from a walk-through as a student preparing for the postgraduate entrance exam
   ['我是不是根本考不上', 'worry'], ['B 树和 B+ 树到底差在哪', 'question'], ['水卡是不是没带', 'question'],
+  ['我统计学考试肯定要挂了', 'worry'], ['点子：做一个地铁上用的刷题小程序', 'idea'], ['今晚要刷两套真题', 'other'], ['idea: a flashcard app for the subway', 'idea'],
   ['要不要做个 408 错题小程序', 'idea'], ['想刷会儿小红书', 'urge'], ['妈妈让我周末回电话', 'todo'], ['二战会不会又考不过', 'worry'],
   ['这道题的时间复杂度对不对', 'question'], ['进程和线程有什么不同', 'question'],
   ['手机好像没电了', 'other'], ['妈妈周五生日', 'other'], ['外面下雪了', 'other'], ['刚才那首歌叫什么来着', 'other'],

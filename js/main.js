@@ -3,7 +3,7 @@
 
 import { store } from './store.js';
 import { t, getLang } from './i18n.js';
-import { toast, loadChineseHand, hasChinese } from './ui.js';
+import { toast, loadChineseHand, hasChinese, clearAnnounce } from './ui.js';
 import { CONFIG } from './config.js';
 import { applyTheme } from './theme.js';
 import { breakTimer } from './breaktimer.js';
@@ -88,7 +88,7 @@ function render(quiet = false) {
   // (set before the screen is drawn: the study screen puts its countdown in front of it)
   const screen = { '': '', focus: t('nav.focus'), margin: t('nav.margin'), summary: t('nav.summary'), scenes: t('nav.scenes'), settings: t('nav.settings'), review: t('review.title') }[name] || '';
   document.title = screen ? `${screen} · ${getLang() === 'zh' ? CONFIG.siteNameZh : CONFIG.siteName}` : t('site.title');
-  if (quiet !== true) foldAll();
+  if (quiet !== true) { foldAll(); clearAnnounce(); }
 
   view.className = `view view-${name || 'home'}`;
   if (name === 'review') destroy = reviewView(view, navigate, arg) || null;

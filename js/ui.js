@@ -89,8 +89,18 @@ export function announce(message) {
     document.body.append(el);
   }
   el.textContent = '';
+  clearTimeout(announceTimer);
   // (a changed text node is announced more reliably than a replaced one)
   setTimeout(() => { el.textContent = message; }, 50);
+  // Stale text left in a live region gets read again by anyone browsing the page.
+  announceTimer = setTimeout(() => { el.textContent = ''; }, 6000);
+}
+let announceTimer = 0;
+
+export function clearAnnounce() {
+  clearTimeout(announceTimer);
+  const el = document.getElementById('sr-status');
+  if (el) el.textContent = '';
 }
 
 export function toast(message, ms = 2600) {
