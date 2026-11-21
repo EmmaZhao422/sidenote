@@ -153,5 +153,17 @@ export function offlineReply(thought) {
     const engine = getLang() === 'zh' ? 'https://cn.bing.com/search?q=' : 'https://www.google.com/search?q=';
     links.push({ label: t('offline.search'), url: engine + encodeURIComponent(thought.text) });
   }
+  // No AI connected here, but most students have one a tap away. These links open
+  // it with the thought already typed in, on the student's own account.
+  if (category !== 'urge') {
+    const ask = encodeURIComponent(askPrompt(thought.text));
+    links.push({ label: t('offline.askClaude'), url: `https://claude.ai/new?q=${ask}` });
+    links.push({ label: t('offline.askChatgpt'), url: `https://chatgpt.com/?q=${ask}` });
+  }
   return { text: t(`offline.${category}`), source: 'offline', category, links };
+}
+
+// The short request sent along when a thought is handed to an outside AI chat
+export function askPrompt(text) {
+  return t('offline.askPrompt', { text: String(text).slice(0, 500) });
 }

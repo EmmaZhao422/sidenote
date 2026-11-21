@@ -6,7 +6,7 @@ import { h, renderText, toast, whenLabel, dayLabel } from '../ui.js';
 import { t } from '../i18n.js';
 import { store } from '../store.js';
 import { CATEGORIES, looksLikeCrisis } from '../classify.js';
-import { resolveThought, offlineReply, aiMode } from '../ai.js';
+import { resolveThought, offlineReply, aiMode, askPrompt } from '../ai.js';
 import { breakTimer } from '../breaktimer.js';
 
 // opts.onChange()  called when the note is marked done / reopened / deleted
@@ -46,6 +46,15 @@ export function noteCard(thoughtId, opts = {}) {
     (thought.reply.links || []).forEach((l) => {
       replyBox.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
     });
+    // ...or copy the same request, to paste into whichever AI app the student uses
+    if (thought.reply.source === 'offline' && thought.category !== 'urge') {
+      replyBox.append(h('button', {
+        type: 'button', class: 'btn btn-quiet note-link',
+        onclick: async () => {
+          try { await navigator.clipboard.writeText(askPrompt(thought.text)); toast(t('offline.copied')); } catch { toast(t('offline.copyFailed')); }
+        },
+      }, t('offline.copy')));
+    }
     replyBox.append(renderText(thought.reply.text));
     if (thought.reply.source === 'offline' && aiMode() === 'offline' && thought.category === 'question') {
       replyBox.append(h('p', { class: 'hint' }, t('note.connectHint'), ' ', h('a', { href: '#/settings' }, t('note.connectLink'))));

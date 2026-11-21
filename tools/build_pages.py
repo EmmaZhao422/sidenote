@@ -729,6 +729,7 @@ page('privacy.html', 'en', 'Privacy', 'What Sidenote stores, what it sends, and 
     <ul>
       <li><strong>Hosting:</strong> the site is served by GitHub Pages, which logs technical information such as IP addresses.</li>
       <li><strong>Fonts:</strong> the typefaces are files on this site. No request goes to a font service.</li>
+      <li><strong>"Search the web", "Ask Claude" and "Ask ChatGPT":</strong> these buttons open the other site in a new tab with the text of that one thought in the link. Nothing is sent unless you press the button, and what happens next is covered by that site's own privacy policy.</li>
     </ul>
     <p>Sidenote doesn't run its own analytics or tracking scripts.</p>
 
@@ -770,6 +771,7 @@ page('zh/privacy.html', 'zh', '隐私', '走神本存了什么，发送了什么
     <ul>
       <li><strong>托管：</strong>网站由 GitHub Pages 提供访问，它会记录 IP 地址等技术信息。</li>
       <li><strong>字体：</strong>字体文件就放在本站，不会向任何字体服务发请求。</li>
+      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
     </ul>
     <p>走神本自己不运行任何统计或追踪脚本。</p>
 
