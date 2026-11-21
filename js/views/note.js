@@ -137,10 +137,17 @@ export function noteCard(thoughtId, opts = {}) {
   // A worry is sorted by one question: can I do something about it? Two buttons
   // answer it, so the student is not left facing an empty box.
   if (wantsLine && thought.category === 'worry' && reply && reply.source === 'offline' && !looksLikeCrisis(thought.text)) {
+    // Until the question is answered, the step box and the days stay out of sight:
+    // shown at once, they made "Yes, there is a step" look like it did nothing.
+    if (!thought.note && !thought.due && !thought.queued) card.classList.add('is-asking');
     card.append(h('div', { class: 'note-sort', role: 'group', 'aria-label': t('worry.ask') },
       h('button', {
         type: 'button', class: 'chip',
-        onclick: () => { const el = card.querySelector('.note-line'); el.placeholder = t('worry.stepPlaceholder'); el.focus(); },
+        onclick: (e) => {
+          card.classList.remove('is-asking');
+          e.currentTarget.setAttribute('aria-pressed', 'true');
+          const el = card.querySelector('.note-line'); el.placeholder = t('worry.stepPlaceholder'); el.focus();
+        },
       }, t('worry.can')),
       h('button', {
         type: 'button', class: 'chip', 'aria-pressed': String(Boolean(thought.notToday)),

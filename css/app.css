@@ -843,3 +843,5 @@ h1[tabindex="-1"]:focus { outline: none; }
 /* The reading list: twelve underlines in a column were heavy */
 .guide-list a { text-decoration-color: var(--rule-strong); text-underline-offset: 0.25em; }
 .guide-list a:hover { text-decoration-color: currentColor; }
+/* A worry first asks one question; the step box and the days appear once it is answered */
+.note.is-asking .note-line, .note.is-asking .note-when { display: none; }
