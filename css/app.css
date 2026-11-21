@@ -105,6 +105,9 @@ a:hover { color: var(--ink); }
 .foot nav { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin-top: 0.5rem; }
 .foot a { color: var(--ink-2); }
 
+/* Inside the Claude app the article pages aren't included, so their links are hidden */
+body.in-claude-app .foot nav, body.in-claude-app .guides-band { display: none; }
+
 /* ---------- shared pieces ---------- */
 
 .lede { font-size: 1.12rem; color: var(--ink-2); max-width: 44rem; margin-top: 0.7rem; }
@@ -405,7 +408,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 
 .view-settings .card { max-width: 44rem; }
 .ai-status { font-weight: 600; padding: 0.5rem 0.8rem; border-radius: 8px; background: var(--paper); border-left: 4px solid var(--rule-strong); }
-.ai-status[data-mode="site"], .ai-status[data-mode="own-key"] { border-left-color: #2E9E6B; }
+.ai-status[data-mode="site"], .ai-status[data-mode="own-key"], .ai-status[data-mode="claude"] { border-left-color: #2E9E6B; }
 .view-settings .row { margin-top: 1rem; }
 
 /* ---------- articles and plain pages (guides, about, privacy, terms) ---------- */

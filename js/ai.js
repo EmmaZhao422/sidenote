@@ -4,6 +4,8 @@
 //              key stays on the server; the browser never sees it.
 //   'own-key'  the visitor pasted their own API key in Settings. Requests go
 //              straight from their browser to the provider.
+//   'claude'   the site is running as a page inside the Claude app (a private
+//              preview). Claude answers directly; no key is involved.
 //   'offline'  no AI connected. The built-in helper sorts the thought and
 //              suggests a next step, but cannot answer questions.
 
@@ -17,8 +19,26 @@ export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-5-5';
 const ANTHROPIC_VERSION = '2026-10-21';
 const TIMEOUT_MS = 30000;
 
+// Inside the Claude app, pages are handed a `claude.use('sample')` function that
+// asks Claude. It arrives a moment after the page loads, or not at all.
+let askClaude = null;
+
+export function insideClaudeApp() {
+  return typeof window !== 'undefined' && Boolean(window.claude && typeof window.claude.use === 'function');
+}
+
+export function connectClaudeApp(onReady) {
+  if (!insideClaudeApp()) return;
+  window.claude.use('sample').then((sample) => {
+    if (!sample) return;
+    askClaude = sample;
+    onReady?.();
+  }).catch(() => { /* not available in this view */ });
+}
+
 export function aiMode() {
   if (store.state.settings.ai.key) return 'own-key';
+  if (askClaude) return 'claude';
   if (CONFIG.ai.proxyUrl) return 'site';
   return 'offline';
 }
@@ -53,6 +73,12 @@ async function callModel(task, input) {
   if (mode === 'site') {
     const data = await postJSON(CONFIG.ai.proxyUrl, {}, { task, input, lang });
     return String(data.text || '');
+  }
+
+  if (mode === 'claude') {
+    const p = buildPrompt(task, input, lang);
+    const reply = await askClaude(`${p.system}\n\n${p.user}`, { modelTier: 'quick', cache: false });
+    return String((reply && reply.text) || '');
   }
 
   const ai = store.state.settings.ai;

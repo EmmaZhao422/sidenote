@@ -43,7 +43,7 @@ test('keys built at runtime exist too', () => {
     'setup.modeHint.paper', 'setup.modeHint.screen',
     ...['up', 'down', 'flat'].flatMap((x) => [`recap.trend.${x}`, `summary.trend.${x}`]),
     ...['narrow', 'medium', 'wide'].map((x) => `recap.breadth.${x}`),
-    ...['offline', 'site', 'own-key'].map((x) => `settings.ai.status.${x}`),
+    ...['offline', 'site', 'own-key', 'claude'].map((x) => `settings.ai.status.${x}`),
   ];
   for (const key of dynamic) {
     assert.ok(key in DICT.en, `en: ${key}`);

@@ -80,7 +80,7 @@ export function homeView(root, navigate) {
 
   // --- reading
   const guideBase = lang === 'zh' ? 'guides/zh/' : 'guides/';
-  const guides = h('section', { class: 'band' },
+  const guides = h('section', { class: 'band guides-band' },
     h('h2', null, t('home.guidesTitle')),
     h('ul', { class: 'guide-list' }, GUIDES.map((g) =>
       h('li', null, h('a', { href: `${guideBase}${g.slug}.html` }, lang === 'zh' ? g.zh : g.en)))));

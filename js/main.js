@@ -6,6 +6,7 @@ import { t, getLang } from './i18n.js';
 import { CONFIG } from './config.js';
 import { applyTheme } from './theme.js';
 import { startAnalytics } from './analytics.js';
+import { connectClaudeApp, insideClaudeApp } from './ai.js';
 import { homeView } from './views/home.js';
 import { sessionView } from './views/session.js';
 import { marginView, reviewView } from './views/margin.js';
@@ -92,8 +93,19 @@ document.getElementById('lang-toggle').addEventListener('click', () => {
 });
 
 // Keep a copy of the site for when the connection drops (see sw.js)
-if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
-  navigator.serviceWorker.register('sw.js').catch(() => { /* offline copy is a bonus, not a requirement */ });
+try {
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+    navigator.serviceWorker.register('sw.js').catch(() => { /* offline copy is a bonus, not a requirement */ });
+  }
+} catch { /* some embedded views don't allow it */ }
+
+// When the site is opened as a page inside the Claude app, Claude can answer directly.
+if (insideClaudeApp()) {
+  document.body.classList.add('in-claude-app');
+  connectClaudeApp(() => {
+    // Redraw so buttons and status reflect the connection, unless a study block is on screen
+    if (route().name !== 'focus') render();
+  });
 }
 
 // Follow the device when it switches between light and dark

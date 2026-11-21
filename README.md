@@ -33,7 +33,7 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/classify.js` | Sorts a thought into question / to-do / worry / idea / urge |
 | `js/score.js` | Focus score, totals for the summary, scene recommendation |
 | `js/audio.js`, `js/backdrop.js` | The soundscapes and the moving backdrop |
-| `js/ai.js`, `js/prompts.js` | Talking to the AI model, and what it is told |
+| `js/ai.js`, `js/prompts.js` | Talking to the AI model (site proxy, a visitor's own key, or Claude itself when the page is opened inside the Claude app), and what it is told |
 | `js/i18n.js` | Every piece of interface text, in both languages |
 | `js/ads.js` | Ad placements (off until configured) |
 | `js/theme.js` | Light and dark theme switch |
