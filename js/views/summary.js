@@ -121,6 +121,18 @@ export function summaryView(root) {
         })), { labelEvery: every, unit: t('unit.minShort') }));
     }
 
+    // ---- what the time went on
+    let byGoal = null;
+    if (stats.byGoal.length > 1) {
+      byGoal = h('section', { class: 'card' },
+        h('h2', null, t('summary.goalsTitle')),
+        barList(stats.byGoal.slice(0, 6).map((g) => ({
+          label: g.goal || t('focus.noGoal'),
+          value: g.minutes,
+          tip: t('summary.goalTip', { goal: g.goal || t('focus.noGoal'), time: minutesText(g.minutes), n: g.blocks }),
+        })), { wide: true, unit: t('unit.minShort') }));
+    }
+
     // ---- what the stray thoughts were about
     let kinds = null;
     let timing = null;
@@ -191,7 +203,7 @@ export function summaryView(root) {
       shareCardButton(() => ({ stats, rec, rangeLabel: t(`summary.${rangeKey}`) })),
       h('span', { class: 'hint' }, t('share.hint')));
 
-    mount(body, sampleNote, ranges, tiles, share, recap, perDay,
+    mount(body, sampleNote, ranges, tiles, share, recap, perDay, byGoal,
       h('div', { class: 'two-col' }, kinds, timing), scenes, blocks,
       h('p', { class: 'hint' }, t('summary.scoreExplain')));
   }

@@ -164,7 +164,25 @@ export function aggregate(state, range) {
     wanderPer25: wanderPer25 === null ? null : Math.round(wanderPer25 * 10) / 10,
     goals,
     longestMin: Math.round(Math.max(0, ...sessions.map((s) => s.focusSec || 0)) / 60),
+    byGoal: minutesByGoal(sessions),
   };
+}
+
+// Focus minutes per goal, largest first. Goals are matched as typed, ignoring
+// case and extra spaces, so "Stats PS 6" and "stats ps 6" count as one.
+export function minutesByGoal(sessions) {
+  const map = new Map();
+  sessions.forEach((s) => {
+    const label = String(s.goal || '').trim().replace(/\s+/g, ' ');
+    const key = label.toLowerCase();
+    const row = map.get(key) || { goal: label, minutes: 0, blocks: 0 };
+    row.minutes += (s.focusSec || 0) / 60;
+    row.blocks += 1;
+    map.set(key, row);
+  });
+  return [...map.values()]
+    .map((r) => ({ ...r, minutes: Math.round(r.minutes) }))
+    .sort((a, b) => b.minutes - a.minutes);
 }
 
 // Today's totals and the run of consecutive days with at least one block.

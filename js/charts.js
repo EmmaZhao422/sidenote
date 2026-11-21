@@ -35,11 +35,12 @@ export function columnChart(data, options = {}) {
 
 // Horizontal bars for comparing a handful of named things.
 // rows: [{ label, value, tip }]
-export function barList(rows) {
+// options.wide: long labels (goals) get their own line above the bar
+export function barList(rows, options = {}) {
   const max = Math.max(1, ...rows.map((r) => r.value));
-  const list = h('div', { class: 'bars', role: 'list' }, rows.map((r, i) =>
+  const list = h('div', { class: options.wide ? 'bars bars-wide' : 'bars', role: 'list' }, rows.map((r, i) =>
     h('div', { class: 'bar-row', role: 'listitem', tabindex: i === 0 ? '0' : '-1', 'aria-label': r.tip, dataset: { tip: r.tip } },
-      h('span', { class: 'bar-label' }, r.label),
+      h('span', { class: 'bar-label', dir: 'auto' }, r.label),
       h('span', { class: 'bar-track' }, h('span', { class: 'bar-fill', style: `width:${(r.value / max) * 100}%` })),
       h('span', { class: 'bar-value' }, String(r.value)))));
   arrowKeys(list);

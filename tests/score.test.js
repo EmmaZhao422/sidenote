@@ -119,3 +119,12 @@ test('streak counts consecutive days and survives a day with no block yet', () =
   assert.equal(habit([block(noon(2026, 10, 19))], now).streak, 0);
   assert.equal(habit([], now).streak, 0);
 });
+
+test('focus time is grouped by goal, ignoring case and spacing', async () => {
+  const { minutesByGoal } = await import('../js/score.js');
+  const rows = minutesByGoal([
+    { goal: 'Stats PS 6', focusSec: 1500 }, { goal: 'stats  ps 6 ', focusSec: 1500 },
+    { goal: 'Essay outline', focusSec: 2700 }, { goal: '', focusSec: 600 },
+  ]);
+  assert.deepEqual(rows.map((r) => [r.goal, r.minutes, r.blocks]), [['Stats PS 6', 50, 2], ['Essay outline', 45, 1], ['', 10, 1]]);
+});

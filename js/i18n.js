@@ -315,6 +315,8 @@ const en = {
 
   // summary
   'summary.title': 'Summary',
+  'summary.goalsTitle': 'What the time went on',
+  'summary.goalTip': '{goal}: {time} in {n} {n|block|blocks}',
   'share.button': 'Make a picture to share',
   'share.hint': 'Numbers only. Nothing you typed is on it.',
   'share.heading': 'My study time, {range}',
@@ -754,6 +756,8 @@ const zh = {
   'recap.sceneEarly': '目前看「{scene}」比较适合你（平均专注分 {score}），不过只有一两轮的数据，还说不准。',
 
   'summary.title': '总结',
+  'summary.goalsTitle': '时间花在了什么上',
+  'summary.goalTip': '{goal}：{time}，共 {n} 轮',
   'share.button': '生成一张分享图',
   'share.hint': '只有数字，你写的内容不会出现在图上。',
   'share.heading': '我的学习时间 · {range}',
