@@ -28,7 +28,21 @@ export function sessionView(root, navigate) {
   const active = () => store.state.active;
   const save = (patch) => store.setActive({ ...active(), ...patch });
 
+  // Phones lock their screen after a minute or so, which would stop the sound and
+  // look like the student left. A "wake lock" asks the device to stay on.
+  let wakeLock = null;
+  async function keepAwake() {
+    try {
+      if ('wakeLock' in navigator && !document.hidden) wakeLock = await navigator.wakeLock.request('screen');
+    } catch { /* not supported or refused (low battery): the block still works */ }
+  }
+  function letSleep() {
+    wakeLock?.release?.().catch(() => {});
+    wakeLock = null;
+  }
+
   function cleanupStage() {
+    letSleep();
     clearInterval(ticker);
     clearInterval(heartbeat);
     ticker = heartbeat = 0;
@@ -427,8 +441,11 @@ export function sessionView(root, navigate) {
     input.focus();
     if (!a.pausedAt) audio.play(a.scene, 2);
 
+    keepAwake();
+
     // Leaving the tab while studying on paper counts as drifting.
     const onVisibility = () => {
+      if (!document.hidden) keepAwake(); // the lock is dropped whenever the page is hidden
       const cur = active();
       if (!cur || cur.stage !== 'focus' || cur.pausedAt) return;
       if (document.hidden) {

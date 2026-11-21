@@ -60,9 +60,60 @@ export function createBackdrop(canvas) {
     }
   }
 
+  // One quiet fixed element per scene, so each place is recognisable at a glance
+  function drawSetting() {
+    if (kind === 'embers') {
+      // the glow of the hearth, flickering
+      const flicker = 0.5 + 0.12 * Math.sin(t * 7.3) + 0.08 * Math.sin(t * 12.1 + 1);
+      const glow = g.createRadialGradient(w / 2, h * 1.05, 0, w / 2, h * 1.05, Math.max(w, h) * 0.55);
+      glow.addColorStop(0, `rgba(255,150,60,${0.55 * flicker})`);
+      glow.addColorStop(1, 'rgba(255,150,60,0)');
+      g.fillStyle = glow;
+      g.fillRect(0, 0, w, h);
+    } else if (kind === 'stars') {
+      // a moon
+      const x = w * 0.84, y = h * 0.2, r = Math.min(w, h) * 0.045;
+      const halo = g.createRadialGradient(x, y, r * 0.5, x, y, r * 5);
+      halo.addColorStop(0, 'rgba(220,225,255,0.22)');
+      halo.addColorStop(1, 'rgba(220,225,255,0)');
+      g.fillStyle = halo;
+      g.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
+      g.fillStyle = 'rgba(240,242,255,0.9)';
+      g.beginPath();
+      g.arc(x, y, r, 0, Math.PI * 2);
+      g.fill();
+    } else if (kind === 'leaves') {
+      // a line of treetops, swaying very slightly
+      g.fillStyle = 'rgba(8,22,18,0.55)';
+      g.beginPath();
+      g.moveTo(0, h);
+      for (let x = 0; x <= w; x += 8) {
+        const y = h * 0.88 - Math.abs(Math.sin(x * 0.013)) * h * 0.07
+          - Math.abs(Math.sin(x * 0.031 + 2)) * h * 0.035 - Math.sin(x * 0.004 + t * 0.15) * 3;
+        g.lineTo(x, y);
+      }
+      g.lineTo(w, h);
+      g.closePath();
+      g.fill();
+    } else if (kind === 'dust') {
+      // light from a reading lamp
+      const lamp = g.createRadialGradient(w * 0.2, -h * 0.1, 0, w * 0.2, -h * 0.1, h * 1.1);
+      lamp.addColorStop(0, 'rgba(255,214,150,0.28)');
+      lamp.addColorStop(1, 'rgba(255,214,150,0)');
+      g.fillStyle = lamp;
+      g.fillRect(0, 0, w, h);
+    } else if (kind === 'rails') {
+      // the top and bottom edge of the carriage window
+      g.fillStyle = 'rgba(255,255,255,0.06)';
+      g.fillRect(0, h * 0.56, w, 2);
+      g.fillRect(0, h * 0.74, w, 2);
+    }
+  }
+
   function frame() {
     t += 0.016;
     g.clearRect(0, 0, w, h);
+    drawSetting();
     if (kind === 'waves') drawWaves();
     const p = preset;
     for (const part of parts) {

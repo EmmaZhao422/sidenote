@@ -37,6 +37,7 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/i18n.js` | Every piece of interface text, in both languages |
 | `js/ads.js` | Ad placements (off until configured) |
 | `js/theme.js` | Light and dark theme switch |
+| `js/analytics.js` | Optional visit counter (off until configured) |
 | `js/charts.js`, `js/recap.js`, `js/sample.js` | Charts, the written recap, and example data for the summary page |
 | `worker/` | The Cloudflare Worker that keeps the API key off the website |
 | `guides/`, `about.html`, `privacy.html`, `terms.html`, `zh/` | Articles and plain pages |

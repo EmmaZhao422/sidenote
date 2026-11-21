@@ -29,6 +29,12 @@ export const CONFIG = {
     },
   },
 
+  analytics: {
+    // Optional visit counter. Paste the token from Cloudflare Web Analytics
+    // (dash.cloudflare.com > Analytics & Logs > Web Analytics) to switch it on.
+    cloudflareToken: '',
+  },
+
   // Optional "Support this project" link (Ko-fi, Buy Me a Coffee, 爱发电...).
   supportUrl: '',
 };

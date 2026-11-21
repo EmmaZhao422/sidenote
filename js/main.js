@@ -5,6 +5,7 @@ import { store } from './store.js';
 import { t, getLang } from './i18n.js';
 import { CONFIG } from './config.js';
 import { applyTheme } from './theme.js';
+import { startAnalytics } from './analytics.js';
 import { homeView } from './views/home.js';
 import { sessionView } from './views/session.js';
 import { marginView, reviewView } from './views/margin.js';
@@ -101,3 +102,4 @@ window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change',
 window.addEventListener('hashchange', render);
 store.subscribe(updateCount);
 render();
+startAnalytics();

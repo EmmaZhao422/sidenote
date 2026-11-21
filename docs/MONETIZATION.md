@@ -59,6 +59,10 @@ ads: {
 
 见 [SETUP-AI.md](SETUP-AI.md)。
 
+### 6.（可选）装一个访问统计
+
+想知道每天有多少人来，可以用 Cloudflare Web Analytics：免费，官方说不用 cookie ⚠（以它的文档为准）。在 Cloudflare 后台「Analytics & Logs → Web Analytics」添加网站，把给你的 token 填进 `js/config.js` 的 `analytics.cloudflareToken`。开了之后，把 `privacy.html` 和 `zh/privacy.html` 里「不运行任何统计脚本」那句改成实际情况。
+
 ## 能赚多少（粗算）
 
 广告收入 ≈ 月浏览量 ÷ 1000 × RPM。第三方文章给的 AdSense 平均 RPM 是每千次浏览 2 到 6 美元 ⚠，学生受众可能偏低。

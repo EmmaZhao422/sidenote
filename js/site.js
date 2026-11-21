@@ -2,8 +2,10 @@
 // placement, if ads are switched on in config.js.
 import { adSlot } from './ads.js';
 import { applyTheme, savedTheme } from './theme.js';
+import { startAnalytics } from './analytics.js';
 
 applyTheme(savedTheme());
+startAnalytics();
 
 document.querySelectorAll('[data-ad]').forEach((el) => {
   const ad = adSlot(el.dataset.ad);
