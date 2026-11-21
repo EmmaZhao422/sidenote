@@ -160,7 +160,8 @@ export function shareCardButton(getData) {
   const btn = h('button', {
     type: 'button', class: 'btn btn-quiet',
     onclick: async () => {
-      btn.disabled = true;
+      if (btn.getAttribute('aria-busy') === 'true') return;
+      btn.setAttribute('aria-busy', 'true');
       try {
         const { stats, rec, rangeLabel, streak } = getData();
         const canvas = await drawShareCard(stats, rec, rangeLabel, { streak });
@@ -183,12 +184,13 @@ export function shareCardButton(getData) {
               }, t('share.copy')) : null,
             ].filter(Boolean)));
           preview.hidden = false;
-          preview.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          preview.scrollIntoView({ block: 'nearest' });
+          preview.querySelector('a, button')?.focus(); // the picture is ready: the cursor goes to Save
         }
       } catch {
         toast(t('share.failed'));
       }
-      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
     },
   }, t('share.button'));
   return [btn, preview];

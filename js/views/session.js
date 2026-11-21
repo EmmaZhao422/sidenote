@@ -5,7 +5,7 @@
 // The block in progress is kept in store.state.active, with real timestamps,
 // so the timer stays correct in a background tab and survives a reload.
 
-import { h, mount, toast, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
+import { h, mount, toast, announce, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store, TAB_ID } from '../store.js';
 import { startBlock, heldElsewhere, settleCarried, takeFresh } from '../block.js';
@@ -131,7 +131,11 @@ export function sessionView(root, navigate) {
       isPreset ? draft.minutes : 'other',
       (v) => {
         customWrap.hidden = v !== 'other';
-        if (v === 'other') { custom.value = String(draft.minutes); custom.focus(); custom.select(); }
+        if (v === 'other') {
+          custom.value = String(draft.minutes);
+          const byKeyboard = document.activeElement?.matches?.('.seg-btn:focus-visible');
+          if (!byKeyboard) { custom.focus(); custom.select(); }
+        }
         else draft.minutes = v;
       });
 
@@ -150,6 +154,21 @@ export function sessionView(root, navigate) {
         },
       }, sceneName(sc, lang), sc.id === bestId ? h('span', { class: 'scene-best' }, t('setup.yourBest')) : null);
       sceneGrid.append(btn);
+    });
+    // one Tab stop, arrows move and choose (the same as every other option group)
+    const chips = () => [...sceneGrid.querySelectorAll('.scene-chip')];
+    const rove = () => chips().forEach((b) => { b.tabIndex = b.getAttribute('aria-checked') === 'true' ? 0 : -1; });
+    rove();
+    sceneGrid.addEventListener('click', rove);
+    sceneGrid.addEventListener('keydown', (e) => {
+      const all = chips();
+      const at = all.indexOf(document.activeElement);
+      const to = { ArrowRight: at + 1, ArrowDown: at + 1, ArrowLeft: at - 1, ArrowUp: at - 1, Home: 0, End: all.length - 1 }[e.key];
+      if (to === undefined || at < 0) return;
+      e.preventDefault();
+      const next = all[(to + all.length) % all.length];
+      next.focus();
+      next.click();
     });
     const blurb = h('p', { class: 'hint' }, sceneBlurb(getScene(draft.scene), lang));
 
@@ -340,7 +359,7 @@ export function sessionView(root, navigate) {
 
     const toSettle = h('button', {
       type: 'button', class: 'btn btn-paper',
-      onclick: () => { savePlan(); save({ settling: true }); drawPhase(); },
+      onclick: () => { savePlan(); save({ settling: true }); drawPhase(); title.tabIndex = -1; title.focus(); },
     }, t('prep.planReady'));
     const startNow = h('button', { type: 'button', class: 'btn btn-ghost', onclick: beginFocus }, t('prep.startNow'));
     const foot = h('div', { class: 'stage-foot' });
@@ -405,7 +424,10 @@ export function sessionView(root, navigate) {
     const drawTimer = () => {
       const text = clock((plannedMs - elapsedMs()) / 1000);
       // one fixed-width box per character so the digits don't jiggle
-      timer.replaceChildren(...[...text].map((ch) => h('span', { class: ch === ':' ? 'timer-colon' : 'timer-digit' }, ch)));
+      timer.replaceChildren(...[...text].map((ch) => h('span', { class: ch === ':' ? 'timer-colon' : 'timer-digit', 'aria-hidden': 'true' }, ch)));
+      // read out as a time, not as five separate characters
+      const [mm, ss] = text.split(':').map(Number);
+      timer.setAttribute('aria-label', t('focus.timeLeftSaid', { m: mm, s: ss }));
       document.title = `${text} · ${baseTitle}`;
     };
 
@@ -450,7 +472,7 @@ export function sessionView(root, navigate) {
           h('span', null, x.text),
           h('button', {
             type: 'button', class: 'margin-peek-x', 'aria-label': t('focus.peekRemove', { text: x.text.slice(0, 40) }), title: t('note.delete'),
-            onclick: () => { store.deleteThought(x.id); if (!mine().length) peek.hidden = true; drawMargin(); input.focus(); },
+            onclick: () => { store.deleteThought(x.id); if (!mine().length) peek.hidden = true; drawMargin(); input.focus(); announce(t('note.deleted', { text: x.text.slice(0, 60) })); },
           }, '×'))));
         peek.scrollTop = peek.scrollHeight;
       }
@@ -480,7 +502,7 @@ export function sessionView(root, navigate) {
     // pause / end
     const pauseBtn = h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => togglePause() });
     const endBtn = h('button', { type: 'button', class: 'btn btn-ghost', onclick: () => finish() }, t('focus.end'));
-    const pausedBanner = h('p', { class: 'paused-banner', hidden: true }, t('focus.paused'));
+    const pausedBanner = h('p', { class: 'paused-banner', role: 'status', hidden: true }, t('focus.paused'));
     const endsAt = h('p', { class: 'ends-at' });
 
     function drawPause() {
@@ -489,6 +511,7 @@ export function sessionView(root, navigate) {
       pauseBtn.textContent = paused ? t('focus.resume') : t('focus.pause');
       pausedBanner.hidden = !paused;
       timer.classList.toggle('is-paused', paused);
+      backdrop?.setRunning?.(!paused);
       // The clock time the block ends, so a glance at a watch is enough
       endsAt.hidden = paused;
       endsAt.textContent = t('focus.endsAt', { time: timeLabel(Date.now() + plannedMs - elapsedMs(cur)) });
@@ -566,13 +589,18 @@ export function sessionView(root, navigate) {
     const wake = () => {
       paper.classList.remove('is-resting');
       clearTimeout(restTimer);
-      restTimer = setTimeout(() => { if (!input.value) { paper.classList.add('is-resting'); if (!peek.hidden) showPeek(false); } }, 8000);
+      restTimer = setTimeout(() => {
+        if (input.value) return;
+        if (peek.contains(document.activeElement) || count === document.activeElement) { wake(); return; } // someone is reading the list
+        paper.classList.add('is-resting');
+        if (!peek.hidden) showPeek(false);
+      }, 8000);
     };
-    ['keydown', 'pointerdown', 'pointermove'].forEach((ev) => window.addEventListener(ev, wake, { passive: true }));
+    ['keydown', 'pointerdown', 'pointermove', 'focusin'].forEach((ev) => window.addEventListener(ev, wake, { passive: true }));
     wake();
     offActivity = () => {
       clearTimeout(restTimer);
-      ['keydown', 'pointerdown', 'pointermove'].forEach((ev) => window.removeEventListener(ev, wake));
+      ['keydown', 'pointerdown', 'pointermove', 'focusin'].forEach((ev) => window.removeEventListener(ev, wake));
     };
 
     // Leaving the tab while studying on paper counts as drifting.
@@ -642,10 +670,17 @@ export function sessionView(root, navigate) {
       { value: 'no', label: t('wrap.no') },
     ], null, (v) => { answers.finished = v; check(); });
 
-    const saveBtn = h('button', { type: 'button', class: 'btn btn-ink btn-big', disabled: true, onclick: commit },
+    // The button is never taken out of the Tab order: while an answer is missing it
+    // is marked unavailable, says why, and sends the cursor to the unanswered question.
+    const saveBtn = h('button', { type: 'button', class: 'btn btn-ink btn-big', 'aria-disabled': 'true', 'aria-describedby': 'wrap-need',
+      onclick: () => {
+        if (answers.rating && answers.finished) { commit(); return; }
+        announce(t('wrap.need'));
+        (answers.rating ? finished : rating).querySelector('[tabindex="0"]')?.focus();
+      } },
       parked ? t('wrap.saveAndSort', { n: parked }) : t('wrap.save'));
-    const need = h('p', { class: 'hint wrap-need' }, t('wrap.need'));
-    const check = () => { saveBtn.disabled = !(answers.rating && answers.finished); need.hidden = !saveBtn.disabled; };
+    const need = h('p', { class: 'hint wrap-need', id: 'wrap-need' }, t('wrap.need'));
+    const check = () => { const ready = Boolean(answers.rating && answers.finished); saveBtn.setAttribute('aria-disabled', String(!ready)); need.hidden = ready; };
 
     function commit() {
       const cur = active();
@@ -699,7 +734,7 @@ export function sessionView(root, navigate) {
     const discard = h('button', {
       type: 'button', class: 'linklike',
       onclick: () => {
-        if (!armed) { armed = true; discard.textContent = t('wrap.discardSure'); return; }
+        if (!armed) { armed = true; discard.textContent = t('wrap.discardSure'); announce(t('wrap.discardSure')); return; }
         // The parked thoughts are kept; only the block itself is thrown away.
         store.state.thoughts.filter((x) => x.sessionId === a.id)
           .forEach((x) => store.updateThought(x.id, { sessionId: null, offsetSec: null }));
@@ -710,7 +745,7 @@ export function sessionView(root, navigate) {
       },
     }, t('wrap.discard'));
 
-    const wrapTitle = h('h1', { tabindex: '-1', role: 'status', 'aria-live': 'polite' }, t('wrap.title'));
+    const wrapTitle = h('h1', { tabindex: '-1' }, t('wrap.title'));
     showStage(scene,
       h('div', { class: 'wrap-card' },
         // focus lands here, and screen readers announce it: the chime alone is not enough

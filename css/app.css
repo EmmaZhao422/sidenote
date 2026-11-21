@@ -25,6 +25,8 @@
   --ink-3: #5C6682;
   --rule: #D5DDF0;
   --rule-strong: #AEBBDD;
+  --field-edge: #8592B8;   /* the outline of a text field: 3:1 against the page */
+  --focus: #2B4FD0;
   --margin: #E2466B;
   --hl: #FFE566;
   --mint: #A6EBC9;
@@ -52,6 +54,8 @@
   --ink-3: #98A2BF;
   --rule: #2A3454;
   --rule-strong: #4A5680;
+  --field-edge: #6A77A3;
+  --focus: #FFE566;
   --margin: #F2678B;
   --mint: #5FD3A0;
   --blue: #9DB2FF;
@@ -82,7 +86,8 @@ a { color: var(--blue); text-underline-offset: 0.18em; }
 a:hover { color: var(--ink); }
 [hidden] { display: none !important; }
 
-:focus-visible { outline: 3px solid var(--hl); outline-offset: 2px; box-shadow: 0 0 0 1px var(--ink); border-radius: 4px; }
+/* The ring is blue on light surfaces and yellow on dark ones: either way at least 3:1 against what is behind it */
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .skip { position: absolute; left: -999px; top: 0; background: var(--ink); color: var(--paper); padding: 0.5rem 1rem; z-index: 50; }
@@ -214,7 +219,7 @@ select.field { appearance: auto; }
 }
 .hero-demo:hover { color: #F3F5FB; }
 .demo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.demo-scene { position: relative; padding: 0.9rem 1.1rem 0; font-size: 0.82rem; color: rgba(243, 245, 251, 0.75); }
+.demo-scene { position: relative; padding: 0.9rem 1.1rem 0; font-size: 0.82rem; color: rgba(243, 245, 251, 0.9); }
 .demo-timer { position: relative; align-self: center; justify-self: center; font-family: var(--display); font-weight: 800; font-size: clamp(3.4rem, 9vw, 4.6rem); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
 .demo-margin { position: relative; display: block; margin: 0 1rem; background: var(--paper); color: var(--ink); border-left: 4px solid var(--margin); border-radius: 0 10px 0 0; padding: 0.6rem 0.9rem 0.8rem; }
 .demo-margin-title { display: block; font-family: var(--display); font-weight: 800; font-size: 0.85rem; margin-bottom: 0.15rem; }
@@ -342,7 +347,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .stage {
   /* The study screens look the same in both themes: a dark scene with one piece of light paper */
   --paper: #F5F7FC; --sheet: #FFFFFF; --ink: #18213D; --ink-2: #485272; --ink-3: #5C6682;
-  --rule: #D5DDF0; --rule-strong: #AEBBDD; --margin: #E2466B; --blue: #2B4FD0; --danger: #B3264A;
+  --rule: #D5DDF0; --rule-strong: #AEBBDD; --margin: #E2466B; --blue: #2B4FD0; --danger: #B3264A; --field-edge: #8592B8; --focus: #FFE566;
   position: fixed; inset: 0; overflow-y: auto; color: #F3F5FB; color-scheme: light;
   background: linear-gradient(165deg, var(--sky-a, #1b2033), var(--sky-b, #313a57));
   transition: background 0.6s;
@@ -352,20 +357,20 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .stage-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.8rem 2rem; }
 .stage-title { font-size: 1.6rem; }
 .stage-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem; }
-.stage-hint { color: rgba(243, 245, 251, 0.75); font-size: 0.95rem; margin: 0.3rem 0 0.9rem; }
+.stage-hint { color: rgba(243, 245, 251, 0.9); font-size: 0.95rem; margin: 0.3rem 0 0.9rem; }
 .stage-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0.7rem; padding-bottom: 1.6rem; }
 .stage .btn { font-size: 0.95rem; }
 
-.volume { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(243, 245, 251, 0.8); }
+.volume { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: rgba(243, 245, 251, 0.92); }
 .stage-foot .volume { margin-left: auto; }
 .volume input, #vol { accent-color: var(--hl); width: 7rem; }
 
 .field-dark { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.28); color: #fff; max-width: none; margin-bottom: 0.55rem; }
-.field-dark::placeholder { color: rgba(243, 245, 251, 0.5); }
+.field-dark::placeholder { color: rgba(243, 245, 251, 0.82); }
 .field-dark:focus { border-color: #fff; }
 
 /* prep */
-.prep-count { margin: 0; font-size: 1rem; color: rgba(243, 245, 251, 0.8); }
+.prep-count { margin: 0; font-size: 1rem; color: rgba(243, 245, 251, 0.92); }
 .prep-clock { font-family: var(--display); font-weight: 800; font-size: 1.7rem; color: #fff; font-variant-numeric: tabular-nums; margin-left: 0.3rem; }
 .prep-body { align-self: center; width: 100%; max-width: 60rem; margin: 0 auto; }
 .prep-plan { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 2rem 3rem; }
@@ -393,19 +398,19 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .timer { font-family: var(--display); font-weight: 800; font-size: clamp(5rem, 21vw, 13.5rem); line-height: 0.95; letter-spacing: -0.02em; display: flex; justify-content: center; }
 .timer-digit { display: inline-block; width: 0.6em; text-align: center; }
 .timer-colon { display: inline-block; width: 0.28em; text-align: center; opacity: 0.65; }
-.timer.is-paused { opacity: 0.45; }
-.ends-at { margin: 0; font-size: 0.95rem; color: rgba(243, 245, 251, 0.72); font-variant-numeric: tabular-nums; }
+.timer.is-paused { opacity: 0.7; }
+.ends-at { margin: 0; font-size: 0.95rem; color: rgba(243, 245, 251, 0.9); font-variant-numeric: tabular-nums; }
 .lock-note { max-width: 24rem; font-size: 0.85rem; margin: 0.4rem 0 0; }
 .paused-banner { margin: 0; background: var(--hl); color: var(--on-hl); padding: 0.3rem 0.8rem; border-radius: 6px; font-weight: 600; }
 .focus-steps { list-style: none; padding: 0; margin: 0.6rem 0 0; display: grid; gap: 0.35rem; text-align: left; font-size: 1.05rem; }
 .focus-steps li { display: flex; align-items: baseline; gap: 0.6rem; }
 .focus-steps input { accent-color: var(--hl); width: 1.05rem; height: 1.05rem; flex: none; translate: 0 0.12rem; }
-.focus-steps input:checked + label { text-decoration: line-through; opacity: 0.6; }
+.focus-steps input:checked + label { text-decoration: line-through; opacity: 0.85; }
 
 /* the margin strip: the one piece of paper on the dark screen */
 .margin { width: 100%; max-width: 46rem; margin: 0 auto; background: var(--paper); color: var(--ink); border-left: 4px solid var(--margin); border-radius: 0 12px 0 0; padding: 0.85rem 1.1rem calc(1.1rem + env(safe-area-inset-bottom)) 1.2rem; transition: opacity 1.2s, filter 1.2s; }
 /* after a few idle seconds the paper dims, so it is not a bright rectangle beside your book at night */
-.margin.is-resting { opacity: 0.78; filter: saturate(0.7); }
+.margin.is-resting { opacity: 0.9; filter: saturate(0.7); }
 .margin-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.3rem; min-width: 0; }
 .margin-title { font-family: var(--display); font-weight: 800; white-space: nowrap; }
 .margin-count { font: inherit; font-size: 0.88rem; color: var(--ink-3); white-space: nowrap; flex: none; margin-left: auto; background: none; border: 0; padding: 0.15rem 0.2rem; border-radius: 4px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 0.2em; }
@@ -530,7 +535,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .scene-card { background: linear-gradient(150deg, var(--sky-a), var(--sky-b)); color: #F3F5FB; border-radius: 14px; padding: 1.2rem 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 0.2rem; min-height: 12.5rem; }
 .scene-card h2 { font-size: 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .scene-card p { margin: 0.2rem 0; font-size: 0.93rem; color: rgba(243, 245, 251, 0.85); }
-.scene-card .scene-stat { font-size: 0.82rem; color: rgba(243, 245, 251, 0.65); }
+.scene-card .scene-stat { font-size: 0.82rem; color: rgba(243, 245, 251, 0.9); }
 .scene-card .row { margin-top: auto; padding-top: 0.8rem; }
 .scene-card .btn { padding: 0.42rem 0.8rem; font-size: 0.88rem; }
 /* on the paler scenes a see-through button washes out, so give it its own dark backing */
@@ -700,8 +705,8 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .ask-menu { display: inline-block; }
 .ask-menu > summary { list-style: none; display: inline-flex; align-items: center; gap: 0.35rem; cursor: pointer; }
 .ask-menu > summary::-webkit-details-marker { display: none; }
-.ask-menu > summary::after { content: "▾"; font-size: 0.8em; color: var(--ink-3); }
-.ask-menu[open] > summary::after { content: "▴"; }
+.ask-menu > summary::after { content: "▾" / ""; font-size: 0.8em; color: var(--ink-3); }
+.ask-menu[open] > summary::after { content: "▴" / ""; }
 .ask-menu[open] { display: block; }
 .ask-menu-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; padding-left: 0.6rem; border-left: 2px solid var(--rule-strong); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
@@ -746,3 +751,32 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
   .margin { padding-top: 0.5rem; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); margin-bottom: 0; }
   .stage-hint, .lock-note { display: none; }
 }
+
+/* light paper inside the dark study screen: the ring goes back to blue there */
+.stage .margin, .stage .wrap-card, .hero-demo .demo-margin { --focus: #2B4FD0; }
+/* text fields and selects get an edge you can see */
+.field:not(.field-dark):not(:focus) { border-color: var(--field-edge); }
+.note[data-status="done"] { border-left-color: #2E9E6B; }
+:root[data-theme="dark"] .note[data-status="done"] { border-left-color: var(--mint); }
+.note-sort-more { display: inline-block; padding-block: 0.35rem; }
+.margin-peek-x { outline-offset: -3px; }
+
+/* phones: a focused control is scrolled clear of the fixed tab bar */
+@media (max-width: 52rem) {
+  html { scroll-padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+  html:has(body.has-break) { scroll-padding-bottom: calc(8.5rem + env(safe-area-inset-bottom)); }
+}
+
+/* Windows contrast themes: state that was carried by a fill is carried by system colours */
+@media (forced-colors: active) {
+  .seg-btn[aria-checked="true"], .chip[aria-pressed="true"], .scene-chosen { background: Highlight; color: HighlightText; forced-color-adjust: none; }
+  .scene-chip[aria-checked="true"] { outline: 3px solid Highlight; outline-offset: 2px; }
+  .nav a[aria-current="page"] { text-decoration: underline; text-decoration-thickness: 3px; }
+  .bar-fill, .col-bar, .week-bar { background: CanvasText; forced-color-adjust: none; }
+  .note-kind, .note-due, .hero-after-what { border: 1px solid CanvasText; }
+}
+.btn[aria-disabled="true"] { opacity: 0.5; cursor: default; }
+.btn[aria-busy="true"] { opacity: 0.7; cursor: progress; }
+.test-result { margin: 0.8rem 0 0; font-weight: 600; }
+.test-result.is-bad { color: var(--danger); }
+h1[tabindex="-1"]:focus { outline: none; }

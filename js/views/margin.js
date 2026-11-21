@@ -28,6 +28,21 @@ function sortAllButton(getIds, goalFor, refresh) {
   return btn;
 }
 
+// Where a thought's card sits in the list, and putting the cursor back at that
+// place after the list is redrawn (the next card, or the heading if none is left).
+function placeOf(body, id) {
+  return [...body.querySelectorAll('.note')].findIndex((n) => n.dataset.id === id);
+}
+function focusPlace(body, at) {
+  if (at < 0) return;
+  const cards = [...body.querySelectorAll('.note')];
+  const card = cards[Math.min(at, cards.length - 1)];
+  const target = card ? card.querySelector('select, button, a, textarea') : body.querySelector('h2');
+  if (!target) return;
+  if (!card) target.tabIndex = -1;
+  target.focus();
+}
+
 function goalOf(thought) {
   const s = store.state.sessions.find((x) => x.id === thought.sessionId);
   return s ? s.goal : '';
@@ -83,7 +98,7 @@ export function marginView(root) {
     list.forEach((x) => {
       const day = dayLabel(x.createdAt, 'long');
       if (day !== lastDay) { notes.append(h('h2', { class: 'notes-day' }, day)); lastDay = day; }
-      notes.append(noteCard(x.id, { goal: goalOf(x), onChange: (what) => { if (what === 'status') draw(); } }));
+      notes.append(noteCard(x.id, { goal: goalOf(x), onChange: (what) => { if (what === 'status') { const at = placeOf(body, x.id); draw(); focusPlace(body, at); } } }));
     });
 
     mount(body, tools, notes);
@@ -137,7 +152,7 @@ export function reviewView(root, navigate, sessionId) {
     const planned = open.filter(isPlanned);
     const unanswered = undecided.filter((x) => !x.reply);
     const card = (x) => noteCard(x.id, {
-      goal: session.goal, onChange: (what) => { if (what === 'status') draw(); else if (what === 'due') draw(x.id); },
+      goal: session.goal, onChange: (what) => { if (what === 'status') { const at = placeOf(body, x.id); draw(); focusPlace(body, at); } else if (what === 'due') draw(x.id); },
     });
     const notes = h('div', { class: 'notes' });
     if (!mine.length) {
@@ -162,7 +177,8 @@ export function reviewView(root, navigate, sessionId) {
       notes);
     if (focusId) {
       const el = [...body.querySelectorAll('.note')].find((n) => n.dataset.id === focusId);
-      el?.querySelector('.note-change, .note-when .chip[aria-pressed="true"], .note-when .chip')?.focus({ preventScroll: true });
+      el?.querySelector('.note-change, .note-when .chip[aria-pressed="true"], .note-when .chip')?.focus();
+      el?.scrollIntoView({ block: 'nearest' });
     }
   }
 

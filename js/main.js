@@ -87,6 +87,10 @@ function render(quiet = false) {
   if (name === 'review') destroy = reviewView(view, navigate, arg) || null;
   else destroy = (ROUTES[name] || homeView)(view, navigate, render) || null;
 
+  // each screen has its own title, so tabs and screen readers can tell them apart
+  const screen = { '': '', focus: t('nav.focus'), margin: t('nav.margin'), summary: t('nav.summary'), scenes: t('nav.scenes'), settings: t('nav.settings'), review: t('review.title') }[name] || '';
+  if (!(name === 'focus' && store.state.active)) document.title = screen ? `${screen} · ${getLang() === 'zh' ? CONFIG.siteNameZh : CONFIG.siteName}` : t('site.title');
+
   updateCount();
   if (keepY !== null) {
     window.scrollTo(0, keepY);
@@ -94,7 +98,11 @@ function render(quiet = false) {
     window.scrollTo(0, 0);
     // Keyboard and screen-reader users land on the new screen: on the field the screen
     // itself put the cursor in, if it did, and otherwise on the screen as a whole.
-    if (!view.contains(document.activeElement) || document.activeElement === view) view.focus({ preventScroll: true });
+    if (!view.contains(document.activeElement) || document.activeElement === view) {
+      // the screen's own heading, so what is read out is its name and not the whole page
+      const head = view.querySelector('h1');
+      if (head) { head.tabIndex = -1; head.focus({ preventScroll: true }); } else view.focus({ preventScroll: true });
+    }
   }
   firstRender = false;
 }

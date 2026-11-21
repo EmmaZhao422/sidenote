@@ -35,20 +35,23 @@ export function scenesView(root) {
       const stat = statFor(sc.id);
       const isDefault = store.state.settings.scene === sc.id;
       const isPlaying = audio.currentId === sc.id;
+      const refocus = (which) => grid.querySelector(`[data-scene="${sc.id}"][data-act="${which}"]`)?.focus();
       const play = sc.id === 'silence' ? null : h('button', {
-        type: 'button', class: 'btn btn-paper', 'aria-pressed': String(isPlaying),
+        type: 'button', class: 'btn btn-paper', dataset: { scene: sc.id, act: 'play' },
+        'aria-label': t(isPlaying ? 'scenes.stopNamed' : 'scenes.listenNamed', { scene: sceneName(sc, lang) }),
         onclick: async () => {
-          if (audio.currentId === sc.id) { audio.stop(0.5); draw(); return; }
+          if (audio.currentId === sc.id) { audio.stop(0.5); draw(); refocus('play'); return; }
           audio.setVolume(store.state.settings.volume);
           const ok = await audio.play(sc.id, 1);
           if (!ok) toast(t('scenes.noAudio'));
           draw();
+          refocus('play');
         },
       }, isPlaying ? t('scenes.stop') : t('scenes.listen'));
       // the chosen scene carries a tag, not a greyed-out button that looks broken
       const choose = isDefault ? h('span', { class: 'scene-chosen' }, t('scenes.isDefault')) : h('button', {
-        type: 'button', class: 'btn btn-ghost',
-        onclick: () => { store.setSettings({ scene: sc.id }); toast(t('scenes.chosen', { scene: sceneName(sc, lang) })); draw(); },
+        type: 'button', class: 'btn btn-ghost', 'aria-label': t('scenes.useNamed', { scene: sceneName(sc, lang) }),
+        onclick: () => { store.setSettings({ scene: sc.id }); toast(t('scenes.chosen', { scene: sceneName(sc, lang) })); draw(); refocus('play'); },
       }, t('scenes.use'));
 
       return h('article', { class: 'scene-card', style: `--sky-a:${sc.sky[0]};--sky-b:${sc.sky[1]}` },

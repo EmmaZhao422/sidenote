@@ -80,6 +80,19 @@ function inline(text) {
 }
 
 let toastTimer = 0;
+// Says something to screen-reader users without showing it: "Done: buy milk",
+// "Removed", "Kind changed to Worry". One quiet region for the whole app.
+export function announce(message) {
+  let el = document.getElementById('sr-status');
+  if (!el) {
+    el = h('div', { id: 'sr-status', class: 'sr-only', role: 'status', 'aria-live': 'polite' });
+    document.body.append(el);
+  }
+  el.textContent = '';
+  // (a changed text node is announced more reliably than a replaced one)
+  setTimeout(() => { el.textContent = message; }, 50);
+}
+
 export function toast(message, ms = 2600) {
   let el = document.getElementById('toast');
   if (!el) {
@@ -149,12 +162,21 @@ export function segmented(name, options, value, onChange) {
   }
   wrap.addEventListener('keydown', (e) => {
     const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
-    if (!step) return;
+    const edge = { Home: 0, End: buttons.length - 1 }[e.key];
+    if (!step && edge === undefined) return;
     e.preventDefault();
     const at = buttons.indexOf(document.activeElement);
-    const next = buttons[(at + step + buttons.length) % buttons.length];
+    const next = edge !== undefined ? buttons[edge] : buttons[(at + step + buttons.length) % buttons.length];
+    const place = [...document.querySelectorAll('[role="radiogroup"]')].indexOf(wrap);
     next.focus();
     next.click();
+    // Choosing may have redrawn the screen, this group included (even in another
+    // language). Put the cursor back on the chosen option of the group in its place.
+    if (!next.isConnected) {
+      const groups = [...document.querySelectorAll('[role="radiogroup"]')];
+      const again = groups.find((g) => g.getAttribute('aria-label') === name) || groups[place];
+      again?.querySelector('[aria-checked="true"]')?.focus();
+    }
   });
   wrap.setValue = mark;
   mark(value);

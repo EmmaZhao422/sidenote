@@ -206,6 +206,9 @@ export function summaryView(root) {
       h('div', { class: 'row' }, shareBtn, h('span', { class: 'hint' }, t('share.hint'))),
       sharePreview);
 
+    // each chart and table is named after the heading above it
+    const named = (sec) => { const head = sec?.querySelector?.('h2'); if (head) sec.querySelectorAll('[role="list"], table').forEach((el) => el.setAttribute('aria-label', head.textContent)); return sec; };
+    [perDay, byGoal, kinds, timing, scenes, blocks].forEach((sec) => { if (sec && sec.querySelector) named(sec); });
     mount(body, sampleNote, ranges, tiles, share, recap, perDay, byGoal,
       h('div', { class: 'two-col' }, kinds, timing), scenes, blocks,
       h('p', { class: 'hint' }, t('summary.scoreExplain')));

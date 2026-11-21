@@ -1,6 +1,6 @@
 // Settings: language, the AI connection, and your data.
 
-import { h, mount, toast, segmented } from '../ui.js';
+import { h, mount, toast, announce, segmented } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { aiMode, testConnection, DEFAULT_ANTHROPIC_MODEL } from '../ai.js';
@@ -19,6 +19,7 @@ export function settingsView(root, navigate, rerenderAll) {
       { value: 'en', label: 'English' },
       { value: 'zh', label: '中文' },
     ], getLang(), (v) => { store.setSettings({ lang: v }); rerenderAll(); }));
+  language.querySelectorAll('.seg-btn').forEach((b, i) => { b.lang = i === 0 ? 'en' : 'zh-CN'; });
 
   // ---- appearance
   const appearance = h('section', { class: 'card' },
@@ -43,7 +44,7 @@ export function settingsView(root, navigate, rerenderAll) {
     h('p', { class: 'hint' }, t('settings.reminder.hint')),
     h('div', { class: 'row' },
       h('label', { class: 'label', for: 'rem-time' }, t('settings.reminder.time')), remTime,
-      h('label', { class: 'visually-hidden', for: 'rem-days' }, t('settings.reminder.days')), remDays),
+      h('label', { class: 'label', for: 'rem-days' }, t('settings.reminder.days')), remDays),
     h('div', { class: 'row' }, h('button', {
       type: 'button', class: 'btn btn-quiet',
       onclick: () => {
@@ -82,7 +83,7 @@ export function settingsView(root, navigate, rerenderAll) {
   const provider = h('select', { class: 'field', id: 'ai-provider' },
     h('option', { value: 'anthropic', selected: s.ai.provider === 'anthropic' }, 'Anthropic (Claude)'),
     h('option', { value: 'openai-compatible', selected: s.ai.provider === 'openai-compatible' }, t('settings.ai.compatible')));
-  const key = h('input', { type: 'password', class: 'field', id: 'ai-key', autocomplete: 'off', value: s.ai.key, placeholder: 'sk-…' });
+  const key = h('input', { type: 'password', class: 'field', id: 'ai-key', autocomplete: 'off', value: s.ai.key, placeholder: 'sk-…', 'aria-describedby': 'ai-test-result' });
   const baseUrl = h('input', { type: 'url', class: 'field', id: 'ai-base', value: s.ai.baseUrl, placeholder: 'https://api.openai.com/v1' });
   const model = h('input', { type: 'text', class: 'field', id: 'ai-model', value: s.ai.model });
   const baseRow = h('div', null, h('label', { class: 'label', for: 'ai-base' }, t('settings.ai.baseUrl')), baseUrl);
@@ -99,21 +100,25 @@ export function settingsView(root, navigate, rerenderAll) {
     remember: remember.checked,
   });
 
+  const testResult = h('p', { class: 'test-result', id: 'ai-test-result', role: 'alert', hidden: true });
   const testBtn = h('button', {
     type: 'button', class: 'btn btn-quiet',
     onclick: async () => {
       saveAi();
       drawStatus();
-      if (aiMode() === 'offline') { toast(t('settings.ai.needKey')); return; }
-      testBtn.disabled = true;
+      // The result stays on the page, next to the field it is about
+      const say = (text, bad) => { testResult.textContent = text; testResult.hidden = false; testResult.classList.toggle('is-bad', bad); if (bad) key.setAttribute('aria-invalid', 'true'); else key.removeAttribute('aria-invalid'); };
+      if (aiMode() === 'offline') { say(t('settings.ai.needKey'), true); key.focus(); return; }
+      if (testBtn.getAttribute('aria-busy') === 'true') return;
+      testBtn.setAttribute('aria-busy', 'true'); // not `disabled`: that would drop the cursor
       testBtn.textContent = t('settings.ai.testing');
       try {
         await testConnection();
-        toast(t('settings.ai.ok'));
+        say(t('settings.ai.ok'), false);
       } catch (err) {
-        toast(t('settings.ai.failed', { detail: err.message || '' }));
+        say(t('settings.ai.failed', { detail: err.message || '' }), true);
       }
-      testBtn.disabled = false;
+      testBtn.removeAttribute('aria-busy');
       testBtn.textContent = t('settings.ai.test');
     },
   }, t('settings.ai.test'));
@@ -138,7 +143,8 @@ export function settingsView(root, navigate, rerenderAll) {
         h('button', {
           type: 'button', class: 'btn btn-quiet',
           onclick: () => { key.value = ''; saveAi(); drawStatus(); toast(t('settings.ai.removed')); },
-        }, t('settings.ai.remove')))));
+        }, t('settings.ai.remove'))),
+      testResult));
 
   // ---- sound
   const chime = h('input', { type: 'checkbox', id: 'chime', checked: s.chime, onchange: (e) => store.setSettings({ chime: e.target.checked }) });
@@ -182,6 +188,7 @@ export function settingsView(root, navigate, rerenderAll) {
             }, t('settings.importGo')),
             h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => { confirmBox.hidden = true; } }, t('settings.importCancel'))));
         confirmBox.hidden = false;
+        confirmBox.querySelector('button')?.focus(); // so Tab does not pass over "Erase everything" on the way
       } catch {
         toast(t('settings.importFailed'));
       }
@@ -193,7 +200,13 @@ export function settingsView(root, navigate, rerenderAll) {
   const clear = h('button', {
     type: 'button', class: 'btn btn-quiet btn-danger',
     onclick: () => {
-      if (!armed) { armed = true; clear.textContent = t('settings.clearSure'); setTimeout(() => { armed = false; clear.textContent = t('settings.clear'); }, 4000); return; }
+      if (!armed) {
+        armed = true;
+        clear.textContent = t('settings.clearSure');
+        announce(t('settings.clearSure'));
+        clear.addEventListener('blur', () => { armed = false; clear.textContent = t('settings.clear'); }, { once: true });
+        return;
+      }
       store.clearAll();
       toast(t('settings.cleared'));
       rerenderAll();

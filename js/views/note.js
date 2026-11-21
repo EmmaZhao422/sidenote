@@ -2,7 +2,7 @@
 // reply once asked for, and the buttons to deal with it. Used on the review
 // screen and in the margin list.
 
-import { h, renderText, toast, whenLabel, dayLabel } from '../ui.js';
+import { h, renderText, toast, announce, whenLabel, dayLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { CATEGORIES, looksLikeCrisis } from '../classify.js';
@@ -28,7 +28,7 @@ export function noteCard(thoughtId, opts = {}) {
   const thought = store.state.thoughts.find((x) => x.id === thoughtId);
   if (!thought) return h('div');
 
-  const card = h('article', { class: 'note', dataset: { status: thought.status, id: thought.id } });
+  const card = h('article', { class: 'note', dataset: { status: thought.status, id: thought.id }, 'aria-label': thought.text.slice(0, 80) });
   const redraw = (focus) => {
     const next = noteCard(thoughtId, opts);
     card.replaceWith(next);
@@ -68,7 +68,12 @@ export function noteCard(thoughtId, opts = {}) {
   // --- kind + when
   const kind = h('select', {
     class: 'note-kind', 'aria-label': t('note.kindLabel'), title: t('note.kindHint'),
-    onchange: (e) => { store.updateThought(thought.id, { category: e.target.value }); redraw(); opts.onChange?.('kind'); },
+    onchange: (e) => {
+      store.updateThought(thought.id, { category: e.target.value });
+      redraw('.note-kind');
+      announce(t('note.kindChanged', { kind: t(`cat.${e.target.value}`) }));
+      opts.onChange?.('kind');
+    },
   }, CATEGORIES.map((c) => h('option', { value: c, selected: c === thought.category }, t(`cat.${c}`))));
   // Parked during a block: say which minute of the block. Otherwise: the time of day.
   const meta = h('div', { class: 'note-meta' }, kind,
@@ -95,7 +100,7 @@ export function noteCard(thoughtId, opts = {}) {
     // One visible action per card: a search for questions, and "Ask an AI", which
     // opens to the student's choice of Claude, ChatGPT, or a copy for any other AI.
     const links = h('div', { class: 'note-links' });
-    const linkTo = (l) => h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer', title: t('offline.linkHint') }, l.label);
+    const linkTo = (l) => h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer', title: t('offline.linkHint') }, l.label, h('span', { class: 'sr-only' }, ` (${t('offline.newTab')})`));
     const safe = (reply.links || []).filter((l) => /^https:\/\//.test(l.url));
     const ai = safe.filter((l) => l.kind === 'ai');
     safe.filter((l) => l.kind !== 'ai').forEach((l) => links.append(linkTo(l)));
@@ -260,6 +265,7 @@ export function noteCard(thoughtId, opts = {}) {
       onclick: () => {
         if (thought.queued) store.removeFromNextPlan(thought.text);
         store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
+        announce(t('note.doneSaid', { text: thought.text.slice(0, 60) }));
         opts.onChange?.('status');
       },
     }, t('note.done'));
@@ -274,11 +280,15 @@ export function noteCard(thoughtId, opts = {}) {
       if (!armed) {
         armed = true;
         del.textContent = t('note.deleteSure');
-        setTimeout(() => { armed = false; del.textContent = t('note.delete'); }, 3000);
+        announce(t('note.deleteAsk', { text: thought.text.slice(0, 60) }));
+        // the question stays while the button has focus, and for a while after
+        setTimeout(() => { if (document.activeElement !== del) { armed = false; del.textContent = t('note.delete'); } }, 20000);
+        del.addEventListener('blur', () => { armed = false; del.textContent = t('note.delete'); }, { once: true });
         return;
       }
       if (thought.queued) store.removeFromNextPlan(thought.text);
       store.deleteThought(thought.id);
+      announce(t('note.deleted', { text: thought.text.slice(0, 60) }));
       opts.onChange?.('status');
     },
   }, t('note.delete'));

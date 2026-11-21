@@ -2,7 +2,7 @@
 // park a stray thought, and beside it a small live study screen where the
 // thought lands in the margin.
 
-import { h, mount, toast, clock, minutesText, dayLabel, isTouchDevice } from '../ui.js';
+import { h, mount, toast, announce, clock, minutesText, dayLabel, isTouchDevice } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { adSlot } from '../ads.js';
@@ -46,7 +46,7 @@ export function homeView(root, navigate) {
       demoList));
 
   // --- and what becomes of the thoughts afterwards: three examples, no AI needed
-  const after = h('div', { class: 'hero-after', 'aria-label': t('home.afterTitle') },
+  const after = h('div', { class: 'hero-after' },
     h('p', { class: 'hero-after-title' }, t('home.afterTitle')),
     h('ul', null, ['todo', 'question', 'urge'].map((k) => h('li', null,
       h('span', { class: 'hero-after-thought' }, t(`home.after.${k}`)),
@@ -64,7 +64,7 @@ export function homeView(root, navigate) {
   const parkedBox = h('div', { class: 'hero-parked', hidden: true });
   function showParked(id) {
     const thought = store.state.thoughts.find((x) => x.id === id);
-    if (!thought || thought.status === 'done') { parkedBox.hidden = true; mount(parkedBox); return; }
+    if (!thought || thought.status === 'done') { const had = parkedBox.contains(document.activeElement); parkedBox.hidden = true; mount(parkedBox); if (had) input.focus(); return; }
     mount(parkedBox,
       h('p', { class: 'hero-parked-head' }, t(real.length ? 'home.parkedHeadBack' : 'home.parkedHead')),
       noteCard(id, { onChange: (what) => { drawParked(false); drawTodo(); if (what === 'status') showParked(id); } }));
@@ -92,6 +92,7 @@ export function homeView(root, navigate) {
       input.value = '';
       drawParked(true);
       showParked(added.id);
+      announce(t('home.parkedSaid', { text: added.text.slice(0, 60) }));
     },
   }, input, h('button', { type: 'submit', class: 'btn btn-ink' }, t('park.button')));
 
@@ -263,7 +264,10 @@ export function homeView(root, navigate) {
     watcher.observe(demo);
   }
   let left = store.state.settings.focusMin * 60;
+  let ticks = 0;
   const tick = setInterval(() => {
+    ticks += 1;
+    if (ticks > 5) { clearInterval(tick); backdrop.setRunning(false); watcher?.disconnect(); return; }
     left = left > 1 ? left - 1 : store.state.settings.focusMin * 60;
     demoTimer.textContent = clock(left);
   }, 1000);

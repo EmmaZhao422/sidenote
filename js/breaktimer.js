@@ -26,7 +26,8 @@ function draw() {
     pill = h('div', { id: 'break-pill', class: 'break-pill', role: 'timer' },
       h('span', { class: 'break-pill-text' }),
       h('button', { type: 'button', class: 'linklike', onclick: () => breakTimer.stop() }, t('review.breakSkip')));
-    document.body.append(pill);
+    // early in the page, so a keyboard user reaches it without tabbing through everything
+    (document.querySelector('.page') || document.body).prepend(pill);
   }
   pill.hidden = !endsAt;
   document.body.classList.toggle('has-break', Boolean(endsAt)); // lifts toasts and the footer clear of the pill
@@ -60,6 +61,7 @@ export const breakTimer = {
     draw();
   },
   stop() {
+    if (pill && pill.contains(document.activeElement)) document.getElementById('view')?.focus();
     endsAt = 0;
     remember();
     clearInterval(ticker);
