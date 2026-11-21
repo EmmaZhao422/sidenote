@@ -724,3 +724,6 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
 /* the volume slider on a light page: a track you can see */
 #vol { accent-color: var(--ink); }
 :root[data-theme="dark"] #vol { accent-color: var(--hl); }
+/* a worry: one question, two answers */
+.note-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.5rem; margin-top: 0.7rem; }
+.note-sort-more { font-size: 0.85rem; margin-left: 0.3rem; }

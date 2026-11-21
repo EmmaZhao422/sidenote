@@ -124,6 +124,26 @@ export function noteCard(thoughtId, opts = {}) {
   // --- the student's own line: a guess, a next step, the idea in three lines.
   // Writing it is the "dealing with it", so it is offered as soon as the thought is opened up.
   const wantsLine = thought.status !== 'done' && thought.category !== 'urge' && (reply || thought.note);
+  // A worry is sorted by one question: can I do something about it? Two buttons
+  // answer it, so the student is not left facing an empty box.
+  if (wantsLine && thought.category === 'worry' && reply && reply.source === 'offline' && !looksLikeCrisis(thought.text)) {
+    card.append(h('div', { class: 'note-sort', role: 'group', 'aria-label': t('worry.ask') },
+      h('button', {
+        type: 'button', class: 'chip',
+        onclick: () => { const el = card.querySelector('.note-line'); el.placeholder = t('worry.stepPlaceholder'); el.focus(); },
+      }, t('worry.can')),
+      h('button', {
+        type: 'button', class: 'chip', 'aria-pressed': String(thought.note === t('worry.nothingNote')),
+        onclick: () => {
+          store.updateThought(thought.id, { note: t('worry.nothingNote') });
+          toast(t('worry.nothingToast'), 5000);
+          redraw('.note-when .chip');
+        },
+      }, t('worry.nothing')),
+      document.body.classList.contains('in-claude-app') ? null : h('a', {
+        class: 'note-sort-more', href: getLang() === 'zh' ? 'guides/zh/worry-while-studying.html' : 'guides/worry-while-studying.html',
+      }, t('worry.guide'))));
+  }
   if (wantsLine) {
     const line = h('textarea', {
       class: 'field note-line', rows: '1', maxlength: '400', dir: 'auto',

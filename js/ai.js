@@ -165,7 +165,10 @@ export function offlineReply(thought) {
     links.push({ label: t('offline.askClaude'), url: `https://claude.ai/new?q=${ask}`, kind: 'ai' });
     links.push({ label: t('offline.askChatgpt'), url: `https://chatgpt.com/?q=${ask}`, kind: 'ai' });
   }
-  return { text: t(`offline.${category}`), source: 'offline', category, links };
+  // An exam worry gets one more line: the step that most often helps with it
+  const examWorry = category === 'worry' && /\b(fail|exam|midterm|final|quiz|test|behind|grade)\b|考不|挂科|考试|期中|期末|落后|跟不上|来不及|成绩/i.test(thought.text);
+  const text = examWorry ? `${t('offline.worry')}\n\n${t('offline.worryExam')}` : t(`offline.${category}`);
+  return { text, source: 'offline', category, links };
 }
 
 // The short request sent along when a thought is handed to an outside AI chat
