@@ -73,6 +73,7 @@ function render(quiet = false) {
   destroy = null;
   // index.html hides its own home-page text on other screens until this first draw
   document.documentElement.classList.remove('is-deep');
+  window.__sidenoteUp = true; // tells the guard in index.html that the app's files loaded together
   applyTheme(store.state.settings.theme);
   applyLanguage();
   const { name, arg } = route();

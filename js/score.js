@@ -32,7 +32,9 @@ export function computeFocusScore(session) {
 
   const finishedValue = { yes: 100, partly: 60, no: 25 }[session.finished] ?? 60;
   const steps = (session.steps || []).filter((s) => s && s.text);
-  const done = steps.length
+  // "Yes, I finished" is taken at its word, ticked boxes or not. For "partly" and
+  // "no" the ticked steps fill in how far it got.
+  const done = steps.length && session.finished !== 'yes'
     ? 0.5 * finishedValue + 0.5 * (100 * steps.filter((s) => s.done).length) / steps.length
     : finishedValue;
 

@@ -70,7 +70,7 @@ export function marginView(root) {
       h('div', { class: 'row' },
         tab === 'open' && unanswered.length >= 2 && aiMode() !== 'offline'
           ? sortAllButton(() => unanswered.map((x) => x.id), goalOf, draw) : null,
-        tab === 'open' && aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null,
+        tab === 'open' && aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.status !== 'done' && x.category !== 'worry' && x.category !== 'urge')) : null,
         tab === 'open' && open.length
           ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null));
 
@@ -157,7 +157,7 @@ export function reviewView(root, navigate, sessionId) {
         h('h2', null, t('review.thoughtsTitle', { n: undecided.length })),
         h('div', { class: 'row' },
           unanswered.length >= 2 && aiMode() !== 'offline' ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
-          aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done' && !isPlanned(x))) : null,
+          aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done' && !isPlanned(x) && x.category !== 'worry' && x.category !== 'urge')) : null,
           open.length ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done')) : null)),
       notes);
     if (focusId) {
@@ -176,7 +176,9 @@ export function reviewView(root, navigate, sessionId) {
       type: 'button', class: 'btn btn-ink',
       title: t('review.againHint'),
       onclick: () => {
-        startBlock({ goal: session.goal, minutes: session.plannedMin, scene: session.scene, mode: session.mode, steps: leftover });
+        const { prepMin } = store.state.settings;
+        startBlock({ goal: session.goal, minutes: session.plannedMin, scene: session.scene, mode: session.mode, prep: 0, steps: leftover });
+        store.setSettings({ prepMin });
         navigate('#/focus');
       },
     }, t('review.again')) : null,
@@ -242,5 +244,7 @@ export function reviewView(root, navigate, sessionId) {
     breakBox,
     h('p', null, h('a', { href: '#/summary' }, t('review.toSummary'))));
   draw();
-  return stopWatching;
+  // this page shows the break itself, so the floating pill would only say it twice
+  document.body.classList.add('no-pill');
+  return () => { stopWatching(); document.body.classList.remove('no-pill'); };
 }

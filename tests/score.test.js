@@ -45,9 +45,11 @@ test('stopping early costs something', () => {
   assert.ok(computeFocusScore({ ...base, focusSec: 600 }).steady < 100);
 });
 
-test('unfinished steps lower the "done" part', () => {
-  const half = computeFocusScore({ ...base, steps: [{ text: 'a', done: true }, { text: 'b', done: false }] });
-  assert.equal(half.done, 75);
+test('"I finished" is taken at its word; for "partly" the ticked steps count', () => {
+  const steps = [{ text: 'a', done: true }, { text: 'b', done: false }];
+  assert.equal(computeFocusScore({ ...base, finished: 'yes', steps }).done, 100);
+  assert.equal(computeFocusScore({ ...base, finished: 'partly', steps }).done, 55);
+  assert.equal(computeFocusScore({ ...base, finished: 'partly', steps: [] }).done, 60);
 });
 
 test('totals for a range add up', () => {

@@ -54,7 +54,7 @@ export function askAllLink(getThoughts) {
   const list = getThoughts();
   if (list.length < 2 || url().length > MAX_LINK) return null;
   return h('a', {
-    class: 'btn btn-ink', href: url(), target: '_blank', rel: 'noopener noreferrer', title: t('handoff.askAllHint'),
+    class: 'btn btn-quiet', href: url(), target: '_blank', rel: 'noopener noreferrer', title: t('handoff.askAllHint'),
     onclick: (e) => { e.currentTarget.href = url(); },
   }, t('handoff.askAll', { n: list.length }));
 }

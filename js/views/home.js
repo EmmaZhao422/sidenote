@@ -75,10 +75,8 @@ export function homeView(root, navigate) {
     const open = openThoughts();
     const shown = open.slice(-3);
     // Before anything is parked, the miniature shows two examples in pencil
-    const items = shown.length
-      ? shown.map((x, i) => h('li', { class: justAdded && i === shown.length - 1 ? 'is-new' : null }, x.text))
-      : [h('li', { class: 'is-example' }, t('home.example1')), h('li', { class: 'is-example' }, t('home.example2'))];
-    mount(demoList, items);
+    // (always the two examples: real thoughts stay off a picture anyone nearby can read)
+    mount(demoList, [h('li', { class: 'is-example' }, t('home.example1')), h('li', { class: 'is-example' }, t('home.example2'))]);
     openLink.textContent = open.length ? t('home.openMargin', { n: open.length }) : '';
     openLink.hidden = !open.length;
   }
@@ -103,10 +101,12 @@ export function homeView(root, navigate) {
   const again = last && !active ? h('button', {
     type: 'button', class: 'btn btn-quiet btn-again',
     onclick: () => {
+      const { prepMin } = store.state.settings;
       startBlock({
-        goal: last.goal, minutes: last.plannedMin, scene: last.scene, mode: last.mode,
+        goal: last.goal, minutes: last.plannedMin, scene: last.scene, mode: last.mode, prep: 0,
         steps: (last.steps || []).filter((x) => !x.done).map((x) => x.text),
       });
+      store.setSettings({ prepMin }); // one tap skips the warm-up without changing the usual setting
       navigate('#/focus');
     },
   }, h('strong', null, t('home.again')),

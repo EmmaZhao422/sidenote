@@ -705,3 +705,18 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .ask-menu[open] { display: block; }
 .ask-menu-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; padding-left: 0.6rem; border-left: 2px solid var(--rule-strong); }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* while a break is running: toasts sit above the pill, and the page ends clear of it */
+body.has-break:not(.no-pill) .toast { bottom: 4.6rem; }
+body.has-break:not(.no-pill) .foot, body.has-break:not(.no-pill) .prose-foot { padding-bottom: 4.5rem; }
+body.no-pill .break-pill { display: none; }
+/* Chinese interface: one handwriting face for everything, so "B+ 树" and "408" do not switch fonts mid-line */
+html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi", "楷体", "Caveat", cursive; }
+.prep-first { font-family: var(--hand); font-size: 1.5rem; color: #F3F5FB; margin: 0.4rem 0 0; }
+.margin-peek { scrollbar-width: thin; }
+@media (max-width: 52rem) {
+  body.has-break:not(.no-pill) .toast { bottom: calc(8.4rem + env(safe-area-inset-bottom)); }
+  body.has-break:not(.no-pill) .foot { padding-bottom: calc(9rem + env(safe-area-inset-bottom)); }
+}
+.load-failed { border: 2px solid var(--danger); border-radius: var(--radius); padding: 1rem 1.2rem; margin-bottom: 1.5rem; max-width: 40rem; }
+.load-failed p { margin: 0 0 0.8rem; }

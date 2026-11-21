@@ -16,7 +16,7 @@ const watchers = new Set();
 
 function remember() {
   try {
-    if (endsAt) sessionStorage.setItem(KEY, String(endsAt)); else sessionStorage.removeItem(KEY);
+    if (endsAt) localStorage.setItem(KEY, String(endsAt)); else localStorage.removeItem(KEY);
   } catch { /* private mode: the break just won't survive a reload */ }
 }
 
@@ -29,6 +29,7 @@ function draw() {
     document.body.append(pill);
   }
   pill.hidden = !endsAt;
+  document.body.classList.toggle('has-break', Boolean(endsAt)); // lifts toasts and the footer clear of the pill
   pill.firstChild.textContent = `${t('break.pill')} ${clock(left)}`;
   pill.lastChild.textContent = t('review.breakSkip');
   watchers.forEach((fn) => fn(left));
@@ -73,7 +74,7 @@ export const breakTimer = {
   // Picks a running break back up after a reload
   resume() {
     try {
-      const saved = Number(sessionStorage.getItem(KEY));
+      const saved = Number(localStorage.getItem(KEY));
       if (saved > Date.now()) {
         endsAt = saved;
         ticker = setInterval(tick, 500);

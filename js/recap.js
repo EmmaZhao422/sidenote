@@ -16,19 +16,22 @@ export function localRecap(stats, rec) {
     time: minutesText(stats.focusMin),
     longest: minutesText(stats.longestMin),
   }));
-  if (stats.goals.length) lines.push(t('recap.goals', { goals: stats.goals.slice(0, 3).join(getLang() === 'zh' ? '、' : '; ') }));
+  if (stats.goals.length) lines.push(t('recap.goals', { goals: stats.goals.slice(0, 3).map((x) => (getLang() === 'zh' ? `「${x}」` : x)).join(getLang() === 'zh' ? '、' : '; ') }));
 
   if (stats.avgScore !== null) {
     let line = t('recap.score', { score: stats.avgScore });
-    if (stats.trend) line += ' ' + t(`recap.trend.${stats.trend}`);
+    if (stats.trend) line += (getLang() === 'zh' ? '' : ' ') + t(`recap.trend.${stats.trend}`);
     lines.push(line);
   }
 
   if (stats.thoughtCount) {
-    let line = t('recap.thoughts', { n: stats.thoughtCount, top: t(`cat.${stats.topCategory}`) });
+    // naming "the most common kind" from a handful of thoughts would be reading tea leaves
+    let line = stats.thoughtCount >= 5
+      ? t('recap.thoughts', { n: stats.thoughtCount, top: t(`cat.${stats.topCategory}`) })
+      : t('recap.thoughtsFew', { n: stats.thoughtCount });
     // A pattern needs enough thoughts behind it: five thoughts from one block are not one
     const b = stats.thoughtCount >= 8 ? breadthLabel(stats.breadth) : null;
-    if (b) line += ' ' + t(`recap.breadth.${b}`);
+    if (b) line += (getLang() === 'zh' ? '' : ' ') + t(`recap.breadth.${b}`);
     lines.push(line);
 
     const peak = stats.timing.indexOf(Math.max(...stats.timing));

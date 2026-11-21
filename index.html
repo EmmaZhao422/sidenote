@@ -97,6 +97,37 @@
     </nav>
   </footer>
 
+  <script>
+    // If the app's files fail to load together (for example, right after an update the
+    // browser can hold a mix of old and new files), say so instead of leaving a blank page.
+    (function () {
+      var told = false;
+      function tell() {
+        if (told || window.__sidenoteUp) return;
+        told = true;
+        var view = document.getElementById('view');
+        if (!view) return;
+        var zh = /^zh/i.test(navigator.language || '');
+        var box = document.createElement('div');
+        box.className = 'load-failed';
+        box.setAttribute('role', 'alert');
+        var p = document.createElement('p');
+        p.textContent = zh
+          ? '页面没能完整加载，可能是网站刚更新，浏览器里新旧文件混在了一起。你记下的内容都还在。等一分钟再重新加载。'
+          : 'The page did not load completely. The site may have just been updated, leaving your browser with a mix of old and new files. Your notes are safe. Wait a minute, then reload.';
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-ink';
+        btn.textContent = zh ? '重新加载' : 'Reload';
+        btn.onclick = function () { location.reload(); };
+        box.appendChild(p);
+        box.appendChild(btn);
+        view.insertBefore(box, view.firstChild);
+      }
+      window.addEventListener('error', function () { if (!window.__sidenoteUp) setTimeout(tell, 3000); }, true);
+      window.addEventListener('load', function () { setTimeout(tell, 8000); });
+    })();
+  </script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>

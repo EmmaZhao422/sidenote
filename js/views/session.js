@@ -335,6 +335,7 @@ export function sessionView(root, navigate) {
       h('div', { class: 'breath', 'aria-hidden': 'true' }, ring),
       breathWord,
       h('p', { class: 'stage-hint' }, t('prep.settleHint')),
+      h('p', { class: 'prep-first', dir: 'auto', hidden: true }),
     );
 
     const toSettle = h('button', {
@@ -349,6 +350,11 @@ export function sessionView(root, navigate) {
       body.replaceChildren(settling ? settlePhase : planPhase);
       foot.replaceChildren(...(settling ? [startNow] : [toSettle]), volumeControl());
       title.textContent = settling ? t('prep.settleTitle') : t('prep.title');
+      // the breathing screen says "look at your first step", so it shows it
+      const first = (active().steps || []).find((x) => x && x.text);
+      const firstLine = settlePhase.querySelector('.prep-first');
+      firstLine.textContent = first ? first.text : (active().goal || '');
+      firstLine.hidden = !firstLine.textContent;
     }
 
     const title = h('h1', { class: 'stage-title' }, t('prep.title'));
@@ -460,11 +466,11 @@ export function sessionView(root, navigate) {
       onsubmit: (e) => {
         e.preventDefault();
         const cur = active();
-        const offsetSec = cur.pausedAt ? null : Math.round(elapsedMs(cur) / 1000);
+        const offsetSec = Math.round(elapsedMs(cur) / 1000); // while paused: the minute the clock stopped at
         if (!store.addThought(input.value, { sessionId: cur.id, offsetSec })) return;
         input.value = '';
         drawMargin();
-        flash.textContent = t(window.innerWidth < 560 ? 'focus.parkedShort' : 'focus.parked');
+        flash.textContent = t(window.innerWidth < 560 || cur.pausedAt ? 'focus.parkedShort' : 'focus.parked');
         flash.classList.remove('is-on');
         void flash.offsetWidth; // restart the fade animation
         flash.classList.add('is-on');

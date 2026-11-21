@@ -66,8 +66,12 @@ export function settleCarried(carried = [], steps = null) {
     const thought = store.state.thoughts.find((x) => x.queued && x.text === text && x.status !== 'done');
     if (done) {
       if (thought) store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
-    } else {
-      store.addToNextPlan(text);
+    } else if (steps === null) {
+      store.addToNextPlan(text);      // the block was thrown away: it still waits for the next one
+    } else if (thought) {
+      // Not ticked off: it goes back to the list of thoughts instead of following
+      // the student into every block from now on.
+      store.updateThought(thought.id, { queued: false });
     }
   });
 }
