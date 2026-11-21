@@ -166,7 +166,7 @@ export function homeView(root, navigate) {
         h('h2', null, hb.todayBlocks
           ? t('home.today', { time: minutesText(hb.todayMinutes), n: hb.todayBlocks })
           : t('home.todayNone')),
-        h('p', null, hb.streak >= 2 ? t(hb.todayBlocks ? 'home.streakDone' : 'home.streak', { n: hb.streak }) : t('home.streakStart')),
+        hb.streak >= 2 ? h('p', null, t(hb.todayBlocks ? 'home.streakDone' : 'home.streak', { n: hb.streak })) : null,
         countdown),
       h('ol', { class: 'week', 'aria-label': t('home.weekLabel') }, hb.week.map((d) =>
         h('li', { title: `${dayLabel(d.day)}: ${minutesText(d.minutes)}` },

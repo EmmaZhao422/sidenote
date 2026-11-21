@@ -26,12 +26,13 @@ export function localRecap(stats, rec) {
 
   if (stats.thoughtCount) {
     let line = t('recap.thoughts', { n: stats.thoughtCount, top: t(`cat.${stats.topCategory}`) });
-    const b = breadthLabel(stats.breadth);
+    // A pattern needs enough thoughts behind it: five thoughts from one block are not one
+    const b = stats.thoughtCount >= 8 ? breadthLabel(stats.breadth) : null;
     if (b) line += ' ' + t(`recap.breadth.${b}`);
     lines.push(line);
 
     const peak = stats.timing.indexOf(Math.max(...stats.timing));
-    if (stats.timing[peak] >= 2) {
+    if (stats.timing[peak] >= 4 && stats.sessionCount >= 3) {
       lines.push(peak === 9
         ? t('recap.timingLate', { from: 45 })
         : t('recap.timing', { from: peak * 5, to: peak * 5 + 5 }));

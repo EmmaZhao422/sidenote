@@ -1,7 +1,7 @@
 # Four more guides. Imported by build_pages.py (GUIDES += MORE_GUIDES).
 MORE_GUIDES = [
  dict(slug='mind-wandering',
-  en=dict(title='Why your mind wanders while you study, and what to do instead of fighting it',
+  en=dict(title='Why your mind wanders while you study, and what to do instead of fighting it', seo='Why your mind wanders while you study',
    desc='Minds wander almost half the time, during nearly everything. What that means for studying, and three things that work better than trying harder.',
    body='''
     <h1>Why your mind wanders while you study, and what to do instead of fighting it</h1>
@@ -22,14 +22,14 @@ MORE_GUIDES = [
     <h2>Three things that work better</h2>
     <ol>
       <li><strong>Catch it, write one line, go back.</strong> The thought gets a place to live that isn't your head. This is the <a href="parking-lot-method.html">parking lot method</a>, and it is what the box at the bottom of a Sidenote study block is for. It takes about five seconds.</li>
-      <li><strong>Make the task smaller.</strong> Minds leave vague work faster than specific work. "Study chapter 4" gives your attention nothing to hold. "Answer the three end-of-section questions without looking" does. If you drift every few minutes, look at how the task is worded before you blame yourself. The <a href="five-minute-start.html">five-minute start</a> is a quick way to do this.</li>
-      <li><strong>Expect the dip.</strong> Many people drift most at a particular point in a session. Once you know yours, a wander at that minute stops feeling like failure. It becomes a cue: write the line, carry on. Sidenote's summary page shows which minute your parked thoughts cluster in.</li>
+      <li><strong>Make the task smaller.</strong> A vague task is easy to drift away from. "Study chapter 4" gives your attention nothing to hold. "Answer the three end-of-section questions without looking" does. If you drift every few minutes, look at how the task is worded before you blame yourself. The <a href="five-minute-start.html">five-minute start</a> is a quick way to do this.</li>
+      <li><strong>Expect the dip.</strong> You may notice that you drift most at a particular point in a session. Once you know yours, a wander at that minute stops feeling like failure. It becomes a cue: write the line, carry on. Sidenote's summary page shows which minute your parked thoughts cluster in.</li>
     </ol>
 
     <h2>When wandering is telling you something</h2>
     <p>Sometimes the drifting has a pattern worth acting on. If you always leave during one subject, the material may be a step too hard or too easy right now, and that is a problem to solve with a tutor or a different resource. If the same worry returns every session, it probably needs a real conversation with someone. And if you are short on sleep, no technique will hold your attention for long.</p>
     <div class="callout">
-      <p>The same study found people were less happy when their minds wandered than when they stayed on what they were doing. That is one more reason to give stray thoughts somewhere to go: you get the work done, and the session feels better while you do it.</p>
+      <p>In the same study, people reported feeling less happy when their minds wandered than when they stayed on what they were doing. The timing suggested the wandering came first, though this was a survey and not an experiment. That is one more reason to give stray thoughts somewhere to go: you get the work done, and the session feels better while you do it.</p>
     </div>
     <h2>Sources</h2>
     <ul>
@@ -57,14 +57,14 @@ MORE_GUIDES = [
     <h2>三个更管用的做法</h2>
     <ol>
       <li><strong>发现了，写一行，回去。</strong>让念头有个不在你脑子里的地方待着。这就是<a href="parking-lot-method.html">「念头停车场」</a>，走神本学习页面底部那个输入框就是干这个的，大概五秒钟。</li>
-      <li><strong>把任务改小。</strong>任务越模糊，心思跑得越快。「复习第四章」让注意力没东西可抓，「不看书答出章末三道题」就有。如果你每隔几分钟就走神，先看看任务是怎么写的，再怪自己。<a href="five-minute-start.html">开始前的五分钟</a>是做这件事的快办法。</li>
-      <li><strong>预料到那个低谷。</strong>很多人在一轮学习的某个固定时段最容易走神。知道了自己的时段，到那一分钟走神就不再像失败，而是一个提示：写一行，继续。走神本的总结页会显示你记下的念头集中在第几分钟。</li>
+      <li><strong>把任务改小。</strong>任务越模糊，越容易走神。「复习第四章」让注意力没东西可抓，「不看书答出章末三道题」就有。如果你每隔几分钟就走神，先看看任务是怎么写的，再怪自己。<a href="five-minute-start.html">开始前的五分钟</a>是做这件事的快办法。</li>
+      <li><strong>预料到那个低谷。</strong>你可能会发现，自己在一轮学习的某个固定时段最容易走神。知道了自己的时段，到那一分钟走神就不再像失败，而是一个提示：写一行，继续。走神本的总结页会显示你记下的念头集中在第几分钟。</li>
     </ol>
 
     <h2>走神有时是在提醒你</h2>
     <p>有些走神是有规律的，值得处理。如果你总是在某一门课上走神，可能是内容现在对你偏难或偏易，这需要找助教或换一份资料来解决。如果同一个担心每次都回来，它大概需要你认真找人聊一次。如果你睡得不够，什么方法都撑不了多久。</p>
     <div class="callout">
-      <p>同一项研究还发现，走神的时候人们不如专注于手头的事时快乐。这也是给念头找个去处的另一个理由：事情做完了，过程也更好受。</p>
+      <p>在同一项研究里，人们报告说走神的时候不如专注于手头的事时快乐。从先后顺序看，更像是走神在前，不过这是问卷调查，不是实验。这也是给念头找个去处的另一个理由：事情做完了，过程也更好受。</p>
     </div>
     <h2>参考</h2>
     <ul>
@@ -73,7 +73,7 @@ MORE_GUIDES = [
    ''')),
 
  dict(slug='worry-while-studying',
-  en=dict(title='A worry showed up while you were studying. Give it an appointment.',
+  en=dict(title='A worry showed up while you were studying. Give it an appointment.', seo='Worry while studying: give it an appointment',
    desc='How to handle a worry that arrives mid-study: write it down, give it a time later today, and what the research on "worry time" does and does not show.',
    body='''
     <h1>A worry showed up while you were studying. Give it an appointment.</h1>
@@ -102,7 +102,7 @@ MORE_GUIDES = [
     </ul>
 
     <h2>What the research does and doesn't show</h2>
-    <p>The evidence for worry postponement is real but mixed. The early studies and several later ones found that people who postponed spent less time worrying. A large online trial that simply sent people instructions found no benefit. A fair summary: it is a cheap thing to try, it works better when you actually hold the later appointment, and it is no cure.</p>
+    <p>The evidence for worry postponement is real but mixed. The early studies and several later ones found that people who postponed spent less time worrying. A 2016 online trial by Versluis and colleagues, in which 996 people signed up and 361 finished, simply sent the instructions by web, and it found no benefit. A fair summary: it is a cheap thing to try, it works better when you actually hold the later appointment, and it is no cure.</p>
     <div class="callout">
       <p>This guide is about ordinary study worries. If worry is constant, keeps you from sleeping, or comes with a feeling that you can't cope, that is a reason to talk to a counsellor or doctor. Most universities have a free service. If you are thinking about harming yourself, contact a local emergency number or crisis line now.</p>
     </div>
@@ -129,7 +129,7 @@ MORE_GUIDES = [
       <li><strong>把担心原样写成一行。</strong>「期中挂科怎么办。」不用修饰，也不用反驳它。</li>
       <li><strong>告诉它什么时候。</strong>「这一轮学完」就够了。事情比较大的话，定一个今天的时间。</li>
       <li><strong>回到刚才那句话。</strong>它再来，不用再写一遍，它已经在清单上了。</li>
-      <li><strong>到时间真的去看它。</strong>这一轮结束后，把那一行再读一遍，问两个问题：我能为它做点什么吗？能的话，最小的下一步是什么、什么时候做？不能的话，也写下来：「今天对这件事无事可做。」</li>
+      <li><strong>到时间真的去看它。</strong>这一轮结束后，把那一行再读一遍，问两个问题：我能为它做点什么吗？能的话，最小的下一步是什么、什么时候做？不能的话，也写下来：「今天这件事做不了什么。」</li>
     </ol>
 
     <h2>到时间再看，通常会发现</h2>
@@ -137,11 +137,11 @@ MORE_GUIDES = [
     <ul>
       <li><strong>伪装成担心的任务。</strong>「统计落下太多了」其实是「明天十点做第四次作业」。有了时间，它就是一件普通的待办。</li>
       <li><strong>该问别人的问题。</strong>「现在转专业还来得及吗」有确切答案，教务或导师知道。下一步是发一封邮件。</li>
-      <li><strong>今天做不了什么的事。</strong>还没出的成绩、别人怎么看你。把它标成「今天无事可做」，往往暂时就够了。</li>
+      <li><strong>今天做不了什么的事。</strong>还没出的成绩、别人怎么看你。把它标成「今天做不了什么」，往往暂时就够了。</li>
     </ul>
 
     <h2>研究说明了什么，没说明什么</h2>
-    <p>推迟担忧有证据支持，但结果并不一致。早期研究和后来的几项研究发现，照做的人花在担心上的时间变少了；一项只是在线发放说明的大样本试验则没有发现效果。比较公允的说法是：这个办法成本很低，值得一试；到了约定的时间真的去面对，效果更好；它不是灵药。</p>
+    <p>推迟担忧有证据支持，但结果并不一致。早期研究和后来的几项研究发现，照做的人花在担心上的时间变少了；2016 年 Versluis 等人做的一项线上试验（996 人报名，361 人完成）只是在网上把说明发给参与者，结果没有发现效果。比较公允的说法是：这个办法成本很低，值得一试；到了约定的时间真的去面对，效果更好；它不是灵药。</p>
     <div class="callout">
       <p>这篇讲的是学习中常见的担心。如果担心一直停不下来、影响睡眠，或者让你觉得撑不住，请去找心理老师或医生，多数学校都有免费的咨询。如果你有伤害自己的念头，请现在就联系当地急救电话或心理援助热线。</p>
     </div>
@@ -163,10 +163,10 @@ MORE_GUIDES = [
     <h2>What short breaks do</h2>
     <p>In 2022 a team led by Patricia Albulescu pooled 22 study samples (2,335 people) on "micro-breaks", meaning breaks of ten minutes or less between tasks. Two results were clear and one was not.</p>
     <ul>
-      <li>People who took short breaks felt more energetic afterwards and less tired. Both effects were small but reliable.</li>
+      <li>People who took short breaks felt more energetic afterwards and less tired. Both effects were small, and they showed up consistently across the studies.</li>
       <li>Performance on the next task did not improve on average. Within that ten-minute limit, the longer the break, the more it helped performance, and the authors suggest that recovering from very demanding work may need more than ten minutes.</li>
     </ul>
-    <p>So a five-minute break is mainly for how you feel, and that matters, because how you feel decides whether you start the next block. After a long, hard stretch, take a longer one.</p>
+    <p>That suggests a five-minute break is mainly for how you feel, and that matters, because how you feel decides whether you start the next block. After a long, hard stretch, take a longer one.</p>
 
     <h2>A break that ends on time</h2>
     <ol>
@@ -202,10 +202,10 @@ MORE_GUIDES = [
     <h2>短休息有什么用</h2>
     <p>2022 年，Patricia Albulescu 带领的团队汇总了 22 个研究样本（共 2,335 人），研究对象是「微休息」，也就是任务之间不超过十分钟的休息。有两个结论很清楚，一个不那么清楚。</p>
     <ul>
-      <li>休息过的人之后更有精神，也没那么累。两个效果都不大，但很稳定。</li>
+      <li>休息过的人之后更有精神，也没那么累。两个效果都不大，但在各项研究里都能看到。</li>
       <li>下一项任务的表现，平均来看没有明显提高。在十分钟以内，休息越长对表现的帮助越大；作者认为，从非常耗神的任务里恢复，可能需要十分钟以上。</li>
     </ul>
-    <p>所以五分钟的休息主要改善的是感受，而感受很重要，因为它决定你会不会开始下一轮。学了很久、很吃力之后，就休息久一点。</p>
+    <p>由此看来，五分钟的休息主要改善的是感受，而感受很重要，因为它决定你会不会开始下一轮。学了很久、很吃力之后，就休息久一点。</p>
 
     <h2>让休息按时结束</h2>
     <ol>
@@ -233,8 +233,8 @@ MORE_GUIDES = [
    ''')),
 
  dict(slug='test-yourself',
-  en=dict(title='Re-reading feels like studying. Testing yourself works better.',
-   desc='A review of ten common study techniques rated self-testing and spreading sessions out as the most useful, and highlighting and re-reading as the least. How to use that in a 25-minute block.',
+  en=dict(title='Re-reading feels like studying. Testing yourself works better.', seo='Re-reading vs testing yourself: what works',
+   desc='A review of ten study techniques rated self-testing and spaced sessions highest, and highlighting and re-reading lowest. How to use that in a 25-minute block.',
    body='''
     <h1>Re-reading feels like studying. Testing yourself works better.</h1>
     <p class="byline">A Sidenote study guide</p>
@@ -258,7 +258,7 @@ MORE_GUIDES = [
     <p>For problem-based subjects, the test is already there: cover the worked solution and solve the problem cold. For subjects with a lot of facts, flashcards do the same job, as long as you answer before you turn the card over.</p>
 
     <h2>Spread it out</h2>
-    <p>The other high-rated technique costs nothing. Three 25-minute blocks on three different days beat one 75-minute block the night before, for the same total time. The gap between sessions lets you forget a little, and pulling the material back is what strengthens it. If you plan a week, give each subject several short slots.</p>
+    <p>The other high-rated technique costs nothing. For the same total time, three 25-minute blocks on three different days usually do better than one 75-minute block the night before, especially when the test is days or weeks away. The gap between sessions lets you forget a little, and pulling the material back is what strengthens it. If you plan a week, give each subject several short slots.</p>
 
     <h2>Why it feels worse</h2>
     <p>Self-testing is uncomfortable, because it keeps showing you what you don't know. Re-reading is pleasant, because nothing pushes back. That discomfort is useful. It is also when stray thoughts are most tempting, since any other thought is a way out. Expect them, <a href="parking-lot-method.html">park them in one line</a>, and go back to the question you were stuck on.</p>
@@ -292,7 +292,7 @@ MORE_GUIDES = [
     <p>以做题为主的科目，测试是现成的：把解答盖住，从头自己做一遍。知识点很多的科目，背诵卡片有同样的作用，前提是先回答，再翻面。</p>
 
     <h2>分散开来</h2>
-    <p>另一种评价高的方法不花任何成本。同样的总时长，分在三天的三个 25 分钟，比考前一晚的一个 75 分钟效果更好。两次学习之间的间隔会让你忘掉一点，再把它想起来的过程，正是让记忆变牢的过程。排一周计划时，给每门课安排几个短时段。</p>
+    <p>另一种评价高的方法不花任何成本。同样的总时长，分在三天的三个 25 分钟，通常比考前一晚的一个 75 分钟效果更好，离考试还有几天或几周时尤其明显。两次学习之间的间隔会让你忘掉一点，再把它想起来的过程，正是让记忆变牢的过程。排一周计划时，给每门课安排几个短时段。</p>
 
     <h2>为什么感觉更难受</h2>
     <p>自测不舒服，因为它不断让你看到自己不会的地方；反复阅读很舒服，因为没有任何东西在为难你。这种不舒服是有用的。这也是走神的念头最诱人的时候，因为随便想点别的，都是一条退路。预料到它们，<a href="parking-lot-method.html">用一行字记下来</a>，然后回到卡住你的那道题。</p>

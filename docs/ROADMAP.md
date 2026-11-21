@@ -21,7 +21,7 @@
 | 改 AI 回答的语气和长度 | `js/prompts.js` | 容易 |
 | 调专注分的权重 | `js/score.js` 的 `computeFocusScore`，对应测试在 `tests/score.test.js` | 中等 |
 | 加一个新场景 | `js/scenes.js` 加一项（名字、简介、五个特征值、背景颜色），`js/audio.js` 的 `BUILDERS` 里照着 `rain` 写一个同名的 | 中等 |
-| 写一篇新的学习方法文章 | 在 `tools/more_guides.py` 里照着已有的一篇加一项（中英文各一份，引用要核实过），运行 `python3 tools/build_pages.py .` 生成页面，再加进 `js/views/home.js` 的 `GUIDES` 和 `sitemap.xml` | 中等 |
+| 写一篇新的学习方法文章 | 在 `tools/more_guides.py` 里照着已有的一篇加一项（中英文各一份，引用要核实过），运行 `python3 tools/build_pages.py .` 生成页面，再加进 `js/views/home.js` 的 `GUIDES` 和 `index.html` 里那段静态的文章列表（`sitemap.xml` 现在由脚本自动生成，不用手改；漏了哪一处，`npm test` 会报错） | 中等 |
 | 改关于、隐私、条款、Claude 页面的文字 | 改 `tools/build_pages.py` 里对应的那段，再运行 `python3 tools/build_pages.py .`（不要直接改生成的 `.html`，下次生成会被覆盖） | 容易 |
 
 ## 还没做的功能（想法，没排期）

@@ -3,11 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>隐私 | 走神本</title>
-  <meta name="description" content="走神本存了什么，发送了什么，还涉及哪些第三方。">
+  <title>隐私说明 | 走神本</title>
+  <meta name="description" content="走神本不用注册，你写的内容只存在自己的浏览器里。这里逐项说明：存了什么，什么情况下会发给 AI，广告和统计的现状，以及涉及哪些第三方。">
   <link rel="canonical" href="https://emmazhao422.github.io/sidenote/zh/privacy.html">
   <link rel="alternate" hreflang="zh" href="https://emmazhao422.github.io/sidenote/zh/privacy.html">
   <link rel="alternate" hreflang="en" href="https://emmazhao422.github.io/sidenote/privacy.html">
+  <link rel="alternate" hreflang="x-default" href="https://emmazhao422.github.io/sidenote/privacy.html">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="../css/app.css">
   <script>
@@ -38,26 +39,26 @@
       <li><strong>拆步骤：</strong>你输入的目标和这一轮的时长。</li>
       <li><strong>AI 总结：</strong>你的统计数字和你输入过的目标，不包含念头本身。</li>
     </ul>
-    <p>根据网站的配置，请求有两种走法：一种是经过本站自己的服务器转发给模型服务商，本站服务器不保存内容；另一种是你在「设置」里填了自己的 API key，这时请求从你的浏览器直接发给你选的服务商。服务商会按它自己的条款和隐私政策处理这些文字。你不点击就不会发送，所以，不想被这样处理的内容，请不要记下来之后再让 AI 处理。</p>
-    <p>如果你填了自己的 API key，它只保存在你的浏览器里，也不会写进备份文件。</p>
+    <p>根据网站的配置，请求有两种走法：一种是经过本站自己的服务器转发给模型服务商，这台服务器不保存文字内容（只记请求次数，用来防滥用；提供这台服务器的 Cloudflare 可能会记录 IP 地址等技术信息）；另一种是你在「设置」里填了自己的 API key，这时请求从你的浏览器直接发给你选的服务商。截至上面的日期，本站自己的服务器连接还没有开通，所以念头只会通过你自己的 key、Claude 应用，或者下面说的「问 AI」按钮到达 AI。服务商会按它自己的条款和隐私政策处理这些文字。你不点击就不会发送，所以，不想被这样处理的内容，请不要记下来之后再让 AI 处理。</p>
+    <p>如果你填了自己的 API key，它只保留到浏览器关闭为止，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
 
     <h2>广告</h2>
-    <p>走神本免费使用，部分页面可能展示广告来支付运行成本。在你做计划或学习的过程中，永远不会显示广告。广告开启后由 Google AdSense 提供：</p>
+    <p>走神本免费使用，部分页面可能展示广告来支付运行成本。截至上面的日期，网站没有投放任何广告。在你做计划或学习的过程中，永远不会显示广告。广告开启后将由 Google AdSense 提供，届时：</p>
     <ul>
       <li>包括 Google 在内的第三方供应商会使用 cookie，根据你之前访问本站或其他网站的情况来投放广告。</li>
       <li>Google 使用广告 cookie，使它和它的合作伙伴能够根据你对本站及互联网上其他网站的访问情况投放广告。</li>
       <li>你可以在 <a href="https://adssettings.google.com/">Google 广告设置</a>中停用个性化广告，也可以在 <a href="https://www.aboutads.info/choices/">aboutads.info</a> 停用部分第三方供应商的 cookie。</li>
     </ul>
-    <p>在法律有要求的地区（例如欧洲经济区、英国和瑞士），使用广告 cookie 之前会先征得你的同意。你记下的内容不会分享给广告商。</p>
+    <p>Google 在展示其广告的网站上收集哪些信息，见 <a href="https://policies.google.com/technologies/partner-sites">Google 如何使用来自合作网站或应用的信息</a>。在法律要求征得同意的地区（例如欧洲经济区、英国和瑞士），在征求同意的提示上线之前，不会对当地访客开启广告。本站自己的代码不设置任何 cookie。你记下的内容不会分享给广告商。</p>
 
     <h2>涉及的其他服务</h2>
     <ul>
       <li><strong>托管：</strong>网站由 GitHub Pages 提供访问，它会记录 IP 地址等技术信息。</li>
       <li><strong>字体：</strong>字体文件就放在本站，不会向任何字体服务发请求。</li>
-      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
+      <li><strong>离线副本：</strong>浏览器会保存一份本站自己的文件，这样没有网络也能打开。这份副本里没有你记下的内容。</li>
+      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字（最多 500 个字符）带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
     </ul>
-    <p>走神本不运行追踪脚本。网站可以用 Cloudflare Web Analytics 统计访问量，它不使用 cookie，也看不到你写的内容；除非本页另有说明，这个统计是关闭的。如果你是在 Claude 应用里打开走神本，你要求处理的念头会在那里发给 Claude，用的是你自己的 Claude 账号。</p>
-    <p>如果你填了自己的 AI key，它只保留到浏览器关闭为止，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
+    <p>走神本不运行追踪脚本。网站可以接入 Cloudflare Web Analytics 来统计访问量，它不使用 cookie，也看不到你写的内容。截至上面的日期，这个统计是关闭的。如果你是在 Claude 应用里打开走神本，你要求处理的念头会在那里发给 Claude，用的是你自己的 Claude 账号。</p>
 
     <h2>儿童</h2>
     <p>走神本不面向 13 岁以下的儿童，我们也不会有意收集他们的个人信息。</p>

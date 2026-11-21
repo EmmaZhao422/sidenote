@@ -211,3 +211,27 @@ test('more keys built at runtime exist in both languages', () => {
     assert.ok(key in DICT.zh, `zh: ${key}`);
   }
 });
+
+test('a question only the student can answer gets no search links', async () => {
+  const { onlyYouCanCheck } = await import('../js/classify.js');
+  for (const s of ['Did I lock my bike?', 'Where did I put my charger?', 'Is the stove off?', '门锁了吗', '煤气关了没', '钥匙放哪了', '作业交了吗']) {
+    assert.equal(onlyYouCanCheck(s), true, s);
+  }
+  for (const s of ['Why is the sky blue?', 'Did the Romans have concrete?', 'Should I email the professor?', '为什么天是蓝的', '光合作用是什么']) {
+    assert.equal(onlyYouCanCheck(s), false, s);
+  }
+});
+
+test('the home page HTML itself lists every guide, and the sitemap has every page', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const root = join(here, '..');
+  const home = readFileSync(join(root, 'index.html'), 'utf8');
+  const sitemap = readFileSync(join(root, 'sitemap.xml'), 'utf8');
+  const guides = readdirSync(join(root, 'guides')).filter((f) => f.endsWith('.html') && f !== 'index.html');
+  assert.ok(guides.length >= 10);
+  for (const g of guides) {
+    assert.ok(home.includes(`href="guides/${g}"`), `index.html links to ${g}`);
+    assert.ok(sitemap.includes(`/guides/${g}<`), `sitemap has ${g}`);
+    assert.ok(sitemap.includes(`/guides/zh/${g}<`), `sitemap has zh/${g}`);
+  }
+});

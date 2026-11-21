@@ -12,12 +12,16 @@ SITE = 'https://emmazhao422.github.io/sidenote/'
 REPO = 'https://github.com/EmmaZhao422/sidenote'
 UPDATED = {'en': 'November 21, 2026', 'zh': '2026 年 11 月 21 日'}
 
-def page(path, lang, title, desc, body, other, depth, ad=False):
+PAGES = []  # every page written, for the sitemap
+
+def page(path, lang, title, desc, body, other, depth, ad=False, seo=None):
     up = '../' * depth
     canon = path[:-len('index.html')] if path.endswith('index.html') else path
     alt_path = os.path.normpath(os.path.join(os.path.dirname(path), other)).replace(os.sep, '/')
     if other.endswith('/') or other in ('zh/', '../'): alt_path = (alt_path + '/').replace('./', '')
     brand = '走神本' if lang == 'zh' else 'Sidenote'
+    PAGES.append(canon)
+    en_url = SITE + (alt_path if lang == 'zh' else canon)
     nav = ([('开始一轮学习', up + '#/focus'), ('学习方法', up + 'guides/zh/'), ('English', other)] if lang == 'zh'
            else [('Start a study block', up + '#/focus'), ('Study guides', up + 'guides/'), ('中文', other)])
     foot = ([('首页', up), ('配合 Claude 使用', up + 'zh/claude.html'), ('关于', up + 'zh/about.html'), ('隐私', up + 'zh/privacy.html'), ('条款', up + 'zh/terms.html'), ('GitHub 源码', REPO)] if lang == 'zh'
@@ -29,11 +33,12 @@ def page(path, lang, title, desc, body, other, depth, ad=False):
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{html.escape(title)} | {brand}</title>
+  <title>{html.escape(seo or title)} | {brand}</title>
   <meta name="description" content="{html.escape(desc)}">
   <link rel="canonical" href="{SITE}{canon}">
   <link rel="alternate" hreflang="{'zh' if lang == 'zh' else 'en'}" href="{SITE}{canon}">
   <link rel="alternate" hreflang="{'en' if lang == 'zh' else 'zh'}" href="{SITE}{alt_path}">
+  <link rel="alternate" hreflang="x-default" href="{en_url}">
   <link rel="icon" href="{up}favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="{up}css/app.css">
   <script>
@@ -70,7 +75,7 @@ def cta(lang, up):
 # ----------------------------------------------------------------------------- guides
 GUIDES = [
  dict(slug='parking-lot-method',
-  en=dict(title='The parking lot method: what to do with a thought that shows up mid-study',
+  en=dict(title='The parking lot method: what to do with a thought that shows up mid-study', seo='The parking lot method for stray study thoughts',
    desc='Why stray thoughts keep interrupting your studying, and a simple way to write them down and deal with them after the block ends.',
    body='''
     <h1>The parking lot method: what to do with a thought that shows up mid-study</h1>
@@ -81,7 +86,7 @@ GUIDES = [
     <h2>Why a stray thought is so hard to ignore</h2>
     <p>An unfinished task nags. Psychologists have studied this since the 1920s, when Bluma Zeigarnik reported that people remembered interrupted tasks better than completed ones. Later studies of that specific memory effect have been mixed, but the everyday experience behind it is familiar: an open loop keeps asking for attention.</p>
     <p>A more useful finding came in 2011. E. J. Masicampo and Roy Baumeister found that unfinished goals intruded on people's thinking during an unrelated task, and that the intrusions largely went away once people made a specific plan for the unfinished goal. They didn't have to finish it. Deciding when and how they would handle it was enough.</p>
-    <p>That is what parking a thought does. Writing it down in a place you trust tells your brain the thought is safe and has an appointment.</p>
+    <p>Parking a thought is probably doing something similar. Those experiments tested plans that said when and how, so the closer your note comes to that (one line now, a set time to deal with it later), the closer you are to what the participants did.</p>
 
     <h2>How to do it</h2>
     <ol>
@@ -116,7 +121,7 @@ GUIDES = [
     <h2>Sources</h2>
     <ul>
       <li>Masicampo, E. J., &amp; Baumeister, R. F. (2011). Consider it done! Plan making can eliminate the cognitive effects of unfulfilled goals. <em>Journal of Personality and Social Psychology</em>, 101(4), 667–683.</li>
-      <li>Cirillo, F. <em>The Pomodoro Technique</em>.</li>
+      <li>Cirillo, F. (2006). <em>The Pomodoro Technique</em>.</li>
     </ul>
    '''),
   zh=dict(title='「念头停车场」：学到一半冒出来的想法，该拿它怎么办',
@@ -130,7 +135,7 @@ GUIDES = [
     <h2>为什么走神的念头这么难忽略</h2>
     <p>没做完的事会一直惦记着你。早在 1920 年代，心理学家就在研究这个现象：布鲁玛·蔡格尼克（Bluma Zeigarnik）报告说，人对被打断的任务比对已完成的任务记得更牢。后来针对这个记忆效应的重复实验结果并不一致，但它背后的日常体验大家都熟悉：一件悬着的事，会不停地来要注意力。</p>
     <p>2011 年有一项更实用的发现。马西坎波（E. J. Masicampo）和鲍迈斯特（Roy Baumeister）发现，没完成的目标会在人做别的事时不断闯进脑子；而只要为这件事定一个具体的计划，这种干扰就基本消失了。不需要把事做完，只要决定了什么时候、怎么做，就够了。</p>
-    <p>把念头「停」下来，做的正是这件事。把它写在一个你信得过的地方，等于告诉大脑：这件事丢不了，已经排上日程了。</p>
+    <p>把念头「停」下来，做的大概是类似的事。那些实验测的是「什么时候、怎么做」的具体计划，所以你的记录越接近这个样子（现在写一行，之后有个固定的时间处理），就越接近实验里那些人做的事。</p>
 
     <h2>具体怎么做</h2>
     <ol>
@@ -165,11 +170,11 @@ GUIDES = [
     <h2>参考</h2>
     <ul>
       <li>Masicampo, E. J., &amp; Baumeister, R. F. (2011). Consider it done! Plan making can eliminate the cognitive effects of unfulfilled goals. <em>Journal of Personality and Social Psychology</em>, 101(4), 667–683.</li>
-      <li>Cirillo, F. <em>The Pomodoro Technique</em>.</li>
+      <li>Cirillo, F. (2006). <em>The Pomodoro Technique</em>.</li>
     </ul>
    ''')),
  dict(slug='five-minute-start',
-  en=dict(title='Five minutes before you study: a short plan beats a long warm-up',
+  en=dict(title='Five minutes before you study: a short plan beats a long warm-up', seo='Five minutes before you study: a short plan',
    desc='A five-minute routine for starting a study session: name the goal, split it into steps, empty your head, and settle in.',
    body='''
     <h1>Five minutes before you study: a short plan beats a long warm-up</h1>
@@ -185,7 +190,7 @@ GUIDES = [
     <p>There is good evidence that this kind of specific planning helps. The psychologist Peter Gollwitzer calls plans of the form "when X happens, I will do Y" implementation intentions, and his 1999 review found that they make people noticeably more likely to follow through than a general intention to "work hard" does. You can borrow the format: "When the timer starts, I will open to page 112."</p>
 
     <h2>Minute four: empty your head</h2>
-    <p>Anything already nagging at you (a message you owe someone, something you need to buy, a worry about tomorrow) will interrupt you later if you leave it loose. Write each one down in a single line now. Don't solve them. Once it is on the page, it stops asking for attention. Our guide to the <a href="parking-lot-method.html">parking lot method</a> explains why this works.</p>
+    <p>Anything already nagging at you (a message you owe someone, something you need to buy, a worry about tomorrow) will interrupt you later if you leave it loose. Write each one down in a single line now. Don't solve them. Once it is on the page, it tends to stop asking for attention. Our guide to the <a href="parking-lot-method.html">parking lot method</a> explains why this works.</p>
 
     <h2>Minute five: settle</h2>
     <p>Put the phone out of reach, face down or in another room. Start your background sound if you use one. Take a few slow breaths, with the out-breath longer than the in-breath. Look at your first step. Then begin.</p>
@@ -221,7 +226,7 @@ GUIDES = [
     <p>这种具体的计划确实有用，研究证据不少。心理学家彼得·戈尔维策（Peter Gollwitzer）把「当 X 发生时，我就做 Y」这种形式的计划叫做「执行意图」。他 1999 年的综述发现，比起笼统地想「我要好好学」，这种计划能明显提高人真正去做的可能性。你可以直接套用这个句式：「计时一开始，我就翻到 112 页。」</p>
 
     <h2>第四分钟：把脑子清空</h2>
-    <p>已经在惦记的事（欠别人的一条消息、要买的东西、对明天的担心），现在不处理，等会儿一定来打扰你。趁现在每件事写一行。不用解决它们。写下来以后，它就不再来抢注意力了。原理可以看我们的另一篇：<a href="parking-lot-method.html">「念头停车场」</a>。</p>
+    <p>已经在惦记的事（欠别人的一条消息、要买的东西、对明天的担心），现在不处理，等会儿一定来打扰你。趁现在每件事写一行。不用解决它们。写下来以后，它多半就不再来抢注意力了。原理可以看我们的另一篇：<a href="parking-lot-method.html">「念头停车场」</a>。</p>
 
     <h2>第五分钟：安顿下来</h2>
     <p>把手机放到够不着的地方，扣过来，或者放到另一个房间。如果你习惯听背景声，现在打开。慢慢呼吸几次，呼气比吸气长一点。看一眼你的第一步。开始。</p>
@@ -242,7 +247,7 @@ GUIDES = [
     </ul>
    ''')),
  dict(slug='background-sound',
-  en=dict(title='Rain, brown noise or silence: finding the sound you focus with',
+  en=dict(title='Rain, brown noise or silence: finding the sound you focus with', seo='Rain, brown noise or silence: sound for focus',
    desc='What research says about studying with background sound, why it differs from person to person, and how to test it on yourself.',
    body='''
     <h1>Rain, brown noise or silence: finding the sound you focus with</h1>
@@ -253,7 +258,7 @@ GUIDES = [
     <p>The evidence is mixed, and the most consistent finding is that people differ.</p>
     <ul>
       <li><strong>Speech and lyrics get in the way of reading.</strong> Decades of work on what researchers call the irrelevant speech effect shows that background speech disrupts tasks that rely on verbal memory, even when you try to ignore it. If you are reading or writing, songs with words in a language you understand are the riskiest choice.</li>
-      <li><strong>Steady noise helps some people and hurts others.</strong> In a 2007 study, Göran Söderlund and colleagues found that white noise improved memory performance in children with ADHD and made it worse in children without it. So the same sound can help one person and get in another's way.</li>
+      <li><strong>Steady noise helps some people and hurts others.</strong> In a small 2007 study, Göran Söderlund and colleagues found that white noise improved memory performance in children with ADHD and made it worse in children without it. It was a small study of children, and later results have been mixed, so take it as one hint that the same sound can help one person and get in another's way.</li>
       <li><strong>Sound can also work as a mask.</strong> In a noisy dorm or café, a steady background covers sudden sounds (a door, a conversation) that would otherwise pull your attention. Here the noise isn't helping your brain directly. It hides the things that would interrupt you.</li>
     </ul>
     <p>We haven't found good evidence that any one colour of noise is best for everyone. Be sceptical of anyone who says otherwise.</p>
@@ -303,7 +308,7 @@ GUIDES = [
     <p>证据并不一致，其中最稳定的一条结论是：人和人不一样。</p>
     <ul>
       <li><strong>人声和歌词会干扰阅读。</strong>研究者把这叫做「无关言语效应」：几十年的研究表明，背景里的说话声会干扰依赖语言记忆的任务，即使你努力不去听。如果你在读书或写东西，带歌词而且你听得懂的歌风险最大。</li>
-      <li><strong>平稳的噪音对一些人有帮助，对另一些人有妨碍。</strong>2007 年，约兰·瑟德隆德（Göran Söderlund）等人的研究发现，白噪音让有 ADHD 的孩子记忆成绩变好，却让没有 ADHD 的孩子成绩变差。同一种声音，可能帮了这个人，却妨碍了那个人。</li>
+      <li><strong>平稳的噪音对一些人有帮助，对另一些人有妨碍。</strong>2007 年，约兰·瑟德隆德（Göran Söderlund）等人的一项小规模研究发现，白噪音让有 ADHD 的孩子记忆成绩变好，却让没有 ADHD 的孩子成绩变差。这项研究样本小、对象是儿童，后来的结果也不一致，所以只把它当作一个提示：同一种声音，可能帮了这个人，却妨碍了那个人。</li>
       <li><strong>声音还可以当遮挡用。</strong>在吵闹的宿舍或咖啡馆，平稳的背景声能盖住突然的响动（关门声、说话声），这些响动本来会把你的注意力拽走。这时候噪音并没有直接帮到大脑，它只是把会打断你的东西盖住了。</li>
     </ul>
     <p>我们没有找到可靠的证据表明某一种颜色的噪音对所有人都最好。谁要是这么说，别急着信。</p>
@@ -328,7 +333,7 @@ GUIDES = [
       <li><strong>每种声音至少试三轮，</strong>再相信它们之间的差别。一次状态好说明不了什么，也许只是前一晚睡得好。</li>
     </ol>
     <div class="callout">
-      <p>这些记录走神本会替你做。每一轮都会记下当时放的是哪个场景、最后的专注分是多少。打过三次分之后，它开始告诉你在哪个场景里专注得最好；数据少的场景会向你的平均分靠拢，免得一次超常发挥就定了结论；它还会推荐性格相近、你还没试过的场景。</p>
+      <p>这些记录走神本会替你做。每一轮都会记下当时放的是哪个场景、最后的专注分是多少。打过三次分之后，它会告诉你在哪个场景里专注得最好；数据少的场景会向你的平均分靠拢，免得一次超常发挥就定了结论；它还会推荐性格相近、你还没试过的场景。</p>
     </div>
 
     <h2>实用的小设置</h2>
@@ -349,7 +354,7 @@ GUIDES = [
     <h1>25 minutes or 45? How long a study block should be</h1>
     <p class="byline">A Sidenote study guide</p>
     <p>The Pomodoro technique says 25 minutes of work, then a 5-minute break. Other people swear by 50 and 10, or by working until they feel like stopping. So which one is right?</p>
-    <p>Researchers have only recently started testing this with students doing their real coursework, and so far the answer is: no single number wins. What the studies do show is useful for choosing your own.</p>
+    <p>Few studies have tested this with students doing their real coursework, and so far the answer is: no single number wins. What the studies do show is useful for choosing your own.</p>
 
     <h2>What the studies found</h2>
     <p>In 2023, Felicitas Biwer and colleagues at Maastricht University followed students through a day of their own studying. One group decided for themselves when to take breaks. Two other groups took breaks on a fixed schedule: 6 minutes after every 24 minutes, or 3 minutes after every 12.</p>
@@ -358,14 +363,14 @@ GUIDES = [
       <li>The groups didn't differ in how much mental effort they reported or in how much of their work they completed.</li>
       <li>Fixed, pre-planned breaks came with better mood, and appeared to be more efficient: similar work in less time.</li>
     </ul>
-    <p>A follow-up study from the same university in 2025 compared self-chosen breaks, Pomodoro breaks (25 and 5) and a third method. This time fatigue rose faster in the Pomodoro group, and again the groups ended up without overall differences.</p>
-    <p>So the evidence doesn't crown 25 minutes. It suggests that <strong>deciding your block length in advance</strong> is what helps, because you stop spending attention on the question "should I take a break now?"</p>
+    <p>A 2025 study from the same university (Smits, Wenzel and de Bruin) compared self-chosen breaks, Pomodoro breaks (25 and 5) and a third method called Flowtime. This time fatigue rose faster in the Pomodoro group, motivation fell faster in the two timed groups, and the groups still ended up without overall differences.</p>
+    <p>So the evidence doesn't crown 25 minutes, and the two studies don't fully agree with each other. One reading is that <strong>deciding your block length in advance</strong> saves you from asking "should I take a break now?" every few minutes. Neither study tested that directly, so treat it as a reasonable guess and check it against your own blocks.</p>
 
     <h2>How to choose your length</h2>
     <ol>
       <li><strong>Start with 25 minutes.</strong> It is short enough to begin on a bad day.</li>
       <li><strong>Look at when your mind starts to wander.</strong> If your stray thoughts cluster around minute 15, a 45-minute block is mostly a fight. If you are still steady at minute 25 and annoyed when the timer rings, go longer.</li>
-      <li><strong>Match the block to the task.</strong> Flashcards and problem drills suit short blocks. Writing and long proofs need time to load into your head, so 45 or 60 minutes often works better.</li>
+      <li><strong>Match the block to the task.</strong> Flashcards and problem drills suit short blocks. Writing and long proofs need time to load into your head, so many people find 45 or 60 minutes works better for them.</li>
       <li><strong>Change one thing at a time</strong> and give it a few sessions before judging.</li>
     </ol>
     <div class="callout">
@@ -378,7 +383,7 @@ GUIDES = [
     <h2>Sources</h2>
     <ul>
       <li>Biwer, F., Wiradhany, W., oude Egbrink, M. G. A., &amp; de Bruin, A. B. H. (2023). Understanding effort regulation: Comparing 'Pomodoro' breaks and self-regulated breaks. <em>British Journal of Educational Psychology</em>, 93(S2), 353–367.</li>
-      <li>Investigating the effectiveness of self-regulated, Pomodoro, and Flowtime break-taking techniques among students (2025). <em>Behavioral Sciences</em>, 15(7), 861.</li>
+      <li>Smits, E. J. C., Wenzel, N., &amp; de Bruin, A. (2025). Investigating the effectiveness of self-regulated, Pomodoro, and Flowtime break-taking techniques among students. <em>Behavioral Sciences</em>, 15(7), 861.</li>
     </ul>
    """),
   zh=dict(title='25 分钟还是 45 分钟？一轮学习该多长',
@@ -387,23 +392,23 @@ GUIDES = [
     <h1>25 分钟还是 45 分钟？一轮学习该多长</h1>
     <p class="byline">走神本学习方法</p>
     <p>番茄工作法说：学 25 分钟，休息 5 分钟。也有人坚持 50 加 10，还有人主张学到想停为止。到底哪个对？</p>
-    <p>研究者是最近几年才开始拿学生的真实功课来测这件事的。目前的答案是：没有哪个数字胜出。不过这些研究对你自己做选择很有用。</p>
+    <p>拿学生的真实功课来测这件事的研究还很少。目前的答案是：没有哪个数字胜出。不过这些研究对你自己做选择很有用。</p>
 
     <h2>研究发现了什么</h2>
     <p>2023 年，马斯特里赫特大学的 Felicitas Biwer 等人跟踪了学生一整天的自习。一组学生自己决定什么时候休息；另外两组按固定时间表休息：每学 24 分钟休息 6 分钟，或者每学 12 分钟休息 3 分钟。</p>
     <ul>
       <li>自己决定休息的学生，每段学得更久，休息得也更久。</li>
-      <li>三组学生自我报告的脑力投入没有差别，完成的任务量也没有差别。</li>
+      <li>三组学生自己报告的费力程度没有差别，完成的任务量也没有差别。</li>
       <li>事先定好的固定休息，带来了更好的心情，看起来效率也更高：差不多的任务量，用的时间更少。</li>
     </ul>
-    <p>2025 年，同一所大学的后续研究比较了自主休息、番茄钟休息（25 加 5）和第三种方法。这一次番茄钟组的疲劳感上升得更快，而各组最终同样没有整体上的差别。</p>
-    <p>所以，证据并没有把 25 分钟捧上王座。它提示的是：<strong>提前定好一轮多长</strong>这件事本身有帮助，因为你不用再分神去想「现在要不要休息」。</p>
+    <p>2025 年，同一所大学的另一项研究（Smits、Wenzel 和 de Bruin）比较了自主休息、番茄钟休息（25 加 5）和第三种叫 Flowtime 的方法。这一次番茄钟组的疲劳感上升得更快，两个按规则休息的组动力下降得也更快，而各组最终仍然没有整体上的差别。</p>
+    <p>所以，证据并不支持 25 分钟就是最佳答案，两项研究的结论也不完全一致。一种解释是：<strong>提前定好一轮多长</strong>，你就不用每隔几分钟分神去想「现在要不要休息」。这一点两项研究都没有直接检验，所以把它当作一个合理的猜测，拿你自己的记录去验证。</p>
 
     <h2>怎么选你的时长</h2>
     <ol>
       <li><strong>从 25 分钟开始。</strong>它够短，状态差的日子也开得了头。</li>
       <li><strong>看看你一般什么时候开始走神。</strong>如果走神的念头集中在第 15 分钟前后，45 分钟的一轮大半是在硬撑。如果到第 25 分钟还很稳，计时器响了你还嫌烦，那就加长。</li>
-      <li><strong>时长跟着任务走。</strong>背卡片、刷题适合短的一轮。写作和长证明需要时间「加载」到脑子里，45 或 60 分钟往往更合适。</li>
+      <li><strong>时长跟着任务走。</strong>背卡片、刷题适合短的一轮。写作和长证明需要时间「加载」到脑子里，不少人觉得 45 或 60 分钟更合适。</li>
       <li><strong>一次只改一样，</strong>多试几轮再下结论。</li>
     </ol>
     <div class="callout">
@@ -416,7 +421,7 @@ GUIDES = [
     <h2>参考</h2>
     <ul>
       <li>Biwer, F., Wiradhany, W., oude Egbrink, M. G. A., &amp; de Bruin, A. B. H. (2023). Understanding effort regulation: Comparing 'Pomodoro' breaks and self-regulated breaks. <em>British Journal of Educational Psychology</em>, 93(S2), 353–367.</li>
-      <li>Investigating the effectiveness of self-regulated, Pomodoro, and Flowtime break-taking techniques among students (2025). <em>Behavioral Sciences</em>, 15(7), 861.</li>
+      <li>Smits, E. J. C., Wenzel, N., &amp; de Bruin, A. (2025). Investigating the effectiveness of self-regulated, Pomodoro, and Flowtime break-taking techniques among students. <em>Behavioral Sciences</em>, 15(7), 861.</li>
     </ul>
    """)),
  dict(slug='phone-while-studying',
@@ -458,8 +463,8 @@ GUIDES = [
       <li>Ward, A. F., Duke, K., Gneezy, A., &amp; Bos, M. W. (2017). Brain drain: The mere presence of one's own smartphone reduces available cognitive capacity. <em>Journal of the Association for Consumer Research</em>. doi:10.1086/691462</li>
       <li>Ruiz Pardo, A. C., &amp; Minda, J. P. (2022). Reexamining the "brain drain" effect: A replication of Ward et al. (2017). <em>Acta Psychologica</em>, 230, 103717.</li>
       <li>Böttger, T., Poschik, M., &amp; Zierer, K. (2023). Does the brain drain effect really exist? A meta-analysis. <em>Behavioral Sciences</em>, 13(9), 751.</li>
-      <li>Hartanto, A., et al. (2024). The effect of mere presence of smartphone on cognitive functions: A four-level meta-analysis.</li>
-      <li>Parry, D. A. (2024). Does the mere presence of a smartphone impact cognitive performance? A meta-analysis of the "brain drain effect".</li>
+      <li>Hartanto, A., Lua, V. Y. Q., Kasturiratna, K. T. A. S., et al. (2024). The effect of mere presence of smartphone on cognitive functions: A four-level meta-analysis. <em>Technology, Mind, and Behavior</em>, 5(1).</li>
+      <li>Parry, D. A. (2024). Does the mere presence of a smartphone impact cognitive performance? A meta-analysis of the "brain drain effect". <em>Media Psychology</em>, 27(5), 737–762.</li>
     </ul>
    """),
   zh=dict(title='学习的时候，手机该放哪儿？',
@@ -488,7 +493,7 @@ GUIDES = [
     <ol>
       <li><strong>放到伸手够不着的地方，</strong>最好看不见：房间另一头的包里、身后的架子上，条件允许就放到另一个房间。</li>
       <li><strong>真正静音。</strong>在桌上震动同样是打断。开勿扰模式，只放行两三个可能真有急事找你的人的电话。</li>
-      <li><strong>给那个冲动找个去处。</strong>想到「看看她回了没有」，就用一行字写下来，然后继续。这个念头丢不了，这一轮结束再去看。这就是<a href="parking-lot-method.html">「念头停车场」</a>。</li>
+      <li><strong>给那个冲动找个去处。</strong>想到「看看她回了没有」，就用一行字写下来，然后继续。这个念头不会丢，这一轮结束再去看。这就是<a href="parking-lot-method.html">「念头停车场」</a>。</li>
       <li><strong>如果你用手机计时，</strong>换成电脑上的计时器，手机就没有留在桌上的理由了。</li>
     </ol>
     <div class="callout">
@@ -500,8 +505,8 @@ GUIDES = [
       <li>Ward, A. F., Duke, K., Gneezy, A., &amp; Bos, M. W. (2017). Brain drain: The mere presence of one's own smartphone reduces available cognitive capacity. <em>Journal of the Association for Consumer Research</em>. doi:10.1086/691462</li>
       <li>Ruiz Pardo, A. C., &amp; Minda, J. P. (2022). Reexamining the "brain drain" effect: A replication of Ward et al. (2017). <em>Acta Psychologica</em>, 230, 103717.</li>
       <li>Böttger, T., Poschik, M., &amp; Zierer, K. (2023). Does the brain drain effect really exist? A meta-analysis. <em>Behavioral Sciences</em>, 13(9), 751.</li>
-      <li>Hartanto, A., et al. (2024). The effect of mere presence of smartphone on cognitive functions: A four-level meta-analysis.</li>
-      <li>Parry, D. A. (2024). Does the mere presence of a smartphone impact cognitive performance? A meta-analysis of the "brain drain effect".</li>
+      <li>Hartanto, A., Lua, V. Y. Q., Kasturiratna, K. T. A. S., et al. (2024). The effect of mere presence of smartphone on cognitive functions: A four-level meta-analysis. <em>Technology, Mind, and Behavior</em>, 5(1).</li>
+      <li>Parry, D. A. (2024). Does the mere presence of a smartphone impact cognitive performance? A meta-analysis of the "brain drain effect". <em>Media Psychology</em>, 27(5), 737–762.</li>
     </ul>
    """)),
 ]
@@ -526,7 +531,8 @@ def guide_extras(i, lang):
         'datePublished': PUBLISHED, 'dateModified': PUBLISHED,
         'inLanguage': 'zh-CN' if lang == 'zh' else 'en',
         'author': {'@type': 'Organization', 'name': '走神本 Sidenote' if lang == 'zh' else 'Sidenote', 'url': SITE},
-        'publisher': {'@type': 'Organization', 'name': 'Sidenote', 'url': SITE},
+        'image': SITE + 'og.png',
+        'publisher': {'@type': 'Organization', 'name': 'Sidenote', 'url': SITE, 'logo': {'@type': 'ImageObject', 'url': SITE + 'icon-512.png'}},
         'mainEntityOfPage': url,
     }
     return (f'\n    <h2>{head}</h2>\n    <ul>{links}</ul>\n'
@@ -540,7 +546,7 @@ def dated(body, lang):
     return body.replace('<p class="byline">A Sidenote study guide</p>', f'<p class="byline">A Sidenote study guide · Published {UPDATED["en"]}</p>', 1)
 
 for i, g in enumerate(GUIDES):
-    page(f"guides/{g['slug']}.html", 'en', g['en']['title'], g['en']['desc'], dated(g['en']['body'], 'en') + guide_extras(i, 'en') + cta('en', '../'), f"zh/{g['slug']}.html", 1, ad=True)
+    page(f"guides/{g['slug']}.html", 'en', g['en']['title'], g['en']['desc'], dated(g['en']['body'], 'en') + guide_extras(i, 'en') + cta('en', '../'), f"zh/{g['slug']}.html", 1, ad=True, seo=g['en'].get('seo'))
     page(f"guides/zh/{g['slug']}.html", 'zh', g['zh']['title'], g['zh']['desc'], dated(g['zh']['body'], 'zh') + guide_extras(i, 'zh') + cta('zh', '../../'), f"../{g['slug']}.html", 2, ad=True)
 
 def index(lang):
@@ -549,8 +555,8 @@ def index(lang):
         return f'<h1>学习方法</h1><p>几篇短文，讲走神本背后的做法。每一篇都能在五分钟内读完，读完马上能用。</p><ul>{items}</ul>'
     return f'<h1>Study guides</h1><p>Short pieces on the ideas behind Sidenote. Each takes under five minutes to read, and you can use it the same day.</p><ul>{items}</ul>'
 
-page('guides/index.html', 'en', 'Study guides', 'Short, practical guides on focus: parking stray thoughts, starting a study session, and choosing background sound.', index('en'), 'zh/', 1)
-page('guides/zh/index.html', 'zh', '学习方法', '几篇实用短文：怎么处理走神的念头，怎么开始一次学习，怎么选背景声。', index('zh'), '../', 2)
+page('guides/index.html', 'en', 'Study guides', 'Ten short, practical guides on studying with focus: parking stray thoughts, the five-minute start, block length, phones, background sound and breaks. Sources included.', index('en'), 'zh/', 1)
+page('guides/zh/index.html', 'zh', '学习方法', '十篇实用短文：学习时走神的念头怎么处理，开始前五分钟做什么，一轮学多久，手机放哪儿，背景声怎么选，休息时做什么。每篇五分钟读完，都附了研究出处。', index('zh'), '../', 2)
 
 # ----------------------------------------------------------------------------- Chinese landing page
 # A plain page in Chinese that search engines can read without running the app.
@@ -585,7 +591,7 @@ page('zh/index.html', 'zh', '学习时把走神的念头先记下来', '走神�
 # ----------------------------------------------------------------------------- about
 page('about.html', 'en', 'About', 'What Sidenote is, who makes it, and how it handles your notes.', f'''
     <h1>About Sidenote</h1>
-    <p>Sidenote is a study timer with one extra box. While you study, every stray thought (a question, an errand, a worry, an idea) goes into that box in one line, and you keep working. When the block ends, you click each thought and an AI model answers it, plans it, or talks it through. Over time the summary page shows what you worked on, how steady your attention was, and what tends to pull it away.</p>
+    <p>Sidenote is a study timer with one extra box. While you study, every stray thought (a question, an errand, a worry, an idea) goes into that box in one line, and you keep working. When the block ends, you go through them one by one: a question gets looked up or handed to an AI in one tap, a to-do gets a day or a place in your next block, a worry gets a second look. If you connect an AI (your own key, or the Claude skill), it answers each thought directly. Over time the summary page shows what you worked on, how steady your attention was, and what tends to pull it away.</p>
     <h2>Why it exists</h2>
     <p>Most study tools help you with the material. This one is for the moment your mind leaves the material. It started as a simple observation: some of us wander constantly while studying, and trying harder to concentrate doesn't help. What helps is having somewhere to put the thought so it can wait.</p>
     <h2>Who makes it</h2>
@@ -598,9 +604,9 @@ page('about.html', 'en', 'About', 'What Sidenote is, who makes it, and how it ha
     <p>Questions, bugs and ideas are welcome on the <a href="{REPO}/issues">GitHub issues page</a>.</p>
 ''', 'zh/about.html', 0)
 
-page('zh/about.html', 'zh', '关于', '走神本是什么，谁在做，怎么对待你写下的内容。', f'''
+page('zh/about.html', 'zh', '关于走神本', '走神本是一个免费的学习计时器：学习时把走神的念头一句话记下，学完再处理。这里说明它是什么，谁在做，以及怎么对待你写下的内容。', f'''
     <h1>关于走神本</h1>
-    <p>走神本是一个多了一个输入框的学习计时器。学习的时候，每一个冒出来的念头（一个问题、一件杂事、一个担心、一个点子）都用一行字记进这个框里，然后继续学。这一轮结束后，点开每一条，AI 模型会回答它、帮你拆解它，或者陪你理一理。用久了，总结页会显示你学了什么、注意力有多稳，以及通常是什么把它拉走的。</p>
+    <p>走神本是一个多了一个输入框的学习计时器。学习的时候，每一个冒出来的念头（一个问题、一件杂事、一个担心、一个点子）都用一行字记进这个框里，然后继续学。这一轮结束后，一条条处理：问题可以去查，或者点一下交给 AI；待办定个日子，或者排进下一轮；担心的事再看一眼。如果你接上了 AI（自己的 key，或者 Claude skill），它会直接回答每一条。用久了，总结页会显示你学了什么、注意力有多稳，以及通常是什么把它拉走的。</p>
     <h2>为什么做它</h2>
     <p>大多数学习工具帮你对付学习内容。这个工具管的是你的心思离开内容的那一刻。它来自一个很简单的观察：有些人学习时就是会不停地走神，更用力地「集中注意力」并没有用。有用的是给念头找个地方先放着，让它可以等。</p>
     <h2>谁在做</h2>
@@ -713,26 +719,26 @@ page('privacy.html', 'en', 'Privacy', 'What Sidenote stores, what it sends, and 
       <li><strong>Suggested steps:</strong> the goal you typed and the length of the block.</li>
       <li><strong>AI recap:</strong> your summary numbers and the goals you typed. The thoughts themselves are not included.</li>
     </ul>
-    <p>Depending on how the site is set up, the request goes either through this site's own server, which forwards it to the model provider and doesn't store it, or, if you entered your own API key in Settings, straight from your browser to the provider you chose. The provider handles that text under its own terms and privacy policy. Nothing is sent until you click, so please don't park anything you wouldn't want processed that way and then ask the AI about it.</p>
-    <p>If you enter your own API key, it is stored only in your browser and is not included in backups.</p>
+    <p>Depending on how the site is set up, the request goes either through this site's own server, which forwards it to the model provider and does not store the text (it keeps only a count of requests, to stop abuse; Cloudflare, which runs that server, may log technical details such as IP addresses), or, if you entered your own API key in Settings, straight from your browser to the provider you chose. As of the date above, this site's own server connection is switched off, so a thought reaches an AI only through your own key, the Claude app, or the "Ask" buttons described below. The provider handles that text under its own terms and privacy policy. Nothing is sent until you click, so please don't park anything you wouldn't want processed that way and then ask the AI about it.</p>
+    <p>If you paste in your own API key, it is kept only until you close the browser, unless you tick "Remember the key on this device". It is sent only to the provider you chose, and it is never written into a backup file.</p>
 
     <h2>Advertising</h2>
-    <p>Sidenote is free, and some pages may show ads to pay for running it. Ads are never shown while you are planning or in a study block. When ads are enabled they are provided by Google AdSense:</p>
+    <p>Sidenote is free, and some pages may show ads to pay for running it. As of the date above, no ads are running. Ads are never shown while you are planning or in a study block. When ads are enabled they will be provided by Google AdSense, and then:</p>
     <ul>
       <li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites.</li>
       <li>Google's use of advertising cookies enables it and its partners to serve ads based on your visits to this site and other sites on the Internet.</li>
       <li>You can opt out of personalised advertising in <a href="https://adssettings.google.com/">Google's Ads Settings</a>, or opt out of some third-party vendors' cookies at <a href="https://www.aboutads.info/choices/">aboutads.info</a>.</li>
     </ul>
-    <p>Where the law requires it (for example in the EEA, the UK and Switzerland), you will be asked for consent before advertising cookies are used. The content of your notes is never shared with advertisers.</p>
+    <p>Google explains what it collects on sites that show its ads in <a href="https://policies.google.com/technologies/partner-sites">How Google uses information from sites or apps that use our services</a>. Where the law requires consent (for example in the EEA, the UK and Switzerland), ads will not be switched on for visitors there until a consent banner is in place that asks before advertising cookies are used. The site's own code sets no cookies. The content of your notes is never shared with advertisers.</p>
 
     <h2>Other services involved</h2>
     <ul>
       <li><strong>Hosting:</strong> the site is served by GitHub Pages, which logs technical information such as IP addresses.</li>
       <li><strong>Fonts:</strong> the typefaces are files on this site. No request goes to a font service.</li>
-      <li><strong>"Search the web", "Ask Claude" and "Ask ChatGPT":</strong> these buttons open the other site in a new tab with the text of that one thought in the link. Nothing is sent unless you press the button, and what happens next is covered by that site's own privacy policy.</li>
+      <li><strong>Offline copy:</strong> your browser keeps a copy of the site's own files so it can open without a connection. That copy holds no notes.</li>
+      <li><strong>"Search the web", "Ask Claude" and "Ask ChatGPT":</strong> these buttons open the other site in a new tab with the text of that one thought (up to 500 characters) in the link. Nothing is sent unless you press the button, and what happens next is covered by that site's own privacy policy.</li>
     </ul>
-    <p>Sidenote doesn't run tracking scripts. The site can count visits with Cloudflare Web Analytics, which uses no cookies and does not see what you write; that counter is switched off unless this page says otherwise. If you open Sidenote inside the Claude app, a thought you ask to have dealt with is sent to Claude there, under your own Claude account.</p>
-    <p>If you paste in your own AI key, it is kept only until you close the browser, unless you tick "Remember the key on this device". It is sent only to the provider you chose, and it is never written into a backup file.</p>
+    <p>Sidenote doesn't run tracking scripts. The site is able to count visits with Cloudflare Web Analytics, which uses no cookies and does not see what you write. As of the date above, that counter is switched off. If you open Sidenote inside the Claude app, a thought you ask to have dealt with is sent to Claude there, under your own Claude account.</p>
 
     <h2>Children</h2>
     <p>Sidenote is not directed at children under 13, and we don't knowingly collect personal information from them.</p>
@@ -741,7 +747,7 @@ page('privacy.html', 'en', 'Privacy', 'What Sidenote stores, what it sends, and 
     <p>If this page changes, the date at the top changes with it. Questions can be raised on the <a href="{REPO}/issues">GitHub issues page</a>.</p>
 ''', 'zh/privacy.html', 0)
 
-page('zh/privacy.html', 'zh', '隐私', '走神本存了什么，发送了什么，还涉及哪些第三方。', f'''
+page('zh/privacy.html', 'zh', '隐私说明', '走神本不用注册，你写的内容只存在自己的浏览器里。这里逐项说明：存了什么，什么情况下会发给 AI，广告和统计的现状，以及涉及哪些第三方。', f'''
     <h1>隐私说明</h1>
     <p class="byline">最后更新：{UPDATED['zh']}</p>
     <p>一句话版本：不用注册，你写的东西留在你的浏览器里；只有当你让 AI 处理某一条念头时，那条念头的文字才会离开你的设备。</p>
@@ -756,26 +762,26 @@ page('zh/privacy.html', 'zh', '隐私', '走神本存了什么，发送了什么
       <li><strong>拆步骤：</strong>你输入的目标和这一轮的时长。</li>
       <li><strong>AI 总结：</strong>你的统计数字和你输入过的目标，不包含念头本身。</li>
     </ul>
-    <p>根据网站的配置，请求有两种走法：一种是经过本站自己的服务器转发给模型服务商，本站服务器不保存内容；另一种是你在「设置」里填了自己的 API key，这时请求从你的浏览器直接发给你选的服务商。服务商会按它自己的条款和隐私政策处理这些文字。你不点击就不会发送，所以，不想被这样处理的内容，请不要记下来之后再让 AI 处理。</p>
-    <p>如果你填了自己的 API key，它只保存在你的浏览器里，也不会写进备份文件。</p>
+    <p>根据网站的配置，请求有两种走法：一种是经过本站自己的服务器转发给模型服务商，这台服务器不保存文字内容（只记请求次数，用来防滥用；提供这台服务器的 Cloudflare 可能会记录 IP 地址等技术信息）；另一种是你在「设置」里填了自己的 API key，这时请求从你的浏览器直接发给你选的服务商。截至上面的日期，本站自己的服务器连接还没有开通，所以念头只会通过你自己的 key、Claude 应用，或者下面说的「问 AI」按钮到达 AI。服务商会按它自己的条款和隐私政策处理这些文字。你不点击就不会发送，所以，不想被这样处理的内容，请不要记下来之后再让 AI 处理。</p>
+    <p>如果你填了自己的 API key，它只保留到浏览器关闭为止，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
 
     <h2>广告</h2>
-    <p>走神本免费使用，部分页面可能展示广告来支付运行成本。在你做计划或学习的过程中，永远不会显示广告。广告开启后由 Google AdSense 提供：</p>
+    <p>走神本免费使用，部分页面可能展示广告来支付运行成本。截至上面的日期，网站没有投放任何广告。在你做计划或学习的过程中，永远不会显示广告。广告开启后将由 Google AdSense 提供，届时：</p>
     <ul>
       <li>包括 Google 在内的第三方供应商会使用 cookie，根据你之前访问本站或其他网站的情况来投放广告。</li>
       <li>Google 使用广告 cookie，使它和它的合作伙伴能够根据你对本站及互联网上其他网站的访问情况投放广告。</li>
       <li>你可以在 <a href="https://adssettings.google.com/">Google 广告设置</a>中停用个性化广告，也可以在 <a href="https://www.aboutads.info/choices/">aboutads.info</a> 停用部分第三方供应商的 cookie。</li>
     </ul>
-    <p>在法律有要求的地区（例如欧洲经济区、英国和瑞士），使用广告 cookie 之前会先征得你的同意。你记下的内容不会分享给广告商。</p>
+    <p>Google 在展示其广告的网站上收集哪些信息，见 <a href="https://policies.google.com/technologies/partner-sites">Google 如何使用来自合作网站或应用的信息</a>。在法律要求征得同意的地区（例如欧洲经济区、英国和瑞士），在征求同意的提示上线之前，不会对当地访客开启广告。本站自己的代码不设置任何 cookie。你记下的内容不会分享给广告商。</p>
 
     <h2>涉及的其他服务</h2>
     <ul>
       <li><strong>托管：</strong>网站由 GitHub Pages 提供访问，它会记录 IP 地址等技术信息。</li>
       <li><strong>字体：</strong>字体文件就放在本站，不会向任何字体服务发请求。</li>
-      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
+      <li><strong>离线副本：</strong>浏览器会保存一份本站自己的文件，这样没有网络也能打开。这份副本里没有你记下的内容。</li>
+      <li><strong>「去网上搜」「问 Claude」「问 ChatGPT」：</strong>这几个按钮会在新标签页打开对应的网站，并把这一条念头的文字（最多 500 个字符）带在链接里。你不点，就什么都不会发出去；点了之后的事，由对方网站自己的隐私政策负责。</li>
     </ul>
-    <p>走神本不运行追踪脚本。网站可以用 Cloudflare Web Analytics 统计访问量，它不使用 cookie，也看不到你写的内容；除非本页另有说明，这个统计是关闭的。如果你是在 Claude 应用里打开走神本，你要求处理的念头会在那里发给 Claude，用的是你自己的 Claude 账号。</p>
-    <p>如果你填了自己的 AI key，它只保留到浏览器关闭为止，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
+    <p>走神本不运行追踪脚本。网站可以接入 Cloudflare Web Analytics 来统计访问量，它不使用 cookie，也看不到你写的内容。截至上面的日期，这个统计是关闭的。如果你是在 Claude 应用里打开走神本，你要求处理的念头会在那里发给 Claude，用的是你自己的 Claude 账号。</p>
 
     <h2>儿童</h2>
     <p>走神本不面向 13 岁以下的儿童，我们也不会有意收集他们的个人信息。</p>
@@ -785,10 +791,10 @@ page('zh/privacy.html', 'zh', '隐私', '走神本存了什么，发送了什么
 ''', '../privacy.html', 1)
 
 # ----------------------------------------------------------------------------- terms
-page('terms.html', 'en', 'Terms', 'The terms for using Sidenote.', f'''
+page('terms.html', 'en', 'Terms', 'The terms for using Sidenote: free and provided as it is, AI replies can be wrong, and your notes live in your own browser.', f'''
     <h1>Terms of use</h1>
     <p class="byline">Last updated {UPDATED['en']}</p>
-    <p>By using Sidenote you agree to these terms. They are short on purpose.</p>
+    <p>By using Sidenote you agree to these terms. They are short on purpose. Sidenote is meant for people aged 13 and over.</p>
     <h2>What you get</h2>
     <p>Sidenote is a free study tool, provided as it is. We try to keep it working and accurate, but we don't promise that it will always be available or free of errors.</p>
     <h2>AI replies</h2>
@@ -803,10 +809,10 @@ page('terms.html', 'en', 'Terms', 'The terms for using Sidenote.', f'''
     <p>These terms may be updated; the date above shows the latest version. Questions can be raised on the <a href="{REPO}/issues">GitHub issues page</a>.</p>
 ''', 'zh/terms.html', 0)
 
-page('zh/terms.html', 'zh', '条款', '使用走神本的条款。', f'''
+page('zh/terms.html', 'zh', '使用条款', '使用走神本的条款：免费、按现状提供；AI 的回复可能出错，重要内容请自己核实；你的数据存在自己的浏览器里，需要自己备份。', f'''
     <h1>使用条款</h1>
     <p class="byline">最后更新：{UPDATED['zh']}</p>
-    <p>使用走神本即表示你同意以下条款。我们特意写得很短。</p>
+    <p>使用走神本即表示你同意以下条款。我们特意写得很短。走神本面向 13 岁及以上的使用者。</p>
     <h2>你得到的是什么</h2>
     <p>走神本是一个免费的学习工具，按现状提供。我们会尽力让它正常、准确地运行，但不保证它永远可用或没有错误。</p>
     <h2>AI 的回复</h2>
@@ -820,4 +826,11 @@ page('zh/terms.html', 'zh', '条款', '使用走神本的条款。', f'''
     <h2>变更</h2>
     <p>条款可能会更新，以上面的日期为准。有疑问可以到 <a href="{REPO}/issues">GitHub issues</a> 提出。</p>
 ''', '../terms.html', 1)
+# ----------------------------------------------------------------------------- sitemap
+# Written from the list of pages above, so a new page can never be left out of it.
+urls = [''] + sorted(set(PAGES) - {'404.html'})
+open(os.path.join(ROOT, 'sitemap.xml'), 'w', encoding='utf8').write(
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + ''.join(f'  <url><loc>{SITE}{u}</loc><lastmod>{PUBLISHED}</lastmod></url>\n' for u in urls)
+    + '</urlset>\n')
 print('pages built')

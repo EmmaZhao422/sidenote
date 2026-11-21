@@ -5,7 +5,7 @@
 import { h, mount, toast, clock, minutesText, dayLabel, timeLabel, segmented } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
-import { noteCard, sortAll } from './note.js';
+import { noteCard, sortAll, isPlanned } from './note.js';
 import { aiMode } from '../ai.js';
 import { copyForClaudeButton } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
@@ -114,7 +114,9 @@ export function reviewView(root, navigate, sessionId) {
         h('dt', null, t('review.feel')), h('dd', null, String(p.feel)),
         h('dt', null, t('review.done')), h('dd', null, String(p.done)),
         h('dt', null, t('review.steady')), h('dd', null, String(p.steady))),
-      h('p', { class: 'hint' }, t('review.scoreHint'))));
+      h('details', { class: 'score-how' },
+        h('summary', null, t('review.scoreHow')),
+        h('p', { class: 'hint' }, t('review.scoreHint')))));
 
   const facts = [
     t('review.factTime', { time: minutesText(Math.max(1, session.focusSec / 60)) }),
@@ -125,26 +127,41 @@ export function reviewView(root, navigate, sessionId) {
   ].filter(Boolean);
 
   const body = h('div');
-  function draw() {
+  function draw(focusId) {
     const mine = store.state.thoughts.filter((x) => x.sessionId === sessionId);
     const open = mine.filter((x) => x.status !== 'done');
-    const unanswered = open.filter((x) => !x.reply);
+    // Thoughts already given a day or a place in the next block sit below, folded:
+    // the list on top is what is still undecided.
+    const undecided = open.filter((x) => !isPlanned(x));
+    const planned = open.filter(isPlanned);
+    const unanswered = undecided.filter((x) => !x.reply);
+    const card = (x) => noteCard(x.id, {
+      goal: session.goal, onChange: (what) => { if (what === 'status') draw(); else if (what === 'due') draw(x.id); },
+    });
     const notes = h('div', { class: 'notes' });
     if (!mine.length) {
       notes.append(h('p', { class: 'empty' }, t('review.none')));
     } else if (!open.length) {
       notes.append(h('p', { class: 'empty' }, t('review.allDone')));
+    } else if (!undecided.length) {
+      notes.append(h('p', { class: 'empty' }, t('review.allPlanned')));
     }
-    open.forEach((x) => notes.append(noteCard(x.id, {
-      goal: session.goal, onChange: (what) => { if (what === 'status') draw(); },
-    })));
+    undecided.forEach((x) => notes.append(card(x)));
+    if (planned.length) {
+      notes.append(h('h3', { class: 'notes-day' }, t('review.plannedTitle', { n: planned.length })));
+      planned.forEach((x) => notes.append(card(x)));
+    }
     mount(body,
       h('div', { class: 'row row-between' },
-        h('h2', null, t('review.thoughtsTitle', { n: open.length })),
+        h('h2', null, t('review.thoughtsTitle', { n: undecided.length })),
         h('div', { class: 'row' },
           unanswered.length >= 2 && aiMode() !== 'offline' ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
           open.length ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done')) : null)),
       notes);
+    if (focusId) {
+      const el = [...body.querySelectorAll('.note')].find((n) => n.dataset.id === focusId);
+      el?.querySelector('.note-change, .note-when .chip[aria-pressed="true"], .note-when .chip')?.focus({ preventScroll: true });
+    }
   }
 
   // --- a short break before the next block, timed here so the phone stays put

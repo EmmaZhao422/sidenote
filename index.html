@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Sidenote: park stray thoughts while you study</title>
-  <meta name="description" content="A free study timer with one extra box: type every stray thought into the margin, keep studying, and deal with it when the block is over, with AI answers if you connect one. Then see where your attention went.">
+  <meta name="description" content="A free study timer with one extra box: type each stray thought into the margin, keep studying, and deal with it after the block. Then see where your attention went.">
   <link rel="canonical" href="https://emmazhao422.github.io/sidenote/">
   <link rel="alternate" hreflang="en" href="https://emmazhao422.github.io/sidenote/">
   <link rel="alternate" hreflang="zh" href="https://emmazhao422.github.io/sidenote/zh/">
@@ -28,6 +28,8 @@
       var theme = saved && saved.theme;
       if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
     } catch (e) {}
+    // The text in the page below is the home page. On any other screen it stays hidden until the app has drawn.
+    if (location.hash && location.hash !== '#/') document.documentElement.classList.add('is-deep');
   </script>
 </head>
 <body>
@@ -53,6 +55,29 @@
         <h1 class="hero-title">Mind wandered? Put it in the margin.</h1>
         <p class="hero-sub">While you study, every stray thought goes here in one line. When the block is over, you deal with them one by one: answers for the questions, a first step for the errands, a calmer look at the worries. Then you see where your attention went.</p>
         <noscript><p>Sidenote needs JavaScript to run the timer and save your notes in this browser.</p></noscript>
+      </section>
+      <section class="static-home">
+        <h2>How a study block goes</h2>
+        <ol>
+          <li><strong>Five minutes to get ready.</strong> Write what this block is for, split it into two or three steps, and empty out whatever is already on your mind.</li>
+          <li><strong>Study with one box open.</strong> A timer, a background scene, and one input box. A thought shows up, you type it, press Enter, and go back to work.</li>
+          <li><strong>Deal with the thoughts afterwards.</strong> Questions get an answer, to-dos get a day or a first step, worries get a calmer second look.</li>
+          <li><strong>See the pattern.</strong> The summary shows what you worked on, how steady each block was, and what your stray thoughts are usually about.</li>
+        </ol>
+        <p>Sidenote is free and needs no account. Your notes are saved in this browser and nowhere else.</p>
+        <h2>Study guides</h2>
+        <ul>
+          <li><a href="guides/parking-lot-method.html">The parking lot method: what to do with a thought that shows up mid-study</a></li>
+          <li><a href="guides/five-minute-start.html">Five minutes before you study: a short plan beats a long warm-up</a></li>
+          <li><a href="guides/background-sound.html">Rain, brown noise or silence: finding the sound you focus with</a></li>
+          <li><a href="guides/study-block-length.html">25 minutes or 45? How long a study block should be</a></li>
+          <li><a href="guides/phone-while-studying.html">Where should your phone be while you study?</a></li>
+          <li><a href="guides/mind-wandering.html">Why your mind wanders while you study, and what to do instead of fighting it</a></li>
+          <li><a href="guides/worry-while-studying.html">A worry showed up while you were studying. Give it an appointment.</a></li>
+          <li><a href="guides/study-breaks.html">What to do in a five-minute study break</a></li>
+          <li><a href="guides/test-yourself.html">Re-reading feels like studying. Testing yourself works better.</a></li>
+          <li><a href="guides/one-block-worked-example.html">One study block, start to finish: a worked example</a></li>
+        </ul>
       </section>
     </main>
   </div>

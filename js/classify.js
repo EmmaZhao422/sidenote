@@ -31,7 +31,7 @@ const RULES = {
     /[?？]\s*$/,
     /^(what|why|how|when|where|who|which|is|are|was|were|can|could|does|do|did|will|would|should)\b/i,
     /^i wonder\b/i,
-    /(为什么|为啥|怎么|什么是|是什么|如何|是不是|多少|哪个|哪里|哪天|几点|几号|什么时候|多久|吃啥|吃什么|谁|能不能|要不要|吗$|呢$|区别)/,
+    /(为什么|为啥|怎么|什么是|是什么|如何|是不是|多少|哪个|哪里|哪天|几点|几号|什么时候|多久|吃啥|吃什么|谁|能不能|要不要|吗$|呢$|区别|了没(有)?$|哪了$|哪儿|(什么|啥)$)/,
   ],
 };
 
@@ -69,4 +69,21 @@ const CRISIS = [
 export function looksLikeCrisis(text) {
   const s = String(text || '');
   return CRISIS.some((re) => re.test(s));
+}
+
+// "Did I lock my bike?" is a question no search engine or AI can answer: only
+// the student can, by checking. The helper says so instead of offering a search.
+const ONLY_YOU = [
+  /^(did|have|had) (i|we)\b/i,
+  /^(where('s| is| are| did i put| did i leave)) (my|the)\b/i,
+  /^(is|are|was|were) (my|the) .{0,40}\b(locked|unlocked|off|on|closed|open|shut|unplugged|plugged in|charging|charged|sent|submitted|turned in|saved)\b/i,
+  /我.{0,6}(有没有|是不是).{0,12}(锁|关|拔|带|交|发|回|存|保存|提交|还|拿|吃药|打卡)/,
+  /(门|窗|灯|煤气|燃气|火|车|电动车|自行车|空调|电脑|水龙头|热水器|插头|充电器).{0,8}(锁|关|拔|停|熄).{0,3}(了吗|了没|没有|没)[?？]?$/,
+  /.{1,12}(放|落|丢|忘)(在|到)?(哪|哪里|哪儿)了?[?？]?$/,
+  /(带|交|发|回|提交|保存|存|打卡)了(吗|没|没有)[?？]?$/,
+];
+
+export function onlyYouCanCheck(text) {
+  const s = String(text || '').trim();
+  return ONLY_YOU.some((re) => re.test(s));
 }

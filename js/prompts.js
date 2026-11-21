@@ -48,6 +48,7 @@ export function buildPrompt(task, input = {}, lang = 'en') {
         '',
         'Deal with the thought in one reply:',
         '- A factual or conceptual question: answer it directly and correctly. If you are not sure, say so plainly and say how to check.',
+        '- A question only the student can check ("did I lock my bike?", "which room is the exam in?"): say in one line that only checking settles it, and where to look.',
         '- A to-do or errand: give the smallest first step, then at most three more steps, and a rough time estimate.',
         '- A worry: be kind and brief. Separate what they can act on from what they cannot, and give one concrete next action.',
         '- An idea: say what is promising, raise the two or three questions that would decide if it is worth pursuing, and suggest the cheapest way to test it.',

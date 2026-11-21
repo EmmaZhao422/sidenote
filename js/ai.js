@@ -12,7 +12,7 @@
 import { CONFIG } from './config.js';
 import { store } from './store.js';
 import { buildPrompt, parseResolveReply } from './prompts.js';
-import { classify, looksLikeCrisis } from './classify.js';
+import { classify, looksLikeCrisis, onlyYouCanCheck } from './classify.js';
 import { getLang, t } from './i18n.js';
 
 export const DEFAULT_ANTHROPIC_MODEL = 'claude-haiku-5-5';
@@ -147,6 +147,10 @@ export function offlineReply(thought) {
     return { text: t('offline.crisis'), source: 'offline', category: 'worry' };
   }
   const category = thought.category || classify(thought.text);
+  // "Did I lock my bike?" has no answer online: say so, and skip the search links
+  if ((category === 'question' || category === 'other') && onlyYouCanCheck(thought.text)) {
+    return { text: t('offline.check'), source: 'offline', category, kind: 'check', links: [] };
+  }
   const links = [];
   if (category === 'question') {
     // Bing is reachable where Google is not, so Chinese-language visitors get that
@@ -155,7 +159,8 @@ export function offlineReply(thought) {
   }
   // No AI connected here, but most students have one a tap away. These links open
   // it with the thought already typed in, on the student's own account.
-  if (category !== 'urge') {
+  // (not for errands or urges: "text Jess back" needs doing, not asking)
+  if (category !== 'urge' && category !== 'todo') {
     const ask = encodeURIComponent(askPrompt(thought.text));
     links.push({ label: t('offline.askClaude'), url: `https://claude.ai/new?q=${ask}` });
     links.push({ label: t('offline.askChatgpt'), url: `https://chatgpt.com/?q=${ask}` });

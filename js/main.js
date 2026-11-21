@@ -71,6 +71,8 @@ function render(quiet = false) {
   const keepY = quiet === true ? window.scrollY : null;
   destroy?.();
   destroy = null;
+  // index.html hides its own home-page text on other screens until this first draw
+  document.documentElement.classList.remove('is-deep');
   applyTheme(store.state.settings.theme);
   applyLanguage();
   const { name, arg } = route();

@@ -5,7 +5,7 @@
 // The block in progress is kept in store.state.active, with real timestamps,
 // so the timer stays correct in a background tab and survives a reload.
 
-import { h, toast, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
+import { h, mount, toast, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store, TAB_ID } from '../store.js';
 import { startBlock, heldElsewhere, settleCarried } from '../block.js';
@@ -421,10 +421,33 @@ export function sessionView(root, navigate) {
     // the margin: where stray thoughts go
     // Only a count is shown while studying: reading the list back would be its own distraction.
     const mine = () => parkedIn(a.id);
-    const count = h('span', { class: 'margin-count' });
+    // The count is a button: one press shows what has been parked (to fix a typo or
+    // check it landed), and the list folds away again when the margin rests.
+    const peek = h('ul', { class: 'margin-peek', id: 'margin-peek', hidden: true });
+    const count = h('button', {
+      type: 'button', class: 'margin-count', 'aria-expanded': 'false', 'aria-controls': 'margin-peek',
+      onclick: () => showPeek(peek.hidden),
+    });
+    const showPeek = (on) => {
+      peek.hidden = !on || !mine().length;
+      count.setAttribute('aria-expanded', String(!peek.hidden));
+      drawMargin();
+    };
     const drawMargin = () => {
-      const n = mine().length;
-      count.textContent = n ? t('focus.inMargin', { n }) : t('focus.marginEmpty');
+      const list = mine();
+      const n = list.length;
+      count.disabled = !n;
+      count.textContent = !n ? t('focus.marginEmpty')
+        : `${t('focus.inMargin', { n })} · ${t(peek.hidden ? 'focus.peekShow' : 'focus.peekHide')}`;
+      if (!peek.hidden) {
+        mount(peek, list.map((x) => h('li', { dir: 'auto' },
+          h('span', null, x.text),
+          h('button', {
+            type: 'button', class: 'margin-peek-x', 'aria-label': t('focus.peekRemove', { text: x.text.slice(0, 40) }), title: t('note.delete'),
+            onclick: () => { store.deleteThought(x.id); if (!mine().length) peek.hidden = true; drawMargin(); input.focus(); },
+          }, '×'))));
+        peek.scrollTop = peek.scrollHeight;
+      }
     };
 
     const input = h('input', {
@@ -522,7 +545,7 @@ export function sessionView(root, navigate) {
       h('div', { class: 'focus-center' }, timer, endsAt, pausedBanner, steps, lockNote),
       h('div', { class: 'margin' },
         h('div', { class: 'margin-top' }, h('span', { class: 'margin-title' }, t('focus.marginTitle')), flash, count),
-        strip));
+        peek, strip));
     drawTimer();
     drawMargin();
     drawPause();
@@ -537,7 +560,7 @@ export function sessionView(root, navigate) {
     const wake = () => {
       paper.classList.remove('is-resting');
       clearTimeout(restTimer);
-      restTimer = setTimeout(() => { if (!input.value) paper.classList.add('is-resting'); }, 8000);
+      restTimer = setTimeout(() => { if (!input.value) { paper.classList.add('is-resting'); if (!peek.hidden) showPeek(false); } }, 8000);
     };
     ['keydown', 'pointerdown', 'pointermove'].forEach((ev) => window.addEventListener(ev, wake, { passive: true }));
     wake();

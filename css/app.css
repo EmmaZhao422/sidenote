@@ -340,7 +340,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .stage {
   /* The study screens look the same in both themes: a dark scene with one piece of light paper */
   --paper: #F5F7FC; --sheet: #FFFFFF; --ink: #18213D; --ink-2: #485272; --ink-3: #5C6682;
-  --rule: #D5DDF0; --rule-strong: #AEBBDD; --margin: #E2466B; --blue: #2B4FD0;
+  --rule: #D5DDF0; --rule-strong: #AEBBDD; --margin: #E2466B; --blue: #2B4FD0; --danger: #B3264A;
   position: fixed; inset: 0; overflow-y: auto; color: #F3F5FB; color-scheme: light;
   background: linear-gradient(165deg, var(--sky-a, #1b2033), var(--sky-b, #313a57));
   transition: background 0.6s;
@@ -406,7 +406,17 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .margin.is-resting { opacity: 0.78; filter: saturate(0.7); }
 .margin-top { display: flex; align-items: baseline; justify-content: space-between; gap: 0.6rem; margin-bottom: 0.3rem; min-width: 0; }
 .margin-title { font-family: var(--display); font-weight: 800; white-space: nowrap; }
-.margin-count { font-size: 0.88rem; color: var(--ink-3); white-space: nowrap; flex: none; margin-left: auto; }
+.margin-count { font: inherit; font-size: 0.88rem; color: var(--ink-3); white-space: nowrap; flex: none; margin-left: auto; background: none; border: 0; padding: 0.15rem 0.2rem; border-radius: 4px; cursor: pointer; text-decoration: underline; text-decoration-color: var(--rule-strong); text-underline-offset: 0.2em; }
+.margin-count:disabled { cursor: default; text-decoration: none; }
+.margin-count:not(:disabled):hover { color: var(--ink); }
+.margin-peek { list-style: none; margin: 0.2rem 0 0.5rem; padding: 0; max-height: 9.5rem; overflow-y: auto; border-top: 1px dashed var(--rule-strong); border-bottom: 1px dashed var(--rule-strong); }
+.margin-peek li { display: flex; align-items: baseline; justify-content: space-between; gap: 0.8rem; font-family: var(--hand); font-size: 1.25rem; line-height: 1.3; padding: 0.15rem 0; color: var(--ink-2); overflow-wrap: anywhere; }
+.margin-peek-x { flex: none; font: inherit; font-family: var(--body); font-size: 1.1rem; line-height: 1; color: var(--ink-3); background: none; border: 0; border-radius: 4px; padding: 0.2rem 0.45rem; cursor: pointer; }
+.margin-peek-x:hover { color: var(--danger); }
+/* on a laptop the paper floats above the bottom edge, so it does not look cut off */
+@media (min-width: 52rem) and (min-height: 34rem) {
+  .margin { border-radius: 0 12px 12px 0; margin-bottom: 1.5rem; padding-bottom: 1.1rem; }
+}
 .margin-strip { display: flex; align-items: flex-end; gap: 0.7rem; }
 .margin-input { flex: 1; min-width: 0; font-family: var(--hand); font-size: 1.65rem; line-height: 1.2; color: var(--ink); background: transparent; border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; padding: 0.15rem 0.1rem 0.2rem; }
 .margin-input::placeholder { color: var(--ink-3); opacity: 1; }
@@ -635,3 +645,23 @@ body.is-immersed .view { padding: 0; max-width: none; }
   /* the "Parked" confirmation fades by animation; without motion it must simply show */
   .margin-flash.is-on { animation: none; opacity: 1; }
 }
+
+/* a thought that has a day or a place in the next block: folded to one line */
+.note.is-planned { padding: 0.6rem 1.2rem 0.7rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0.1rem 1rem; align-items: center; border-left-color: var(--rule-strong); }
+.note.is-planned .note-text { font-size: 1.35rem; color: var(--ink-2); }
+.note.is-planned .note-meta { margin-top: 0; grid-column: 1; }
+.note.is-planned .note-line-done { grid-column: 1; margin: 0.1rem 0 0; font-size: 1.1rem; }
+.note.is-planned .note-actions { grid-column: 2; grid-row: 1 / span 3; margin-top: 0; flex-wrap: nowrap; }
+.note-kind-text { font-weight: 600; }
+@media (max-width: 34rem) {
+  .note.is-planned { grid-template-columns: minmax(0, 1fr); }
+  .note.is-planned .note-actions { grid-column: 1; grid-row: auto; margin-top: 0.5rem; }
+}
+.score-how summary { cursor: pointer; font-size: 0.9rem; color: var(--ink-2); width: fit-content; }
+.score-how .hint { margin-top: 0.4rem; }
+
+/* the home page text that is in index.html itself, shown until the app has drawn */
+.static-home { max-width: 44rem; margin-top: 2rem; }
+.static-home h2 { margin: 1.6rem 0 0.6rem; }
+.static-home li { margin: 0.35rem 0; }
+.is-deep #view > .hero, .is-deep #view > .static-home { display: none; }

@@ -9,6 +9,19 @@ import { CATEGORIES, looksLikeCrisis } from '../classify.js';
 import { resolveThought, offlineReply, aiMode, askPrompt } from '../ai.js';
 import { breakTimer } from '../breaktimer.js';
 
+// Planned cards the student has opened up again with "Change", for this page visit
+const unfolded = new Set();
+
+export function isPlanned(thought) {
+  return thought.status !== 'done' && Boolean(thought.due || thought.queued);
+}
+
+function dueLabel(due) {
+  const today = store.dayKey(0);
+  return due < today ? t('due.overdue') : due === today ? t('due.today') : due === store.dayKey(1) ? t('due.tomorrow')
+    : t('due.by', { day: dayLabel(new Date(`${due}T12:00`).getTime()) });
+}
+
 // opts.onChange()  called when the note is marked done / reopened / deleted
 // opts.goal        what the student was studying when they parked it
 export function noteCard(thoughtId, opts = {}) {
@@ -16,7 +29,38 @@ export function noteCard(thoughtId, opts = {}) {
   if (!thought) return h('div');
 
   const card = h('article', { class: 'note', dataset: { status: thought.status, id: thought.id } });
-  const redraw = () => card.replaceWith(noteCard(thoughtId, opts));
+  const redraw = (focus) => {
+    const next = noteCard(thoughtId, opts);
+    card.replaceWith(next);
+    if (focus) next.querySelector(focus)?.focus();
+  };
+
+  // A thought that has been given a day, or a place in the next block, is dealt with
+  // for now: it folds down to one line so the list shows what is still undecided.
+  if (isPlanned(thought) && !unfolded.has(thought.id)) {
+    card.classList.add('is-planned');
+    card.append(...[
+      h('p', { class: 'note-text', dir: 'auto' }, thought.text),
+      h('div', { class: 'note-meta' },
+        h('span', { class: 'note-kind-text' }, t(`cat.${thought.category}`)),
+        thought.due ? h('span', { class: 'note-due' }, dueLabel(thought.due)) : null,
+        thought.queued ? h('span', { class: 'note-due' }, t('note.queuedTag')) : null),
+      thought.note ? h('p', { class: 'note-line-done', dir: 'auto' }, thought.note) : null,
+      h('div', { class: 'note-actions' },
+        h('button', {
+          type: 'button', class: 'btn btn-quiet',
+          onclick: () => {
+            if (thought.queued) store.removeFromNextPlan(thought.text);
+            store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
+            opts.onChange?.('status');
+          },
+        }, t('note.done')),
+        h('button', {
+          type: 'button', class: 'btn btn-quiet note-change',
+          onclick: () => { unfolded.add(thought.id); redraw('.note-when .chip[aria-pressed="true"]'); },
+        }, t('note.change')))].filter(Boolean));
+    return card;
+  }
 
   // --- the thought itself
   card.append(h('p', { class: 'note-text', dir: 'auto' }, thought.text));
@@ -32,9 +76,7 @@ export function noteCard(thoughtId, opts = {}) {
       ? t('note.offset', { n: Math.max(1, Math.round(thought.offsetSec / 60)) })
       : whenLabel(thought.createdAt)));
   if (thought.due && thought.status !== 'done') {
-    const today = store.dayKey(0);
-    const label = thought.due < today ? t('due.overdue') : thought.due === today ? t('due.today') : thought.due === store.dayKey(1) ? t('due.tomorrow') : t('due.by', { day: dayLabel(new Date(`${thought.due}T12:00`).getTime()) });
-    meta.append(h('span', { class: 'note-due' }, label));
+    meta.append(h('span', { class: 'note-due' }, dueLabel(thought.due)));
   }
   card.append(meta);
 
@@ -53,10 +95,10 @@ export function noteCard(thoughtId, opts = {}) {
     const links = h('div', { class: 'note-links' });
     (reply.links || []).forEach((l) => {
       if (!/^https:\/\//.test(String(l.url))) return; // stored data never gets to choose another kind of link
-      links.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label));
+      links.append(h('a', { class: 'btn btn-quiet note-link', href: l.url, target: '_blank', rel: 'noopener noreferrer', title: t('offline.linkHint') }, l.label));
     });
     // ...or copy the same request, to paste into whichever AI app the student uses
-    if (reply.source === 'offline' && thought.category !== 'urge') {
+    if (reply.source === 'offline' && (reply.links || []).length) {
       links.append(h('button', {
         type: 'button', class: 'btn btn-quiet note-link',
         onclick: async () => {
@@ -78,7 +120,7 @@ export function noteCard(thoughtId, opts = {}) {
     const line = h('textarea', {
       class: 'field note-line', rows: '1', maxlength: '400', dir: 'auto',
       oninput: (e) => { e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight + 2}px`; },
-      placeholder: t(`line.${thought.category}`), 'aria-label': t('line.label'),
+      placeholder: t(reply && reply.kind === 'check' ? 'line.check' : `line.${thought.category}`), 'aria-label': t('line.label'),
       onchange: (e) => { store.updateThought(thought.id, { note: e.target.value.trim() }); },
     });
     line.value = thought.note || '';
@@ -124,7 +166,7 @@ export function noteCard(thoughtId, opts = {}) {
   // Dated to-dos show on the home page until they are done.
   let whenRow = null;
   // (worries and "other" thoughts can be given a day too: "look at this again tonight")
-  if (['todo', 'worry', 'other'].includes(thought.category) && thought.status !== 'done') {
+  if ((['todo', 'worry', 'other'].includes(thought.category) || (reply && reply.kind === 'check')) && thought.status !== 'done') {
     // "this week" runs to Sunday; on a Sunday that is today
     const sunday = () => store.dayKey((7 - new Date().getDay()) % 7);
     const choices = [
@@ -138,9 +180,12 @@ export function noteCard(thoughtId, opts = {}) {
         type: 'button', class: 'chip', 'aria-pressed': String(Boolean(thought.due) && thought.duePick === c.key),
         onclick: () => {
           const due = thought.due && thought.duePick === c.key ? null : c.due();
-          store.updateThought(thought.id, { due, duePick: due ? c.key : null });
+          // one "when" at a time: picking a day takes it out of the next block's plan
+          if (due && thought.queued) store.removeFromNextPlan(thought.text);
+          store.updateThought(thought.id, { due, duePick: due ? c.key : null, ...(due ? { queued: false } : {}) });
           if (due) toast(t('due.saved'));
-          redraw();
+          unfolded.delete(thought.id);
+          redraw(due ? '.note-change' : null);
           opts.onChange?.('due');
         },
       }, t(`due.pick.${c.key}`))),
@@ -155,10 +200,11 @@ export function noteCard(thoughtId, opts = {}) {
           } else {
             if ((store.state.nextPlan || []).length >= 6) { toast(t('note.nextFull')); return; }
             store.addToNextPlan(thought.text);
-            store.updateThought(thought.id, { queued: true });
+            store.updateThought(thought.id, { queued: true, due: null, duePick: null });
             toast(t('note.nextAdded'));
           }
-          redraw();
+          unfolded.delete(thought.id);
+          redraw('.note-change');
           opts.onChange?.('due');
         },
       }, t('note.next')));
