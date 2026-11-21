@@ -210,6 +210,8 @@ def main():
             out["alreadyAnswered"] = t["reply"].get("source") == "ai"
         return out
 
+    # oldest first, whatever order the file is in, so "the newest N" means what it says
+    thoughts = sorted(thoughts, key=lambda t: t["createdAt"] if num(t.get("createdAt")) else 0)
     waiting = [describe(t) for t in thoughts if t.get("status") != "done"]
     demo_note = None
     if sample_thoughts or sample_blocks:

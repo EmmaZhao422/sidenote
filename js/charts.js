@@ -64,6 +64,7 @@ function arrowKeys(group) {
 // Round an axis maximum up to a friendly number: 37 -> 40, 130 -> 150
 function niceCeil(x) {
   if (x <= 4) return 4;
+  if (x <= 6) return 6;
   const pow = 10 ** Math.floor(Math.log10(x));
   const n = x / pow;
   const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;

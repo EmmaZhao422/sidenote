@@ -89,23 +89,27 @@ export function announce(message) {
     document.body.append(el);
   }
   el.textContent = '';
+  clearTimeout(announceStart);
   clearTimeout(announceTimer);
   // (a changed text node is announced more reliably than a replaced one)
-  setTimeout(() => { el.textContent = message; }, 50);
+  announceStart = setTimeout(() => { el.textContent = message; }, 50);
   // Stale text left in a live region gets read again by anyone browsing the page.
   announceTimer = setTimeout(() => { el.textContent = ''; }, 6000);
 }
 let announceTimer = 0;
+let announceStart = 0;
 
 let toastAt = 0;
+let toastLong = false;
 // On a change of screen: hide a toast that has had time to be read. One raised
 // in the same moment as the navigation ("Saved", then the next screen) stays.
 export function clearToast() {
-  if (Date.now() - toastAt < 1200) return;
+  if (toastLong || Date.now() - toastAt < 1200) return;
   document.getElementById('toast')?.classList.remove('is-on');
 }
 
 export function clearAnnounce() {
+  clearTimeout(announceStart);
   clearTimeout(announceTimer);
   const el = document.getElementById('sr-status');
   if (el) el.textContent = '';
@@ -120,6 +124,7 @@ export function toast(message, ms = 2600) {
   el.textContent = message;
   el.classList.add('is-on');
   toastAt = Date.now();
+  toastLong = ms >= 5000;
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('is-on'), ms);
 }
