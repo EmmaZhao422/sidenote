@@ -2,7 +2,7 @@
 // park a stray thought, and beside it a small live study screen where the
 // thought lands in the margin.
 
-import { h, mount, toast, clock, minutesText, dayLabel } from '../ui.js';
+import { h, mount, toast, clock, minutesText, dayLabel, isTouchDevice } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { adSlot } from '../ads.js';
@@ -18,6 +18,10 @@ const GUIDES = [
   { slug: 'background-sound', en: 'Rain, brown noise or silence: finding the sound you focus with', zh: '雨声、棕噪音还是安静：找到适合你专注的声音' },
   { slug: 'study-block-length', en: '25 minutes or 45? How long a study block should be', zh: '25 分钟还是 45 分钟？一轮学习该多长' },
   { slug: 'phone-while-studying', en: 'Where should your phone be while you study?', zh: '学习的时候，手机该放哪儿？' },
+  { slug: 'mind-wandering', en: 'Why your mind wanders while you study, and what to do instead of fighting it', zh: '学习时为什么总走神，以及比「硬撑」更管用的办法' },
+  { slug: 'worry-while-studying', en: 'A worry showed up while you were studying. Give it an appointment.', zh: '学到一半开始担心？给这个担心约个时间' },
+  { slug: 'study-breaks', en: 'What to do in a five-minute study break', zh: '学习间隙的五分钟，做什么最好' },
+  { slug: 'test-yourself', en: 'Re-reading feels like studying. Testing yourself works better.', zh: '反复看书像在学习，自己考自己才更有效' },
 ];
 
 export function homeView(root, navigate) {
@@ -115,6 +119,17 @@ export function homeView(root, navigate) {
           h('span', { class: 'week-day' }, new Date(d.day).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'narrow' }))))));
   }
 
+  // --- on a phone, a returning student is told once that the site can sit on the home screen
+  let install = null;
+  const standalone = window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone;
+  if (real.length >= 2 && isTouchDevice() && !standalone && !store.state.settings.installHintSeen) {
+    install = h('p', { class: 'notice install-hint' }, t('home.installHint'), ' ',
+      h('button', {
+        type: 'button', class: 'linklike',
+        onclick: () => { store.setSettings({ installHintSeen: true }); install.remove(); },
+      }, t('home.installOk')));
+  }
+
   // --- how a block goes (a real sequence, so it is numbered)
   const how = h('section', { class: 'band' },
     h('h2', null, t('home.howTitle')),
@@ -144,7 +159,7 @@ export function homeView(root, navigate) {
     h('ul', { class: 'guide-list' }, GUIDES.map((g) =>
       h('li', null, h('a', { href: `${guideBase}${g.slug}.html` }, lang === 'zh' ? g.zh : g.en)))));
 
-  mount(root, hero, today, how, sceneBand, adSlot('home'), guides);
+  mount(root, hero, today, install, how, sceneBand, adSlot('home'), guides);
   drawParked(false);
 
   // The miniature runs a slow, purely cosmetic countdown

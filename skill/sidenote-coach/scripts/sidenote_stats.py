@@ -278,6 +278,10 @@ def main():
     ])
     if demo_note:
         out["notes"].append(demo_note)
+    if num(data.get("exportedAt")):
+        age_days = int((time.time() * 1000 - data["exportedAt"]) // 86400000)
+        if age_days >= 2:
+            out["notes"].append(f"This backup was saved {age_days} days ago, so the period ends on {local_day(now, tz)}, not today.")
     if not sessions:
         out["notes"].append("No study blocks in this period." + ("" if args.days <= 0 else " Try --days 0 for everything."))
     elif len(scored) < 3:

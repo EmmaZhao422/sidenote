@@ -29,6 +29,7 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/config.js` | **The one file to edit** to switch on AI and ads |
 | `js/main.js` | Picks the screen for the current address |
 | `js/views/` | One file per screen: home, study block, margin, summary, scenes, settings |
+| `js/block.js` | Starts a study block (used by the setup screen and the one-tap "Same as last time") |
 | `js/store.js` | Saves everything in the browser's local storage |
 | `js/classify.js` | Sorts a thought into question / to-do / worry / idea / urge |
 | `js/score.js` | Focus score, totals for the summary, scene recommendation |
@@ -40,7 +41,10 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/analytics.js` | Optional visit counter (off until configured) |
 | `js/charts.js`, `js/recap.js`, `js/sample.js` | Charts, the written recap, and example data for the summary page |
 | `worker/` | The Cloudflare Worker that keeps the API key off the website |
-| `guides/`, `about.html`, `privacy.html`, `terms.html`, `zh/` | Articles and plain pages |
+| `guides/`, `about.html`, `privacy.html`, `terms.html`, `claude.html`, `zh/` | Articles and plain pages. They are generated: the text lives in `tools/build_pages.py` and `tools/more_guides.py` |
+| `fonts/` | The two typefaces, served from the site itself |
+| `skill/` | `sidenote-coach`, a Claude skill that sorts parked thoughts and reviews study sessions with the visitor's own Claude plan |
+| `tools/` | Scripts that build the plain pages and package the skill |
 | `sw.js` | Keeps a copy of the site so it still opens when the connection drops |
 | `tests/` | Unit tests |
 | `docs/` | Setup notes, monetization plan and roadmap (in Chinese) |
