@@ -464,7 +464,7 @@ export function sessionView(root, navigate) {
         if (!store.addThought(input.value, { sessionId: cur.id, offsetSec })) return;
         input.value = '';
         drawMargin();
-        flash.textContent = t('focus.parked');
+        flash.textContent = t(window.innerWidth < 560 ? 'focus.parkedShort' : 'focus.parked');
         flash.classList.remove('is-on');
         void flash.offsetWidth; // restart the fade animation
         flash.classList.add('is-on');

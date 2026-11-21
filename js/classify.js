@@ -39,7 +39,7 @@ const RULES = {
 // even when a later word looks like an urge or a worry.
 const TODO_OPENERS = [
   /^(i )?(need to|have to|must|gotta|remember to|don't forget|dont forget|todo|to-do)\b/i,
-  /^(buy|email|call|text|reply|pay|book|submit|finish|send|sign up|register|schedule|clean|wash|renew|return|print|pick up|order|look up|check if|check whether)\b/i,
+  /^(buy|email|call|text|reply|pay|book|submit|finish|send|sign up|register|schedule|clean|wash|renew|return|print|pick up|order|look up|check if|check whether|check the|check on|check with|find out)\b/i,
   /^(记得|别忘|不要忘|要交|要买|要回|要发|要问|查一下|查查|搜一下|看一下|看看|问一下|问问|买|回复|报名|预约|取快递|提交|缴费|还书|订票|续费|给.{1,8}(发|回|打|寄|买))/,
 ];
 

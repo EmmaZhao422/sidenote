@@ -18,7 +18,7 @@ const EN = [
   ['Email Professor Lin about the extension', 'todo'], ['Buy printer paper', 'todo'], ['Reply to mom', 'todo'],
   ['Pay the phone bill', 'todo'], ['Return library books', 'todo'], ['Sign up for the career fair', 'todo'],
   ['need to call the landlord', 'todo'], ['Remember to charge my laptop', 'todo'], ['text Maya back', 'todo'],
-  ['Look up cheap flights home', 'todo'], ['Check if the gym is open on Sunday', 'todo'], ['book dentist appointment', 'todo'],
+  ['Look up cheap flights home', 'todo'], ['Check the library hours', 'todo'], ['Check if the gym is open on Sunday', 'todo'], ['book dentist appointment', 'todo'],
   ['What if I fail the midterm', 'worry'], ['Am I behind everyone else in this class', 'worry'],
   ['Is it too late to switch majors?', 'worry'], ['What if my roommate is annoyed with me', 'worry'],
   ['why am I so bad at this', 'worry'], ['I am going to fail this class', 'worry'], ['am I just too dumb for this major', 'worry'],
