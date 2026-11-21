@@ -15,7 +15,7 @@ const RULES = {
   worry: [
     /\b(worried|worry|anxious|anxiety|afraid|scared|what if|stress|stressed|nervous|fail|failing|behind|overwhelmed|lonely|sad|tired of|hate|can't do|embarrass|regret|too late|not good enough|mad at me|annoyed with me|bad at|not cut out|not smart enough|too dumb|so stupid|give up|never going to|never gonna)\b/i,
     /^why am i (so|like|always)\b/i,
-    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我|不适合|是不是不|学不会|听不懂|看不懂|太难了|我不行|好笨|没救)/,
+    /(担心|焦虑|害怕|好怕|万一|压力|紧张|好烦|烦死|难过|崩溃|来不及|完蛋|挂科|考不好|考不上|考不过|过不了|上不了岸|没戏|没希望|怎么办|丢人|后悔|孤独|撑不住|落后|跟不上|太晚|太迟|是不是(很|太)?(差|笨|菜)|生我(的)?气|讨厌我|不适合|是不是不|学不会|听不懂|看不懂|太难了|我不行|好笨|没救)/,
   ],
   todo: [
     /^(i )?(need to|have to|must|gotta|should|remember to|don't forget|dont forget|todo|to-do)\b/i,
@@ -31,7 +31,7 @@ const RULES = {
     /[?？]\s*$/,
     /^(what|why|how|when|where|who|which|is|are|was|were|can|could|does|do|did|will|would|should)\b/i,
     /^i wonder\b/i,
-    /(为什么|为啥|怎么|什么是|是什么|如何|是不是|多少|哪个|哪里|哪天|几点|几号|什么时候|多久|吃啥|吃什么|谁|能不能|要不要|吗$|呢$|区别|了没(有)?$|哪了$|哪儿|(什么|啥)$)/,
+    /(为什么|为啥|怎么|什么是|是什么|如何|是不是|多少|哪个|哪里|哪天|几点|几号|什么时候|多久|吃啥|吃什么|谁|能不能|要不要|吗$|呢$|区别|了没(有)?$|哪了$|哪儿|(什么|啥)$|在哪里?$|到底|有什么不同|有啥不同|不一样|什么意思|怎么回事|对不对|行不行|可以吗|是不是)/,
   ],
 };
 
@@ -81,6 +81,7 @@ const ONLY_YOU = [
   /(门|窗|灯|煤气|燃气|火|车|电动车|自行车|空调|电脑|水龙头|热水器|插头|充电器).{0,8}(锁|关|拔|停|熄).{0,3}(了吗|了没|没有|没)[?？]?$/,
   /.{1,12}(放|落|丢|忘)(在|到)?(哪|哪里|哪儿)了?[?？]?$/,
   /(带|交|发|回|提交|保存|存|打卡)了(吗|没|没有)[?？]?$/,
+  /(是不是|有没有|会不会).{0,4}(没|忘了?).{0,2}(带|锁|关|拔|交|发|回|存|拿|充|还|提交|保存)/,
 ];
 
 export function onlyYouCanCheck(text) {
