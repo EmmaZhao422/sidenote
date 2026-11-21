@@ -14,6 +14,11 @@ test('sorts thoughts into kinds, in English and Chinese', () => {
     ['这个能不能商业化', 'idea'],
     ['I want to check Instagram', 'urge'],
     ['想刷一会儿抖音', 'urge'],
+    ['Pay the phone bill', 'todo'],
+    ['Look up cheap flights home', 'todo'],
+    ['查一下回家的便宜机票', 'todo'],
+    ['Check if the gym is open on Sunday', 'todo'],
+    ['Scroll TikTok for a bit', 'urge'],
     ['blue umbrella', 'other'],
     ['', 'other'],
   ];

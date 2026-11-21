@@ -30,12 +30,21 @@ const RULES = {
   ],
 };
 
+// Lines that open like an errand ("Pay the phone bill", "记得给妈妈回电话") are to-dos
+// even when a later word looks like an urge or a worry.
+const TODO_OPENERS = [
+  /^(i )?(need to|have to|must|gotta|remember to|don't forget|dont forget|todo|to-do)\b/i,
+  /^(buy|email|call|text|reply|pay|book|submit|finish|send|sign up|register|schedule|clean|wash|renew|return|print|pick up|order|look up|check if|check whether)\b/i,
+  /^(记得|别忘|不要忘|要交|要买|要回|要发|要问|查一下|问一下|买|回复|报名|预约|取快递|提交|缴费|还书|订票|续费)/,
+];
+
 // Order matters: a line like "what if I fail?" is a worry before it is a question.
 const ORDER = ['urge', 'worry', 'todo', 'idea', 'question'];
 
 export function classify(text) {
   const s = String(text || '').trim();
   if (!s) return 'other';
+  if (!/[?？]\s*$/.test(s) && TODO_OPENERS.some((re) => re.test(s))) return 'todo';
   for (const cat of ORDER) {
     if (RULES[cat].some((re) => re.test(s))) return cat;
   }

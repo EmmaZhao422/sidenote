@@ -8,6 +8,7 @@ import { store } from '../store.js';
 import { noteCard, sortAll } from './note.js';
 import { adSlot } from '../ads.js';
 import { audio } from '../audio.js';
+import { copyForClaudeButton } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
 
 function sortAllButton(getIds, goalFor, refresh) {
@@ -63,8 +64,11 @@ export function marginView(root) {
 
     const unanswered = open.filter((x) => !x.reply);
     const tools = h('div', { class: 'row row-between' }, tabs,
-      tab === 'open' && unanswered.length >= 2
-        ? sortAllButton(() => unanswered.map((x) => x.id), goalOf, draw) : null);
+      h('div', { class: 'row' },
+        tab === 'open' && unanswered.length >= 2
+          ? sortAllButton(() => unanswered.map((x) => x.id), goalOf, draw) : null,
+        tab === 'open' && open.length
+          ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null));
 
     const notes = h('div', { class: 'notes' });
     if (!list.length) {
@@ -133,7 +137,9 @@ export function reviewView(root, navigate, sessionId) {
     mount(body,
       h('div', { class: 'row row-between' },
         h('h2', null, t('review.thoughtsTitle', { n: open.length })),
-        unanswered.length >= 2 ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null),
+        h('div', { class: 'row' },
+          unanswered.length >= 2 ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
+          open.length ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done')) : null)),
       notes);
   }
 

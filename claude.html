@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Use Sidenote with Claude | Sidenote</title>
+  <meta name="description" content="A free skill that lets Claude deal with the thoughts you parked while studying and review your week, on your own Claude plan.">
+  <link rel="canonical" href="https://emmazhao422.github.io/sidenote/claude.html">
+  <link rel="alternate" hreflang="en" href="https://emmazhao422.github.io/sidenote/claude.html">
+  <link rel="alternate" hreflang="zh" href="https://emmazhao422.github.io/sidenote/zh/claude.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+  <script>
+    try {
+      var saved = (JSON.parse(localStorage.getItem('sidenote.v1')) || {}).settings;
+      var theme = saved && saved.theme;
+      if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="site-head">
+    <a class="brand" href=""><span class="brand-mark" aria-hidden="true"></span>Sidenote</a>
+    <nav><a href="#/focus">Start a study block</a><a href="guides/">Study guides</a><a href="zh/claude.html" lang="zh-CN">中文</a></nav>
+  </header>
+  <main class="prose">
+<h1>Use Sidenote with Claude</h1>
+    <p>If you already use Claude, you don't need anything else to get real answers to the thoughts you park. The <strong>sidenote-coach</strong> skill teaches Claude what to do with them. It runs in your own Claude account, on your own plan, so it costs this site nothing and needs no API key.</p>
+
+    <h2>What it does</h2>
+    <ul>
+      <li><strong>Sorts out your margin.</strong> Paste your parked thoughts, or attach a backup file. Questions get answered, to-dos get a first step, worries get a calmer second look, and you get a short "next ten minutes" list.</li>
+      <li><strong>Reviews your week.</strong> From a backup file it reports your focus time, focus score, what your stray thoughts were about, the minute of a block they tend to hit, and which scene you focus best with. The numbers are computed by a script, the same way this site computes them.</li>
+      <li><strong>Plans a block</strong> in under a minute: one checkable goal, two or three steps, a starting line.</li>
+      <li><strong>Holds your thoughts in the chat</strong> when you study without this site open. It replies with a tick and nothing else until you say you're done.</li>
+    </ul>
+
+    <h2>Get the skill</h2>
+    <p class="cta"><a class="btn btn-ink btn-big" href="skill/sidenote-coach.zip" download>Download sidenote-coach.zip</a></p>
+    <p class="byline">A small ZIP file. It contains plain-text instructions and one short Python script; you can read all of it <a href="https://github.com/EmmaZhao422/sidenote/tree/main/skill/sidenote-coach">on GitHub</a> before adding it.</p>
+
+    <h2>Add it to Claude</h2>
+    <ol>
+      <li>In Claude, open <strong>Customize</strong>, then <strong>Skills</strong>.</li>
+      <li>Click the <strong>+</strong> button, choose <strong>Create skill</strong>, then <strong>Upload a skill</strong>.</li>
+      <li>Pick the ZIP file you downloaded. Leave it zipped.</li>
+      <li>Make sure the skill is switched on in the list.</li>
+    </ol>
+    <p>Skills need "Code execution and file creation" switched on in Claude's settings. Claude's menus change from time to time; if these steps don't match what you see, <a href="https://support.claude.com/en/articles/12512180">Claude's help page on skills</a> has the current ones.</p>
+
+    <h2>Use it</h2>
+    <ul>
+      <li><strong>After a study block:</strong> on the Margin page here, click <strong>Copy for Claude</strong>, then paste into a Claude chat.</li>
+      <li><strong>For a weekly review:</strong> in Settings here, click <strong>Save a backup file</strong>, attach that file in Claude and ask "How did my week go?"</li>
+      <li><strong>Before studying:</strong> tell Claude "Help me plan a 45-minute block for chapter 7."</li>
+      <li><strong>Without this site:</strong> tell Claude "I'm starting a 25-minute block, hold my thoughts."</li>
+    </ul>
+
+    <h2>What to know</h2>
+    <ul>
+      <li>Whatever you paste or attach goes to Claude under your own account and its privacy terms. This site never sees it.</li>
+      <li>A chat can't keep time or play sound. The timer, the scenes and the charts stay here.</li>
+      <li>Sidenote is an independent student project. It is not affiliated with or endorsed by Anthropic, the company that makes Claude.</li>
+    </ul>
+<p class="cta"><a class="btn btn-ink btn-big" href="#/focus">Start a study block</a></p>
+
+  </main>
+  <footer class="prose-foot"><a href="">Home</a><a href="claude.html">Use with Claude</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/EmmaZhao422/sidenote">Source on GitHub</a></footer>
+  <script type="module" src="js/site.js"></script>
+</body>
+</html>

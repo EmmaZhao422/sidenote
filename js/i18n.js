@@ -53,6 +53,14 @@ const en = {
   'note.delete': 'Delete',
   'note.deleteSure': 'Delete for good?',
 
+  'handoff.button': 'Copy for Claude',
+  'handoff.header': 'Sidenote margin. These are thoughts I parked while studying; please sort them out one by one (use the sidenote-coach skill if you have it).',
+  'handoff.when': 'parked {n} min into "{goal}"',
+  'handoff.copied': 'Copied. Paste it into a Claude chat.',
+  'handoff.manual': 'Select the text below and copy it.',
+  'settings.ai.skill': 'Already use Claude? A free skill lets Claude deal with your margin and review your week on your own Claude plan, with nothing to set up here.',
+  'settings.ai.skillLink': 'Use Sidenote with Claude',
+  'foot.claude': 'Use with Claude',
   'ai.needBaseModel': 'Add the API address and model name in Settings first.',
   'ai.empty': 'The reply came back empty.',
 
@@ -395,6 +403,14 @@ const zh = {
   'note.delete': '删除',
   'note.deleteSure': '确定删掉？',
 
+  'handoff.button': '复制给 Claude',
+  'handoff.header': '走神本 · 页边的念头。这些是我学习时先记下的念头，请帮我逐条处理（如果有 sidenote-coach 这个 skill，就调用它）。',
+  'handoff.when': '「{goal}」学到第 {n} 分钟时记的',
+  'handoff.copied': '已复制。粘贴到 Claude 的对话里就行。',
+  'handoff.manual': '选中下面的文字，手动复制。',
+  'settings.ai.skill': '平时就在用 Claude？有一个免费的 skill，让 Claude 用你自己的额度处理页边的念头、做每周复盘，这里什么都不用设置。',
+  'settings.ai.skillLink': '配合 Claude 使用走神本',
+  'foot.claude': '配合 Claude 使用',
   'ai.needBaseModel': '先去设置里填 API 地址和模型名。',
   'ai.empty': '回复是空的。',
 

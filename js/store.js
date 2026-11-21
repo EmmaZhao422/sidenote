@@ -143,6 +143,10 @@ export const store = {
     const copy = clone(state);
     copy.settings.ai.key = ''; // never write an API key into a backup file
     copy.active = null;
+    // Extra facts for anything that reads the file later (the Claude skill in /skill)
+    copy.app = 'sidenote';
+    copy.exportedAt = Date.now();
+    copy.tzOffsetMinutes = new Date().getTimezoneOffset();
     return JSON.stringify(copy, null, 2);
   },
   importJSON(text) {

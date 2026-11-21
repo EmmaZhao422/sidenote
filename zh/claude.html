@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>配合 Claude 使用走神本 | 走神本</title>
+  <meta name="description" content="一个免费的 skill：让 Claude 用你自己的额度处理学习时记下的念头，并做每周复盘。">
+  <link rel="canonical" href="https://emmazhao422.github.io/sidenote/zh/claude.html">
+  <link rel="alternate" hreflang="zh" href="https://emmazhao422.github.io/sidenote/zh/claude.html">
+  <link rel="alternate" hreflang="en" href="https://emmazhao422.github.io/sidenote/claude.html">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/app.css">
+  <script>
+    try {
+      var saved = (JSON.parse(localStorage.getItem('sidenote.v1')) || {}).settings;
+      var theme = saved && saved.theme;
+      if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+    } catch (e) {}
+  </script>
+</head>
+<body>
+  <header class="site-head">
+    <a class="brand" href="../"><span class="brand-mark" aria-hidden="true"></span>走神本</a>
+    <nav><a href="../#/focus">开始一轮学习</a><a href="../guides/zh/">学习方法</a><a href="../claude.html" lang="en">English</a></nav>
+  </header>
+  <main class="prose">
+<h1>配合 Claude 使用走神本</h1>
+    <p>如果你平时就在用 Claude，不需要别的东西，就能让记下的念头得到真正的回答。<strong>sidenote-coach</strong> 这个 skill 会教 Claude 怎么处理它们。它在你自己的 Claude 账号里运行，用的是你自己的额度，所以本站不花钱，你也不用准备 API key。</p>
+
+    <h2>它能做什么</h2>
+    <ul>
+      <li><strong>处理页边的念头。</strong>把记下的念头粘贴过去，或者上传备份文件。问题给答案，待办给第一步，担心的事换个更平静的角度看，最后给你一张「接下来十分钟」的小清单。</li>
+      <li><strong>做每周复盘。</strong>根据备份文件告诉你：专注了多久、专注分多少、走神时在想什么、一般在第几分钟走神、在哪个场景里最专注。数字由脚本计算，算法和本站一致。</li>
+      <li><strong>帮你计划一轮学习，</strong>不到一分钟：一个能检查的目标，两三步，一句开始的话。</li>
+      <li><strong>在对话里替你记念头。</strong>没开本站时也能用。在你说「结束」之前，它只回一个对勾，别的什么都不说。</li>
+    </ul>
+
+    <h2>获取 skill</h2>
+    <p class="cta"><a class="btn btn-ink btn-big" href="../skill/sidenote-coach.zip" download>下载 sidenote-coach.zip</a></p>
+    <p class="byline">一个很小的 ZIP 文件，里面是纯文本的说明和一个很短的 Python 脚本。添加之前可以先在 <a href="https://github.com/EmmaZhao422/sidenote/tree/main/skill/sidenote-coach">GitHub</a> 上看完全部内容。</p>
+
+    <h2>添加到 Claude</h2>
+    <ol>
+      <li>在 Claude 里打开 <strong>Customize</strong>，再点 <strong>Skills</strong>。</li>
+      <li>点 <strong>+</strong> 按钮，选 <strong>Create skill</strong>，再选 <strong>Upload a skill</strong>。</li>
+      <li>选中刚下载的 ZIP 文件，不用解压。</li>
+      <li>确认它在列表里是开启状态。</li>
+    </ol>
+    <p>使用 skill 需要在 Claude 的设置里打开「Code execution and file creation」。Claude 的菜单时不时会变，如果这里的步骤和你看到的对不上，以 <a href="https://support.claude.com/en/articles/12512180">Claude 官方的 skill 帮助页</a>为准。</p>
+
+    <h2>怎么用</h2>
+    <ul>
+      <li><strong>学完一轮之后：</strong>在本站的「页边」页点<strong>复制给 Claude</strong>，然后粘贴到 Claude 的对话里。</li>
+      <li><strong>每周复盘：</strong>在本站的「设置」页点<strong>保存备份文件</strong>，把文件上传给 Claude，问一句「我这周学得怎么样？」</li>
+      <li><strong>开始学习之前：</strong>对 Claude 说「帮我计划一轮 45 分钟的学习，内容是第 7 章」。</li>
+      <li><strong>没开本站的时候：</strong>对 Claude 说「我要开始学 25 分钟，先帮我记着冒出来的念头」。</li>
+    </ul>
+
+    <h2>需要知道的</h2>
+    <ul>
+      <li>你粘贴或上传的内容，会在你自己的账号下交给 Claude，适用它的隐私条款。本站看不到这些内容。</li>
+      <li>聊天窗口不会计时，也放不了声音。计时器、场景和图表还是在本站。</li>
+      <li>走神本是独立的学生项目，与 Claude 的开发公司 Anthropic 没有隶属或合作关系，也未获其认可。</li>
+    </ul>
+<p class="cta"><a class="btn btn-ink btn-big" href="../#/focus">开始一轮学习</a></p>
+
+  </main>
+  <footer class="prose-foot"><a href="../">首页</a><a href="../zh/claude.html">配合 Claude 使用</a><a href="../zh/about.html">关于</a><a href="../zh/privacy.html">隐私</a><a href="../zh/terms.html">条款</a><a href="https://github.com/EmmaZhao422/sidenote">GitHub 源码</a></footer>
+  <script type="module" src="../js/site.js"></script>
+</body>
+</html>

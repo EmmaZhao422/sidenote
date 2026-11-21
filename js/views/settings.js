@@ -72,6 +72,7 @@ export function settingsView(root, navigate, rerenderAll) {
     h('h2', null, t('settings.ai.title')),
     status,
     h('p', null, CONFIG.ai.proxyUrl ? t('settings.ai.introSite') : t('settings.ai.introNoSite')),
+    h('p', null, t('settings.ai.skill'), ' ', h('a', { href: (getLang() === 'zh' ? 'zh/' : '') + 'claude.html' }, t('settings.ai.skillLink'))),
     h('details', { open: Boolean(s.ai.key) || !CONFIG.ai.proxyUrl },
       h('summary', null, t('settings.ai.ownKey')),
       h('p', { class: 'hint' }, t('settings.ai.keyHint')),
