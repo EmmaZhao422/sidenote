@@ -2,11 +2,12 @@
 //   marginView  - everything you've parked, open or dealt with
 //   reviewView  - the thoughts from one study block, shown right after it ends
 
-import { h, mount, minutesText, dayLabel, segmented } from '../ui.js';
+import { h, mount, toast, clock, minutesText, dayLabel, segmented } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { noteCard, sortAll } from './note.js';
 import { adSlot } from '../ads.js';
+import { audio } from '../audio.js';
 import { getScene, sceneName } from '../scenes.js';
 
 function sortAllButton(getIds, goalFor, refresh) {
@@ -15,8 +16,9 @@ function sortAllButton(getIds, goalFor, refresh) {
     onclick: async () => {
       const ids = getIds();
       btn.disabled = true;
-      await sortAll(ids, goalFor, (n) => { btn.textContent = t('margin.sortingAll', { n, total: ids.length }); });
+      const failed = await sortAll(ids, goalFor, (n) => { btn.textContent = t('margin.sortingAll', { n, total: ids.length }); });
       refresh();
+      if (failed) toast(t('margin.someFailed', { n: failed }));
     },
   }, t('margin.sortAll'));
   return btn;
@@ -135,6 +137,39 @@ export function reviewView(root, navigate, sessionId) {
       notes);
   }
 
+  // --- a short break before the next block, timed here so the phone stays put
+  let breakTicker = 0;
+  const breakBox = h('section', { class: 'break' });
+  function drawBreakChoice() {
+    clearInterval(breakTicker);
+    mount(breakBox,
+      h('h2', null, t('review.breakTitle')),
+      h('div', { class: 'row' },
+        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => startBreak(5) }, t('review.break', { n: 5 })),
+        h('button', { type: 'button', class: 'btn btn-quiet', onclick: () => startBreak(15) }, t('review.break', { n: 15 })),
+        h('a', { class: 'btn btn-ink', href: '#/focus' }, t('review.another'))));
+  }
+  function startBreak(minutes) {
+    const endsAt = Date.now() + minutes * 60000;
+    const left = h('span', { class: 'break-clock', role: 'timer' }, clock(minutes * 60));
+    mount(breakBox,
+      h('h2', null, t('review.breakRunning'), ' ', left),
+      h('p', { class: 'hint' }, t('review.breakHint')),
+      h('button', { type: 'button', class: 'btn btn-quiet', onclick: drawBreakChoice }, t('review.breakSkip')));
+    clearInterval(breakTicker);
+    breakTicker = setInterval(() => {
+      const remaining = (endsAt - Date.now()) / 1000;
+      left.textContent = clock(remaining);
+      if (remaining > 0) return;
+      clearInterval(breakTicker);
+      if (store.state.settings.chime) audio.chime();
+      mount(breakBox,
+        h('h2', null, t('review.breakOver')),
+        h('div', { class: 'row' }, h('a', { class: 'btn btn-ink', href: '#/focus' }, t('review.another'))));
+    }, 500);
+  }
+  drawBreakChoice();
+
   mount(root,
     h('header', { class: 'view-head' },
       h('h1', null, t('review.title')),
@@ -142,8 +177,8 @@ export function reviewView(root, navigate, sessionId) {
     scoreCard,
     h('ul', { class: 'facts' }, facts.map((f) => h('li', null, f))),
     body,
-    h('div', { class: 'row review-next' },
-      h('a', { class: 'btn btn-ink', href: '#/focus' }, t('review.another')),
-      h('a', { class: 'btn btn-quiet', href: '#/summary' }, t('review.toSummary'))));
+    breakBox,
+    h('p', null, h('a', { href: '#/summary' }, t('review.toSummary'))));
   draw();
+  return () => clearInterval(breakTicker);
 }

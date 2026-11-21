@@ -4,6 +4,7 @@
 import { store } from './store.js';
 import { t, getLang } from './i18n.js';
 import { CONFIG } from './config.js';
+import { applyTheme } from './theme.js';
 import { homeView } from './views/home.js';
 import { sessionView } from './views/session.js';
 import { marginView, reviewView } from './views/margin.js';
@@ -63,6 +64,7 @@ function updateCount() {
 function render() {
   destroy?.();
   destroy = null;
+  applyTheme(store.state.settings.theme);
   applyLanguage();
   const { name, arg } = route();
 
@@ -92,6 +94,9 @@ document.getElementById('lang-toggle').addEventListener('click', () => {
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => { /* offline copy is a bonus, not a requirement */ });
 }
+
+// Follow the device when it switches between light and dark
+window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyTheme(store.state.settings.theme));
 
 window.addEventListener('hashchange', render);
 store.subscribe(updateCount);

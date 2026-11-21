@@ -5,6 +5,7 @@ import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { aiMode, testConnection, DEFAULT_ANTHROPIC_MODEL } from '../ai.js';
 import { CONFIG } from '../config.js';
+import { applyTheme } from '../theme.js';
 
 export function settingsView(root, navigate, rerenderAll) {
   const s = store.state.settings;
@@ -16,6 +17,15 @@ export function settingsView(root, navigate, rerenderAll) {
       { value: 'en', label: 'English' },
       { value: 'zh', label: '中文' },
     ], getLang(), (v) => { store.setSettings({ lang: v }); rerenderAll(); }));
+
+  // ---- appearance
+  const appearance = h('section', { class: 'card' },
+    h('h2', null, t('settings.theme')),
+    segmented(t('settings.theme'), [
+      { value: 'auto', label: t('settings.theme.auto') },
+      { value: 'light', label: t('settings.theme.light') },
+      { value: 'dark', label: t('settings.theme.dark') },
+    ], s.theme || 'auto', (v) => { store.setSettings({ theme: v }); applyTheme(v); }));
 
   // ---- AI connection
   const status = h('p', { class: 'ai-status' });
@@ -146,7 +156,7 @@ export function settingsView(root, navigate, rerenderAll) {
 
   mount(root,
     h('header', { class: 'view-head' }, h('h1', null, t('settings.title'))),
-    language, ai, sound, data);
+    language, appearance, ai, sound, data);
   syncProvider();
   drawStatus();
 }

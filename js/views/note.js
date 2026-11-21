@@ -121,6 +121,7 @@ export function noteCard(thoughtId, opts = {}) {
 // "Sort everything out": asks for each open note in turn, one at a time.
 export async function sortAll(ids, goalFor, onProgress) {
   let done = 0;
+  let failed = 0;
   for (const id of ids) {
     const thought = store.state.thoughts.find((x) => x.id === id);
     if (!thought || thought.reply || thought.status === 'done') continue;
@@ -131,8 +132,10 @@ export async function sortAll(ids, goalFor, onProgress) {
       store.updateThought(id, patch);
     } catch {
       // Leave this one for the student to retry by hand; keep going with the rest.
+      failed += 1;
     }
     done += 1;
     onProgress?.(done);
   }
+  return failed;
 }

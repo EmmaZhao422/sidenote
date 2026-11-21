@@ -6,11 +6,20 @@
   <title>Study guides | Sidenote</title>
   <meta name="description" content="Short, practical guides on focus: parking stray thoughts, starting a study session, and choosing background sound.">
   <link rel="canonical" href="https://emmazhao422.github.io/sidenote/guides/index.html">
+  <link rel="alternate" hreflang="en" href="https://emmazhao422.github.io/sidenote/guides/index.html">
+  <link rel="alternate" hreflang="zh" href="https://emmazhao422.github.io/sidenote/guides/zh/">
   <link rel="icon" href="../favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/app.css">
+  <script>
+    try {
+      var saved = (JSON.parse(localStorage.getItem('sidenote.v1')) || {}).settings;
+      var theme = saved && saved.theme;
+      if (theme === 'dark' || (theme !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.dataset.theme = 'dark';
+    } catch (e) {}
+  </script>
 </head>
 <body>
   <header class="site-head">

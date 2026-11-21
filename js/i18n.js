@@ -180,6 +180,7 @@ const en = {
   'margin.tabDone': 'Dealt with ({n})',
   'margin.sortAll': 'Sort everything out',
   'margin.sortingAll': 'Working… {n} of {total}',
+  'margin.someFailed': '{n} couldn\'t be answered. Try {n|it|them} one at a time.',
   'margin.emptyOpen': 'Nothing waiting. Park a thought above, or start a study block.',
   'margin.emptyDone': 'Nothing dealt with yet.',
 
@@ -201,6 +202,12 @@ const en = {
   'review.thoughtsTitle': 'Thoughts to deal with ({n})',
   'review.none': 'No stray thoughts this time.',
   'review.allDone': 'All dealt with. Nothing left nagging.',
+  'review.breakTitle': 'Next: a break, or another block',
+  'review.break': '{n}-minute break',
+  'review.breakRunning': 'On a break. Back in',
+  'review.breakHint': 'Stand up, look at something far away, get some water. Leave the phone where it is.',
+  'review.breakSkip': 'End the break',
+  'review.breakOver': 'Break\'s over.',
   'review.another': 'Start another block',
   'review.toSummary': 'See the summary',
 
@@ -299,6 +306,10 @@ const en = {
   // settings
   'settings.title': 'Settings',
   'settings.language': 'Language',
+  'settings.theme': 'Appearance',
+  'settings.theme.auto': 'Match my device',
+  'settings.theme.light': 'Light',
+  'settings.theme.dark': 'Dark',
   'settings.save': 'Save',
   'settings.saved': 'Saved',
   'settings.ai.title': 'AI connection',
@@ -503,6 +514,7 @@ const zh = {
   'margin.tabDone': '已处理（{n}）',
   'margin.sortAll': '全部帮我处理',
   'margin.sortingAll': '处理中… {n} / {total}',
+  'margin.someFailed': '有 {n} 条没处理成功，可以单独再试一次。',
   'margin.emptyOpen': '没有待处理的。在上面记一条，或者开始一轮学习。',
   'margin.emptyDone': '还没有处理完的。',
 
@@ -523,6 +535,12 @@ const zh = {
   'review.thoughtsTitle': '待处理的念头（{n}）',
   'review.none': '这一轮没有走神的念头。',
   'review.allDone': '都处理完了，没有惦记的事了。',
+  'review.breakTitle': '接下来：休息一下，或者再来一轮',
+  'review.break': '休息 {n} 分钟',
+  'review.breakRunning': '休息中，还有',
+  'review.breakHint': '站起来，看看远处，喝口水。手机先别拿。',
+  'review.breakSkip': '结束休息',
+  'review.breakOver': '休息结束。',
   'review.another': '再来一轮',
   'review.toSummary': '看总结',
 
@@ -617,6 +635,10 @@ const zh = {
 
   'settings.title': '设置',
   'settings.language': '语言',
+  'settings.theme': '外观',
+  'settings.theme.auto': '跟随设备',
+  'settings.theme.light': '浅色',
+  'settings.theme.dark': '深色',
   'settings.save': '保存',
   'settings.saved': '已保存',
   'settings.ai.title': 'AI 连接',

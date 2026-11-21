@@ -10,6 +10,7 @@ const DEFAULTS = {
   version: 1,
   settings: {
     lang: '',            // '' = follow the browser
+    theme: 'auto',       // 'auto' | 'light' | 'dark'
     focusMin: 25,
     prepMin: 5,
     scene: 'rain',

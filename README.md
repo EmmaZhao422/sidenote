@@ -16,6 +16,7 @@ Live site: https://emmazhao422.github.io/sidenote/
 - **Summary.** Focus time per day, a focus score per block, what your stray thoughts were about, and the minute of a block they tend to show up.
 - **Ten scenes, generated in the browser.** Rain, waves, fireplace, forest, summer night, night train, quiet library, and brown, pink and white noise. No audio files.
 - **Scene recommendation.** After three rated blocks it shows which scene you focus best with and suggests untried scenes with a similar character.
+- **A break timer** after each block, light and dark themes, and it still opens when the connection drops.
 - **English and Chinese.** No account. Data stays in the visitor's browser.
 
 ## How it is built
@@ -35,6 +36,8 @@ Plain HTML, CSS and JavaScript modules. There is no framework and no build step,
 | `js/ai.js`, `js/prompts.js` | Talking to the AI model, and what it is told |
 | `js/i18n.js` | Every piece of interface text, in both languages |
 | `js/ads.js` | Ad placements (off until configured) |
+| `js/theme.js` | Light and dark theme switch |
+| `js/charts.js`, `js/recap.js`, `js/sample.js` | Charts, the written recap, and example data for the summary page |
 | `worker/` | The Cloudflare Worker that keeps the API key off the website |
 | `guides/`, `about.html`, `privacy.html`, `terms.html`, `zh/` | Articles and plain pages |
 | `sw.js` | Keeps a copy of the site so it still opens when the connection drops |
@@ -91,6 +94,7 @@ No open-source licence has been chosen yet, so all rights are reserved for now. 
 - **总结：** 每天专注多久、每轮的专注分、走神时在想什么、一般在第几分钟走神
 - **十个场景：** 全部在浏览器里实时生成，没有音频文件
 - **场景推荐：** 打过三次分后，告诉你在哪个场景里最专注，并推荐相似的
+- 每轮之后有休息计时；有浅色和深色两种外观；断网时也能打开
 - 中英文切换，不用注册，数据只存在访客自己的浏览器里
 
 ### 怎么改
