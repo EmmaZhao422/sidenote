@@ -76,7 +76,10 @@ function render() {
   else destroy = (ROUTES[name] || homeView)(view, navigate, render) || null;
 
   updateCount();
-  if (!firstRender) { window.scrollTo(0, 0); }
+  if (!firstRender) {
+    window.scrollTo(0, 0);
+    view.focus({ preventScroll: true }); // so keyboard and screen-reader users land on the new screen
+  }
   firstRender = false;
 }
 

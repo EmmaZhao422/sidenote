@@ -275,6 +275,7 @@ export function sessionView(root, navigate) {
       body, foot);
     drawParked();
     drawPhase();
+    audio.play(a.scene, 3); // already playing after "Get ready"; this covers a reload
     if (!active().settling) goal.value ? stepInputs[0].focus() : goal.focus();
 
     ticker = setInterval(() => {
@@ -405,6 +406,10 @@ export function sessionView(root, navigate) {
       save(patch);
       audio.stop(2.5);
       if (store.state.settings.chime) audio.chime();
+      // If the tab is in the background, a system notification says the block is over
+      if (store.state.settings.notify && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+        try { new Notification(t('notify.title'), { body: t('notify.body'), tag: 'sidenote-block' }); } catch { /* not allowed here */ }
+      }
       render();
     }
 
@@ -420,6 +425,7 @@ export function sessionView(root, navigate) {
     drawMargin();
     drawPause();
     input.focus();
+    if (!a.pausedAt) audio.play(a.scene, 2);
 
     // Leaving the tab while studying on paper counts as drifting.
     const onVisibility = () => {
@@ -474,7 +480,7 @@ export function sessionView(root, navigate) {
         id: cur.id,
         startedAt: cur.focusStartedAt,
         endedAt: cur.endedAt || Date.now(),
-        plannedMin: cur.plannedMin,
+        plannedMin: cur.basePlannedMin ?? cur.plannedMin,
         focusSec,
         pauses: cur.pauses,
         pausedSec: Math.round(cur.pausedMs / 1000),
@@ -502,7 +508,9 @@ export function sessionView(root, navigate) {
       onclick: () => {
         const cur = active();
         // Carry on: ten more minutes on the same clock
-        save({ stage: 'focus', plannedMin: Math.ceil((cur.focusMs ?? 0) / 60000) + 10, endedAt: null, focusMs: null,
+        // basePlannedMin remembers the original plan, so extra time isn't scored as "stopped early"
+        save({ stage: 'focus', basePlannedMin: cur.basePlannedMin ?? cur.plannedMin,
+          plannedMin: Math.ceil((cur.focusMs ?? 0) / 60000) + 10, endedAt: null, focusMs: null,
           pausedMs: cur.pausedMs + (Date.now() - (cur.endedAt || Date.now())), lastSeenAt: Date.now() });
         audio.play(cur.scene, 1.5);
         render();
@@ -541,6 +549,8 @@ export function sessionView(root, navigate) {
     if (a.stage === 'focus') return renderFocus();
     return renderWrap();
   }
+
+  audio.setVolume(store.state.settings.volume);
 
   // Coming back after a reload or a closed tab
   const a = active();

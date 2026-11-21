@@ -79,9 +79,23 @@ export function settingsView(root, navigate, rerenderAll) {
 
   // ---- sound
   const chime = h('input', { type: 'checkbox', id: 'chime', checked: s.chime, onchange: (e) => store.setSettings({ chime: e.target.checked }) });
+  const notify = h('input', {
+    type: 'checkbox', id: 'notify', checked: s.notify && 'Notification' in window && Notification.permission === 'granted',
+    onchange: async (e) => {
+      if (!e.target.checked) { store.setSettings({ notify: false }); return; }
+      if (!('Notification' in window)) { e.target.checked = false; toast(t('settings.notifyUnsupported')); return; }
+      // The browser shows its own permission prompt here
+      const answer = await Notification.requestPermission();
+      if (answer === 'granted') { store.setSettings({ notify: true }); return; }
+      e.target.checked = false;
+      store.setSettings({ notify: false });
+      toast(t('settings.notifyDenied'));
+    },
+  });
   const sound = h('section', { class: 'card' },
     h('h2', null, t('settings.sound')),
-    h('div', { class: 'check' }, chime, h('label', { for: 'chime' }, t('settings.chime'))));
+    h('div', { class: 'check' }, chime, h('label', { for: 'chime' }, t('settings.chime'))),
+    h('div', { class: 'check' }, notify, h('label', { for: 'notify' }, t('settings.notify'))));
 
   // ---- data
   const file = h('input', {

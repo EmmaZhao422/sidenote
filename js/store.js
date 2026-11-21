@@ -16,6 +16,7 @@ const DEFAULTS = {
     volume: 0.6,
     studyMode: 'paper',  // 'paper' = leaving this tab counts as drifting; 'screen' = it doesn't
     chime: true,
+    notify: false,       // system notification when a block ends in a background tab
     ai: { provider: 'anthropic', key: '', baseUrl: '', model: '' },
   },
   thoughts: [],

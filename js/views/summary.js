@@ -1,7 +1,7 @@
 // The summary page: what you worked on, how steady your attention was, what
 // your stray thoughts were about, and which scene you focus best with.
 
-import { h, mount, renderText, toast, minutesText, dayLabel, segmented } from '../ui.js';
+import { h, mount, renderText, toast, minutesText, dayLabel, whenLabel, segmented } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { aggregate, rangeFor, recommendScene, breadthLabel } from '../score.js';
@@ -164,8 +164,27 @@ export function summaryView(root) {
         h('tbody', null, sceneRows)),
       h('p', { class: 'hint' }, t('summary.scenesHint')));
 
+    // ---- the blocks themselves, newest first, each one opens its review
+    const recentBlocks = state.sessions
+      .filter((s) => s.startedAt >= range.from && s.startedAt <= range.to)
+      .sort((a, b) => b.startedAt - a.startedAt)
+      .slice(0, 10);
+    const blocks = h('section', { class: 'card' },
+      h('h2', null, t('summary.blocksTitle')),
+      h('table', { class: 'table' },
+        h('thead', null, h('tr', null,
+          h('th', { scope: 'col' }, t('summary.colWhen')), h('th', { scope: 'col' }, t('summary.colGoal')),
+          h('th', { scope: 'col' }, t('summary.colTime')), h('th', { scope: 'col' }, t('summary.colScoreShort')),
+          h('th', { scope: 'col' }, h('span', { class: 'sr-only' }, t('summary.review'))))),
+        h('tbody', null, recentBlocks.map((s) => h('tr', null,
+          h('td', null, whenLabel(s.startedAt)),
+          h('th', { scope: 'row' }, s.goal || t('focus.noGoal')),
+          h('td', null, minutesText(Math.max(1, s.focusSec / 60))),
+          h('td', null, String(s.score ?? '–')),
+          h('td', null, h('a', { href: `#/review/${s.id}` }, t('summary.review'))))))));
+
     mount(body, sampleNote, ranges, tiles, recap, perDay,
-      h('div', { class: 'two-col' }, kinds, timing), scenes,
+      h('div', { class: 'two-col' }, kinds, timing), scenes, blocks,
       h('p', { class: 'hint' }, t('summary.scoreExplain')));
   }
 
