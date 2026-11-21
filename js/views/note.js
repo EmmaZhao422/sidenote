@@ -11,6 +11,8 @@ import { breakTimer } from '../breaktimer.js';
 
 // Planned cards the student has opened up again with "Change", for this page visit
 const unfolded = new Set();
+// (called when the screen changes, so a card opened here is folded again elsewhere)
+export function foldAll() { unfolded.clear(); }
 
 export function isPlanned(thought) {
   return thought.status !== 'done' && Boolean(thought.due || thought.queued);
@@ -113,7 +115,10 @@ export function noteCard(thoughtId, opts = {}) {
       }, t('offline.copy'));
       // Claude and ChatGPT are not reachable everywhere Chinese is read, so the copy comes first there
       const choices = getLang() === 'zh' ? [copy, ...ai.map(linkTo)] : [...ai.map(linkTo), copy];
-      links.append(h('details', { class: 'ask-menu' },
+      links.append(h('details', {
+        class: 'ask-menu',
+        onkeydown: (e) => { if (e.key === 'Escape' && e.currentTarget.open) { e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } },
+      },
         h('summary', { class: 'btn btn-quiet note-link' }, t('offline.askAi')),
         h('div', { class: 'ask-menu-list' }, choices)));
     } else {
@@ -138,9 +143,14 @@ export function noteCard(thoughtId, opts = {}) {
         onclick: () => { const el = card.querySelector('.note-line'); el.placeholder = t('worry.stepPlaceholder'); el.focus(); },
       }, t('worry.can')),
       h('button', {
-        type: 'button', class: 'chip', 'aria-pressed': String(thought.note === t('worry.nothingNote')),
+        type: 'button', class: 'chip', 'aria-pressed': String(Boolean(thought.notToday)),
         onclick: () => {
-          store.updateThought(thought.id, { note: t('worry.nothingNote') });
+          if (thought.notToday) {
+            store.updateThought(thought.id, { notToday: false, note: '' });
+            redraw('.note-sort .chip:nth-child(2)');
+            return;
+          }
+          store.updateThought(thought.id, { notToday: true, note: t('worry.nothingNote') });
           toast(t('worry.nothingToast'), 5000);
           redraw('.note-when .chip');
         },
@@ -230,6 +240,9 @@ export function noteCard(thoughtId, opts = {}) {
           if (thought.queued) {
             store.removeFromNextPlan(thought.text);
             store.updateThought(thought.id, { queued: false });
+            redraw('.note-when .chip:last-child');
+            opts.onChange?.('due');
+            return;
           } else {
             if ((store.state.nextPlan || []).length >= 6) { toast(t('note.nextFull')); return; }
             store.addToNextPlan(thought.text);

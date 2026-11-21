@@ -30,6 +30,7 @@ export function sessionView(root, navigate) {
   let offVisibility = null;
   let offActivity = null;
   let yielded = false;   // true once another tab has taken this block over
+  let refreshMargin = null; // redraws the count and list of parked thoughts, while the block is on screen
   const baseTitle = document.title;
 
   const active = () => store.state.active;
@@ -252,6 +253,7 @@ export function sessionView(root, navigate) {
 
   // ------------------------------------------------------------------- prep
   function renderPrep() {
+    document.title = baseTitle; // no countdown in the tab title outside the block itself
     const a = active();
     const scene = getScene(a.scene);
     const totalMs = a.prepMin * 60000;
@@ -577,6 +579,7 @@ export function sessionView(root, navigate) {
         peek, strip));
     drawTimer();
     drawMargin();
+    refreshMargin = drawMargin;
     drawPause();
     if (!isTouchDevice()) input.focus();
     if (!a.pausedAt) audio.play(a.scene, 2);
@@ -654,6 +657,7 @@ export function sessionView(root, navigate) {
 
   // ------------------------------------------------------------------- wrap
   function renderWrap() {
+    document.title = baseTitle; // no countdown in the tab title outside the block itself
     const a = active();
     const scene = getScene(a.scene);
     const focusSec = Math.round((a.focusMs ?? elapsedMs(a)) / 1000);
@@ -801,6 +805,7 @@ export function sessionView(root, navigate) {
     // Another tab took the block over: step aside here instead of grabbing it back
     if (cur && cur.owner !== TAB_ID) yielded = true;
     if (!cur || cur.owner !== TAB_ID) render();
+    else refreshMargin?.();
   });
 
   return function destroy() {

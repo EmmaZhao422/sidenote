@@ -12,6 +12,7 @@ import { connectClaudeApp, insideClaudeApp } from './ai.js';
 import { homeView } from './views/home.js';
 import { sessionView } from './views/session.js';
 import { marginView, reviewView } from './views/margin.js';
+import { foldAll } from './views/note.js';
 import { summaryView } from './views/summary.js';
 import { scenesView } from './views/scenes.js';
 import { settingsView } from './views/settings.js';
@@ -83,13 +84,15 @@ function render(quiet = false) {
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
 
+  // each screen has its own title, so tabs and screen readers can tell them apart
+  // (set before the screen is drawn: the study screen puts its countdown in front of it)
+  const screen = { '': '', focus: t('nav.focus'), margin: t('nav.margin'), summary: t('nav.summary'), scenes: t('nav.scenes'), settings: t('nav.settings'), review: t('review.title') }[name] || '';
+  document.title = screen ? `${screen} · ${getLang() === 'zh' ? CONFIG.siteNameZh : CONFIG.siteName}` : t('site.title');
+  if (quiet !== true) foldAll();
+
   view.className = `view view-${name || 'home'}`;
   if (name === 'review') destroy = reviewView(view, navigate, arg) || null;
   else destroy = (ROUTES[name] || homeView)(view, navigate, render) || null;
-
-  // each screen has its own title, so tabs and screen readers can tell them apart
-  const screen = { '': '', focus: t('nav.focus'), margin: t('nav.margin'), summary: t('nav.summary'), scenes: t('nav.scenes'), settings: t('nav.settings'), review: t('review.title') }[name] || '';
-  if (!(name === 'focus' && store.state.active)) document.title = screen ? `${screen} · ${getLang() === 'zh' ? CONFIG.siteNameZh : CONFIG.siteName}` : t('site.title');
 
   updateCount();
   if (keepY !== null) {

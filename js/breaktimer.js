@@ -39,16 +39,34 @@ function draw() {
 function tick() {
   if (!endsAt) return;
   if (Date.now() >= endsAt) {
+    // only the tab that still finds the break on record rings: with several tabs open, one chime
+    let mine = true;
+    try { mine = Number(localStorage.getItem(KEY)) === endsAt; } catch { /* no storage: this tab's own break */ }
     endsAt = 0;
-    remember();
+    if (mine) remember();
     clearInterval(ticker);
     draw();
-    if (store.state.settings.chime) audio.chime();
-    toast(t('review.breakOver'), 6000);
+    if (mine && !store.state.active) {
+      if (store.state.settings.chime) audio.chime();
+      toast(t('review.breakOver'), 6000);
+    }
     watchers.forEach((fn) => fn(0, true));
     return;
   }
   draw();
+}
+
+// Another tab ended the break, started a new one, or began a study block: follow it quietly.
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (e) => {
+    if (e.key !== KEY) return;
+    const saved = Number(e.newValue) || 0;
+    endsAt = saved > Date.now() ? saved : 0;
+    clearInterval(ticker);
+    if (endsAt) ticker = setInterval(tick, 500);
+    draw();
+    watchers.forEach((fn) => fn(Math.max(0, (endsAt - Date.now()) / 1000), false));
+  });
 }
 
 export const breakTimer = {

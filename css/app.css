@@ -749,7 +749,9 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
   .timer { font-size: clamp(3rem, 30vh, 7rem); }
   .focus-center { gap: 0.3rem; }
   .margin { padding-top: 0.5rem; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); margin-bottom: 0; }
-  .stage-hint, .lock-note { display: none; }
+  .stage-hint, .lock-note, .ends-at { display: none; }
+  .margin-peek { max-height: 3.6rem; }
+  .focus-steps { display: none; }
 }
 
 /* light paper inside the dark study screen: the ring goes back to blue there */

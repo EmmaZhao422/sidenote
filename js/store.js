@@ -57,6 +57,10 @@ function normalise(raw) {
     if (Array.isArray(raw.sessions)) data.sessions = raw.sessions.filter((x) => x && typeof x === 'object').map(fixSession);
     if (raw.active && typeof raw.active === 'object') data.active = raw.active;
     if (Array.isArray(raw.nextPlan)) data.nextPlan = raw.nextPlan.filter((x) => typeof x === 'string').slice(0, 6);
+    // "In your next block" is only true while the plan (or the block in progress)
+    // really holds the to-do, and it never goes together with a day.
+    const held = new Set([...data.nextPlan, ...((data.active && Array.isArray(data.active.carried)) ? data.active.carried : [])]);
+    data.thoughts.forEach((x) => { if (x.queued && (x.due || !held.has(x.text))) x.queued = false; });
   }
   return data;
 }
@@ -124,7 +128,9 @@ function sessionKey(value, gen = 0) {
     if (value === undefined) {
       const saved = sessionStorage.getItem(KEY_KEY) || '';
       const cut = saved.indexOf(':');
-      return cut > 0 && Number(saved.slice(0, cut)) === gen ? saved.slice(cut + 1) : '';
+      const tagged = cut > 0 && /^\d+$/.test(saved.slice(0, cut));
+      if (!tagged) return saved; // saved by the previous version: keep it, it is re-saved with its generation
+      return Number(saved.slice(0, cut)) === gen ? saved.slice(cut + 1) : '';
     }
     if (value) sessionStorage.setItem(KEY_KEY, `${gen}:${value}`); else sessionStorage.removeItem(KEY_KEY);
   } catch { /* no session storage: the key lasts until the page is closed */ }
@@ -288,9 +294,11 @@ export const store = {
     persist();
     return list.length;
   },
+  // (every thought with that wording stops being "in your next block", twins included)
   removeFromNextPlan(text) {
     refresh();
     state.nextPlan = (state.nextPlan || []).filter((x) => x !== text);
+    state.thoughts.forEach((x) => { if (x.queued && x.text === text) x.queued = false; });
     persist();
   },
   // Hands over at most `room` queued steps; anything that does not fit stays queued
