@@ -7,7 +7,9 @@
 
 const LANG_NAME = { en: 'English', zh: 'Simplified Chinese (简体中文)' };
 
-const clip = (s, n) => String(s ?? '').slice(0, n);
+// What a student typed sits between triple quotes in the prompt, so a run of
+// quote marks in their text must not be able to close that fence early.
+const clip = (s, n) => String(s ?? '').slice(0, n).replace(/"{3,}/g, '"');
 
 export const TASKS = ['resolve', 'recap', 'plan'];
 

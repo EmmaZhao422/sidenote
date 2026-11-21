@@ -115,6 +115,8 @@ export default {
     if (!allowed) return json({ error: 'origin not allowed' }, 403);
     if (!env.ANTHROPIC_API_KEY && !env.OPENAI_COMPAT_BASE_URL) return json({ error: 'AI is not configured on this server' }, 503, origin);
 
+    // refuse an oversized body from its declared length, before reading any of it
+    if (Number(request.headers.get('content-length')) > 16000) return json({ error: 'request too large' }, 413, origin);
     const raw = await request.text();
     if (raw.length > 8000) return json({ error: 'request too large' }, 413, origin);
 

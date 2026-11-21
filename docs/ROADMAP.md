@@ -38,6 +38,7 @@
 | 加一个新场景 | `js/scenes.js` 加一项（名字、简介、五个特征值、背景颜色），`js/audio.js` 的 `BUILDERS` 里照着 `rain` 写一个同名的 | 中等 |
 | 写一篇新的学习方法文章 | 在 `tools/more_guides.py` 里照着已有的一篇加一项（中英文各一份，引用要核实过），运行 `python3 tools/build_pages.py .` 生成页面，再加进 `js/views/home.js` 的 `GUIDES` 和 `index.html` 里那段静态的文章列表（`sitemap.xml` 现在由脚本自动生成，不用手改；漏了哪一处，`npm test` 会报错） | 中等 |
 | 改关于、隐私、条款、Claude 页面的文字 | 改 `tools/build_pages.py` 里对应的那段，再运行 `python3 tools/build_pages.py .`（不要直接改生成的 `.html`，下次生成会被覆盖） | 容易 |
+| 新增或删除一个 `js/` 文件 | 运行 `python3 tools/modulepreload.py`，它会更新 `index.html` 里的预加载列表（忘了的话 `npm test` 会报错） | 容易 |
 
 ## 还没做的功能（想法，没排期）
 
@@ -59,6 +60,9 @@
 
 - **所有 github.io 项目共用一个「来源」。** 你账号下的任何别的 GitHub Pages 网站，理论上都能读到走神本存在浏览器里的数据（念头、目标；API key 默认只留在当前标签页里）。换成自己的域名之后这个问题就没有了。这是买域名的第二个理由（第一个是 AdSense 不收 github.io）
 - 还没有加内容安全策略（CSP）。等域名和广告定下来再加，因为广告脚本需要专门放行，现在加了以后反而容易把广告挡掉
+  - 安全审查（2026-11-21，另一个模型做的）试过：不开广告时，下面这条策略能让六个页面全部正常运行。⚠ 只在本地测过，开广告 / 统计 / 接 AI 后都要再放行对应的域名：
+    `default-src 'none'; script-src 'self' <两段内联脚本的 sha256>; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https:; manifest-src 'self'; media-src 'self' blob: data:; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'`
+- **AI 中转服务（Worker，还没部署）的限流只是减速带。** 它按来源网址放行、按 IP 计数，但懂技术的人可以伪造来源，Cloudflare 多个实例之间也不共享计数。真正管用的是两道：服务商后台的每月消费上限（见 SETUP-AI.md），以及 Cloudflare 自带的 Rate Limiting 规则或 Turnstile 验证。访问量上来之前先设好第一道
 - 手机锁屏后，浏览器会停掉声音；计时照常，回到页面后声音会接着放。想让声音一直不断，需要做成真正的 App，网页做不到
 - 同一轮学习只能在一个标签页里进行，另一个标签页会提示「正在另一个标签页里进行」
 

@@ -2,7 +2,7 @@
 // key. There is no account and no server database: nothing a student parks here
 // leaves their device unless they ask the AI to look at a thought.
 
-import { classify } from './classify.js';
+import { classify, CATEGORIES } from './classify.js';
 import { computeFocusScore } from './score.js';
 
 const KEY = 'sidenote.v1';
@@ -49,12 +49,32 @@ function clone(x) {
 function normalise(raw) {
   const data = clone(DEFAULTS);
   if (raw && typeof raw === 'object') {
-    Object.assign(data.settings, raw.settings || {});
-    data.settings.ai = Object.assign(clone(DEFAULTS.settings.ai), (raw.settings && raw.settings.ai) || {});
+    // Settings come from this browser's storage or from a backup file someone picked:
+    // either can hold anything, so each known field is checked and odd keys are left out.
+    const given = raw.settings && typeof raw.settings === 'object' ? raw.settings : {};
+    for (const [k, v] of Object.entries(given)) {
+      if (k === '__proto__' || k === 'constructor' || k === 'prototype' || k === 'ai') continue;
+      data.settings[k] = v;
+    }
+    const st = data.settings;
+    const d = DEFAULTS.settings;
+    if (!['', 'en', 'zh'].includes(st.lang)) st.lang = d.lang;
+    if (!['auto', 'light', 'dark'].includes(st.theme)) st.theme = d.theme;
+    if (!(isNum(st.focusMin) && st.focusMin >= 1 && st.focusMin <= 600)) st.focusMin = d.focusMin;
+    if (!(isNum(st.prepMin) && st.prepMin >= 0 && st.prepMin <= 60)) st.prepMin = d.prepMin;
+    if (!(isNum(st.volume) && st.volume >= 0 && st.volume <= 1)) st.volume = d.volume;
+    if (typeof st.scene !== 'string') st.scene = d.scene;
+    if (st.studyMode !== 'screen') st.studyMode = 'paper';
+    st.chime = st.chime !== false;
+    st.notify = st.notify === true;
+    const dl = st.deadline;
+    st.deadline = dl && typeof dl === 'object' && typeof dl.date === 'string' && /^\d{4}-\d\d-\d\d$/.test(dl.date)
+      ? { label: typeof dl.label === 'string' ? dl.label.slice(0, 40) : '', date: dl.date } : null;
+    data.settings.ai = Object.assign(clone(DEFAULTS.settings.ai), (given.ai && typeof given.ai === 'object') ? given.ai : {});
     // a key saved by an older version stays remembered, so nothing stops working
-    if (data.settings.ai.key && raw.settings.ai.remember === undefined) data.settings.ai.remember = true;
-    if (Array.isArray(raw.thoughts)) data.thoughts = raw.thoughts.filter((t) => t && typeof t === 'object').map(fixThought);
-    if (Array.isArray(raw.sessions)) data.sessions = raw.sessions.filter((x) => x && typeof x === 'object').map(fixSession);
+    if (data.settings.ai.key && (!given.ai || given.ai.remember === undefined)) data.settings.ai.remember = true;
+    if (Array.isArray(raw.thoughts)) data.thoughts = raw.thoughts.filter((t) => t && typeof t === 'object').slice(-MAX_RECORDS).map(fixThought);
+    if (Array.isArray(raw.sessions)) data.sessions = raw.sessions.filter((x) => x && typeof x === 'object').slice(-MAX_RECORDS).map(fixSession);
     if (raw.active && typeof raw.active === 'object') data.active = raw.active;
     if (Array.isArray(raw.nextPlan)) data.nextPlan = raw.nextPlan.filter((x) => typeof x === 'string').slice(0, 6);
     // "In your next block" is only true while the plan (or the block in progress)
@@ -67,19 +87,36 @@ function normalise(raw) {
 
 const isNum = (x) => typeof x === 'number' && Number.isFinite(x);
 
+// Far more than years of daily use; a file with more than this is not a real backup,
+// and the screens that list everything would stop responding.
+const MAX_RECORDS = 5000;
+const cut = (text, n) => (text.length > n ? Array.from(text).slice(0, n).join('') : text);
+
+// The only links a reply ever carries are the ones this site makes itself: a web
+// search, or a hand-off to an AI chat. A backup file is not allowed to add others.
+const LINK_HOSTS = ['claude.ai', 'chatgpt.com', 'www.google.com', 'www.bing.com', 'cn.bing.com'];
+function fixLinks(links) {
+  if (!Array.isArray(links)) return [];
+  return links.filter((l) => {
+    if (!l || typeof l !== 'object' || typeof l.url !== 'string' || typeof l.label !== 'string') return false;
+    try { const u = new URL(l.url); return u.protocol === 'https:' && LINK_HOSTS.includes(u.hostname); } catch { return false; }
+  }).slice(0, 4).map((l) => ({ url: l.url, label: cut(l.label, 80), ...(l.kind === 'ai' || l.kind === 'search' ? { kind: l.kind } : {}) }));
+}
+
 // Records from an older version, or edited by hand, may lack fields the screens read
 function fixThought(t) {
-  const text = typeof t.text === 'string' ? t.text : String(t.text ?? '');
+  const text = cut(typeof t.text === 'string' ? t.text : String(t.text ?? ''), 500);
+  const r = t.reply && typeof t.reply === 'object' && typeof t.reply.text === 'string' ? t.reply : null;
   return {
     ...t,
     id: typeof t.id === 'string' ? t.id : uid(),
     text,
     createdAt: isNum(t.createdAt) ? t.createdAt : Date.now(),
     status: t.status === 'done' ? 'done' : 'open',
-    category: typeof t.category === 'string' ? t.category : classify(text),
+    category: CATEGORIES.includes(t.category) ? t.category : classify(text),
     sessionId: typeof t.sessionId === 'string' ? t.sessionId : null,
     offsetSec: isNum(t.offsetSec) ? t.offsetSec : null,
-    reply: t.reply && typeof t.reply === 'object' && typeof t.reply.text === 'string' ? t.reply : null,
+    reply: r ? { text: cut(r.text, 6000), source: r.source === 'ai' ? 'ai' : 'offline', links: fixLinks(r.links), at: isNum(r.at) ? r.at : 0 } : null,
   };
 }
 
@@ -93,9 +130,9 @@ function fixSession(x) {
     pauses: isNum(x.pauses) && x.pauses > 0 ? x.pauses : 0,
     awaySec: isNum(x.awaySec) && x.awaySec > 0 ? x.awaySec : 0,
     parkedCount: isNum(x.parkedCount) && x.parkedCount > 0 ? x.parkedCount : 0,
-    goal: typeof x.goal === 'string' ? x.goal : '',
+    goal: typeof x.goal === 'string' ? cut(x.goal, 200) : '',
     scene: typeof x.scene === 'string' ? x.scene : 'silence',
-    steps: Array.isArray(x.steps) ? x.steps.filter((st) => st && typeof st.text === 'string') : [],
+    steps: Array.isArray(x.steps) ? x.steps.filter((st) => st && typeof st.text === 'string').slice(0, 12) : [],
   };
   if (!isNum(s.score) || !s.parts || typeof s.parts !== 'object') {
     s.parts = computeFocusScore(s);
@@ -421,6 +458,17 @@ export const store = {
     const gen = (state.settings.ai.keyGen || 0) + 1; // so other open tabs let go of the key too
     state = normalise(null);
     state.settings.ai.keyGen = gen;
+    // "Everything" includes the copies kept when saved data could not be read
+    // (they hold the old thoughts), and the small keys beside the main one.
+    try {
+      const s = storage();
+      if (s) {
+        const extra = [];
+        for (let i = 0; i < s.length; i += 1) { const k = s.key(i); if (k && (k.startsWith(`${KEY}.`) || k === BEAT_KEY || k === 'sidenote.break')) extra.push(k); }
+        extra.forEach((k) => s.removeItem(k));
+      }
+    } catch { /* storage blocked: nothing was saved there either */ }
+    unreadable = false;
     persist();
   },
 
