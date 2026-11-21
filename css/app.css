@@ -174,7 +174,7 @@ body.in-claude-app .foot nav, body.in-claude-app .guides-band { display: none; }
 
 .card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 1.3rem 1.5rem 1.4rem; }
 .card > h2 { margin-bottom: 0.6rem; }
-.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr)); gap: 1.2rem; }
+.two-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); gap: 1.2rem; }
 .two-col:empty { display: none; }
 
 .check { display: flex; align-items: center; gap: 0.55rem; }
@@ -203,7 +203,7 @@ select.field { appearance: auto; }
 /* A live miniature of the study screen. Thoughts parked on the left land in its margin. */
 .hero-demo {
   --paper: #F5F7FC; --ink: #18213D; --ink-3: #5C6682; --margin: #E2466B;
-  position: relative; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; overflow: hidden;
   min-height: 21rem; border-radius: 18px; color: #F3F5FB; text-decoration: none;
   background: linear-gradient(165deg, var(--sky-a, #1c2a44), var(--sky-b, #33486b));
   box-shadow: 0 1.2rem 2.5rem -1.2rem rgba(24, 33, 61, 0.55);
@@ -279,7 +279,7 @@ body.is-immersed .break-pill { display: none; }
 .hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem 1rem; margin-top: 1.8rem; }
 
 .band { border-top: 2px solid var(--ink); padding-top: 1.4rem; }
-.band-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 2rem 3rem; }
+.band-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 2rem 3rem; }
 .band-split p { color: var(--ink-2); max-width: 30rem; }
 .band-split .btn { margin-top: 0.6rem; }
 
@@ -355,7 +355,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .prep-count { margin: 0; font-size: 1rem; color: rgba(243, 245, 251, 0.8); }
 .prep-clock { font-family: var(--display); font-weight: 800; font-size: 1.7rem; color: #fff; font-variant-numeric: tabular-nums; margin-left: 0.3rem; }
 .prep-body { align-self: center; width: 100%; max-width: 60rem; margin: 0 auto; }
-.prep-plan { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: 2rem 3rem; }
+.prep-plan { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 2rem 3rem; }
 .prep-col h2 { font-size: 1.25rem; }
 .prep-goal { font-family: var(--display); font-weight: 600; font-size: 1.35rem; line-height: 1.2; margin: 0.5rem 0 0.2rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.8rem; overflow-wrap: anywhere; }
 .prep-goal .linklike { color: rgba(243, 245, 251, 0.75); font-family: var(--body); font-size: 0.85rem; font-weight: 400; }
@@ -502,7 +502,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
 
 /* ---------- scenes ---------- */
 
-.scene-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr)); gap: 1rem; }
+.scene-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 15.5rem), 1fr)); gap: 1rem; }
 .scene-card { background: linear-gradient(150deg, var(--sky-a), var(--sky-b)); color: #F3F5FB; border-radius: 14px; padding: 1.2rem 1.25rem 1.25rem; display: flex; flex-direction: column; gap: 0.2rem; min-height: 12.5rem; }
 .scene-card h2 { font-size: 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .scene-card p { margin: 0.2rem 0; font-size: 0.93rem; color: rgba(243, 245, 251, 0.85); }
@@ -585,7 +585,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
   input, select, textarea, .note-kind { font-size: max(16px, 1em); }
 
   /* choices fill the row, so every option is a full-size target */
-  .seg { display: flex; width: 100%; }
+  .seg { display: flex; }
   .seg-btn { flex: 1 1 0; padding-left: 0.3rem; padding-right: 0.3rem; }
 
   /* study screen: goal on one line, tools on the next, nothing wraps */
