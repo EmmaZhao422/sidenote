@@ -19,6 +19,10 @@ test('sorts thoughts into kinds, in English and Chinese', () => {
     ['查一下回家的便宜机票', 'todo'],
     ['Check if the gym is open on Sunday', 'todo'],
     ['Scroll TikTok for a bit', 'urge'],
+    ['要不要组一个统计学习小组', 'idea'],
+    ['Start a study group for stats?', 'idea'],
+    ['How does game theory explain auctions?', 'question'],
+    ['I want to check my phone', 'urge'],
     ['blue umbrella', 'other'],
     ['', 'other'],
   ];

@@ -50,7 +50,7 @@ export function buildPrompt(task, input = {}, lang = 'en') {
         'Cover, in this order: what they worked on; how steady their attention was (use the actual numbers); what their stray thoughts were mostly about and when in a block they tend to show up; one specific thing to try next time.',
         'Address the student as "you". Under 130 words. Plain text, two or three short paragraphs, no headings, no bullet points.',
         'Be matter-of-fact. No flattery, no diagnosis, no guessing about causes the numbers do not support. If there is very little data, say so in one sentence and keep it shorter.',
-        'The focus score is a rough 0-100 yardstick built from the student\'s own rating, whether they finished, and how often they were interrupted. Do not present it as a scientific measurement.',
+        'The focus score is a rough 0-100 yardstick built from the student\'s own rating, whether they finished, and how uninterrupted the block was. Parking a thought never lowers it. Do not present it as a scientific measurement.',
         `Write in ${language}.`,
       ].join('\n'),
       user: `Stats as JSON:\n${clip(JSON.stringify(input.stats ?? {}), 4000)}`,

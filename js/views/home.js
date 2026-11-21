@@ -1,12 +1,14 @@
 // The front page. The first thing on it is the product itself: a box where you
-// park a stray thought.
+// park a stray thought, and beside it a small live study screen where the
+// thought lands in the margin.
 
-import { h, mount, toast } from '../ui.js';
+import { h, mount, toast, clock, minutesText, dayLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { adSlot } from '../ads.js';
-import { recommendScene } from '../score.js';
+import { recommendScene, habit } from '../score.js';
 import { getScene, sceneName } from '../scenes.js';
+import { createBackdrop } from '../backdrop.js';
 
 const GUIDES = [
   { slug: 'parking-lot-method', en: 'The parking lot method: what to do with a thought that shows up mid-study', zh: '「念头停车场」：学到一半冒出来的想法，该拿它怎么办' },
@@ -16,20 +18,38 @@ const GUIDES = [
   { slug: 'phone-while-studying', en: 'Where should your phone be while you study?', zh: '学习的时候，手机该放哪儿？' },
 ];
 
-export function homeView(root, navigate) {
+export function homeView(root) {
   const lang = getLang();
+  const scene = getScene(store.state.settings.scene);
+  const openThoughts = () => store.state.thoughts.filter((x) => x.status !== 'done');
+
+  // --- the live miniature of a study screen
+  const canvas = h('canvas', { class: 'demo-canvas' });
+  const demoTimer = h('span', { class: 'demo-timer' }, clock(store.state.settings.focusMin * 60));
+  const demoList = h('ul', { class: 'demo-notes' });
+  const demo = h('a', { class: 'hero-demo', href: '#/focus', 'aria-label': t('home.start') },
+    canvas,
+    h('span', { class: 'demo-scene' }, sceneName(scene, lang)),
+    demoTimer,
+    h('span', { class: 'demo-margin' },
+      h('span', { class: 'demo-margin-title' }, t('focus.marginTitle')),
+      demoList));
 
   // --- hero: park a thought right here
   const input = h('input', {
-    type: 'text', class: 'hero-input', maxlength: '500', autocomplete: 'off',
+    type: 'text', class: 'hero-input', maxlength: '500', autocomplete: 'off', enterkeyhint: 'done',
     placeholder: t('home.placeholder'), 'aria-label': t('home.inputLabel'),
   });
-  const recent = h('ul', { class: 'hero-notes' });
   const openLink = h('a', { class: 'hero-open', href: '#/margin' });
 
-  function drawRecent() {
-    const open = store.state.thoughts.filter((x) => x.status !== 'done');
-    recent.replaceChildren(...open.slice(-3).reverse().map((x) => h('li', null, h('span', { class: 'hl' }, x.text))));
+  function drawParked(justAdded) {
+    const open = openThoughts();
+    const shown = open.slice(-3);
+    // Before anything is parked, the miniature shows two examples in pencil
+    const items = shown.length
+      ? shown.map((x, i) => h('li', { class: justAdded && i === shown.length - 1 ? 'is-new' : null }, x.text))
+      : [h('li', { class: 'is-example' }, t('home.example1')), h('li', { class: 'is-example' }, t('home.example2'))];
+    mount(demoList, items);
     openLink.textContent = open.length ? t('home.openMargin', { n: open.length }) : '';
     openLink.hidden = !open.length;
   }
@@ -40,21 +60,39 @@ export function homeView(root, navigate) {
       e.preventDefault();
       if (!store.addThought(input.value)) { input.focus(); return; }
       input.value = '';
-      drawRecent();
+      drawParked(true);
       toast(t('home.parkedToast'));
     },
   }, input, h('button', { type: 'submit', class: 'btn btn-ink' }, t('park.button')));
 
   const active = store.state.active;
-  const startBtn = h('a', { class: 'btn btn-ink btn-big', href: '#/focus' },
-    active ? t('home.resume') : t('home.start'));
-
   const hero = h('section', { class: 'hero' },
-    h('h1', { class: 'hero-title' }, t('home.title')),
-    h('p', { class: 'hero-sub' }, t('home.sub')),
-    form, recent, openLink,
-    h('div', { class: 'hero-cta' }, startBtn, h('span', { class: 'hint' }, t('home.startHint'))),
-  );
+    h('div', { class: 'hero-copy' },
+      h('h1', { class: 'hero-title' }, t('home.title')),
+      h('p', { class: 'hero-sub' }, t('home.sub')),
+      form, openLink,
+      h('div', { class: 'hero-cta' },
+        h('a', { class: 'btn btn-ink btn-big', href: '#/focus' }, active ? t('home.resume') : t('home.start')),
+        h('span', { class: 'hint' }, t('home.startHint')))),
+    demo);
+
+  // --- today and the streak, once there is something to show
+  let today = null;
+  const real = store.state.sessions.filter((s) => !s.sample);
+  if (real.length) {
+    const hb = habit(real);
+    const peak = Math.max(25, ...hb.week.map((d) => d.minutes));
+    today = h('section', { class: 'today' },
+      h('div', { class: 'today-text' },
+        h('h2', null, hb.todayBlocks
+          ? t('home.today', { time: minutesText(hb.todayMinutes), n: hb.todayBlocks })
+          : t('home.todayNone')),
+        h('p', null, hb.streak >= 2 ? t('home.streak', { n: hb.streak }) : t('home.streakStart'))),
+      h('ol', { class: 'week', 'aria-label': t('home.weekLabel') }, hb.week.map((d) =>
+        h('li', { title: `${dayLabel(d.day)}: ${minutesText(d.minutes)}` },
+          h('span', { class: 'week-bar', style: `height:${Math.max(d.minutes ? 12 : 0, (d.minutes / peak) * 100)}%` }),
+          h('span', { class: 'week-day' }, new Date(d.day).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', { weekday: 'narrow' }))))));
+  }
 
   // --- how a block goes (a real sequence, so it is numbered)
   const how = h('section', { class: 'band' },
@@ -85,6 +123,20 @@ export function homeView(root, navigate) {
     h('ul', { class: 'guide-list' }, GUIDES.map((g) =>
       h('li', null, h('a', { href: `${guideBase}${g.slug}.html` }, lang === 'zh' ? g.zh : g.en)))));
 
-  mount(root, hero, how, sceneBand, adSlot('home'), guides);
-  drawRecent();
+  mount(root, hero, today, how, sceneBand, adSlot('home'), guides);
+  drawParked(false);
+
+  // The miniature runs a slow, purely cosmetic countdown
+  const backdrop = createBackdrop(canvas);
+  backdrop.setScene(scene);
+  let left = store.state.settings.focusMin * 60;
+  const tick = setInterval(() => {
+    left = left > 1 ? left - 1 : store.state.settings.focusMin * 60;
+    demoTimer.textContent = clock(left);
+  }, 1000);
+
+  return () => {
+    clearInterval(tick);
+    backdrop.destroy();
+  };
 }

@@ -14,7 +14,7 @@ A backup is one JSON object, saved from the website's Settings page ("Save a bac
 }
 ```
 
-Older backups may lack `app`, `exportedAt` and `tzOffsetMinutes`; the script then uses the current time and UTC.
+Backups made before these three fields existed lack `app`, `exportedAt` and `tzOffsetMinutes`; the script then uses the current time and UTC. The time-zone offset is the one in force when the file was saved, so in a window that crosses a daylight-saving change, blocks close to midnight can land on the neighbouring day.
 
 ## A thought
 
@@ -48,14 +48,23 @@ Older backups may lack `app`, `exportedAt` and `tzOffsetMinutes`; the script the
 
 ## The focus score
 
-`score = 0.45 × feel + 0.20 × done + 0.35 × steady`
+`score = 0.40 × feel + 0.25 × done + 0.35 × steady`
 
 - `feel` = 20 × rating.
 - `done` = 100 / 60 / 25 for yes / partly / no; when steps were written, averaged half-and-half with the share of steps ticked off.
-- `steady` starts at 100 and loses 7 per parked thought and 12 per pause (both scaled to a 25-minute block), up to 40 for time away from the tab in `paper` mode, and up to 30 for stopping well before the planned time.
+- `steady` starts at 100 and loses 15 per pause (per 25 minutes of a longer block), up to 40 for time away from the tab in `paper` mode, and up to 40 for stopping well before the planned time. Parking a thought costs nothing: writing it down instead of chasing it is the point.
+
+Blocks saved before the scoring change of 21 November 2026 used slightly different weights (45 / 20 / 35) and a small penalty per parked thought.
 
 It is a yardstick for comparing one student's blocks with each other. It is not a measurement of attention.
 
 ## Scene ranking
 
-Scenes are ranked by average focus score, with small samples pulled toward the student's overall average (as if every scene started with two average blocks). A recommendation is made only after three rated blocks in total. "Similar" scenes are the untried ones closest in character, compared on five traits: steady, natural, low-pitched, rhythmic, bright.
+Scenes are ranked by average focus score, with small samples pulled toward the student's overall average (as if every scene started with two average blocks). A recommendation is made only after three rated blocks in total, and the top two count as tied when their adjusted averages are within three points. "Similar" scenes are the untried ones closest in character, compared on five traits: steady, natural, low-pitched, rhythmic, bright.
+
+## What the script prints that needs a word of explanation
+
+- `strayThoughts` counts every thought parked in the period, including ones parked from the home page; `strayThoughtsDuringBlocksPer25Minutes` only counts those parked during a block, and is `null` when there were fewer than ten minutes of focus.
+- `parkedInPeriodStillWaiting` is about thoughts parked in the period; `waitingNow` is everything still waiting, whenever it was parked.
+- `thoughtRange` is `narrow` when one or two kinds dominate and `wide` when thoughts are spread across many kinds.
+- An unrated block is scored as if rated 3 (`feel` = 60).

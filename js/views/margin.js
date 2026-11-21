@@ -6,7 +6,6 @@ import { h, mount, toast, clock, minutesText, dayLabel, segmented } from '../ui.
 import { t, getLang } from '../i18n.js';
 import { store } from '../store.js';
 import { noteCard, sortAll } from './note.js';
-import { adSlot } from '../ads.js';
 import { audio } from '../audio.js';
 import { copyForClaudeButton } from '../handoff.js';
 import { getScene, sceneName } from '../scenes.js';
@@ -89,7 +88,7 @@ export function marginView(root) {
     h('header', { class: 'view-head' },
       h('h1', null, t('margin.title')),
       h('p', { class: 'lede' }, t('margin.lede'))),
-    form, body, adSlot('lot'));
+    form, body);
   draw();
 }
 

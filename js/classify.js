@@ -7,7 +7,7 @@ export const CATEGORIES = ['question', 'todo', 'worry', 'idea', 'urge', 'other']
 
 const RULES = {
   urge: [
-    /\b(phone|instagram|insta|tiktok|youtube|netflix|twitter|reddit|snapchat|discord|game|gaming|snack|hungry|coffee|boba|nap|scroll)\b/i,
+    /\b(my phone|instagram|insta|tiktok|youtube|netflix|twitter|reddit|snapchat|discord|video ?games?|gaming|play a game|snack|hungry|boba|nap|scroll)\b/i,
     /(刷|手机|抖音|小红书|微信|朋友圈|微博|b站|B站|游戏|王者|原神|零食|奶茶|好饿|饿了|想吃|外卖|睡一会|追剧|短视频)/,
   ],
   worry: [
@@ -21,7 +21,8 @@ const RULES = {
   ],
   idea: [
     /\b(idea|what about|maybe i could|i could build|could make|should try|side project|startup|an app that|a website that|business)\b/i,
-    /(想法|点子|灵感|要不我|可以做一个|能不能做|创业|商业化|想做一个|试试看|做个)/,
+    /^(start|make|build|create|organi[sz]e|try) (a|an|my|our)\b/i,
+    /(想法|点子|灵感|要不我|要不要(组|做|建|开|搞|试)|不如|可以做一个|能不能做|创业|商业化|想做一个|试试看|做个|做一个)/,
   ],
   question: [
     /[?？]\s*$/,
@@ -35,7 +36,7 @@ const RULES = {
 const TODO_OPENERS = [
   /^(i )?(need to|have to|must|gotta|remember to|don't forget|dont forget|todo|to-do)\b/i,
   /^(buy|email|call|text|reply|pay|book|submit|finish|send|sign up|register|schedule|clean|wash|renew|return|print|pick up|order|look up|check if|check whether)\b/i,
-  /^(记得|别忘|不要忘|要交|要买|要回|要发|要问|查一下|问一下|买|回复|报名|预约|取快递|提交|缴费|还书|订票|续费)/,
+  /^(记得|别忘|不要忘|要交|要买|要回|要发|要问|查一下|查查|搜一下|看一下|问一下|买|回复|报名|预约|取快递|提交|缴费|还书|订票|续费)/,
 ];
 
 // Order matters: a line like "what if I fail?" is a worry before it is a question.

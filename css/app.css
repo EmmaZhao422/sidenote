@@ -179,8 +179,38 @@ select.field { appearance: auto; }
 
 /* ---------- home ---------- */
 
-.hero { padding-top: 1rem; }
-.hero-title { font-size: clamp(2.5rem, 6.4vw, 4.6rem); letter-spacing: -0.03em; max-width: 13em; }
+.hero { padding-top: 1rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem 3rem; align-items: center; }
+@media (min-width: 72rem) { .hero { grid-template-columns: minmax(0, 1.25fr) minmax(17rem, 0.75fr); } }
+.hero-title { font-size: clamp(2.5rem, 5.6vw, 4.3rem); letter-spacing: -0.03em; max-width: 13em; }
+
+/* A live miniature of the study screen. Thoughts parked on the left land in its margin. */
+.hero-demo {
+  --paper: #F5F7FC; --ink: #18213D; --ink-3: #5C6682; --margin: #E2466B;
+  position: relative; display: grid; grid-template-rows: auto 1fr auto; overflow: hidden;
+  min-height: 21rem; border-radius: 18px; color: #F3F5FB; text-decoration: none;
+  background: linear-gradient(165deg, var(--sky-a, #1c2a44), var(--sky-b, #33486b));
+  box-shadow: 0 1.2rem 2.5rem -1.2rem rgba(24, 33, 61, 0.55);
+}
+.hero-demo:hover { color: #F3F5FB; }
+.demo-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.demo-scene { position: relative; padding: 0.9rem 1.1rem 0; font-size: 0.82rem; color: rgba(243, 245, 251, 0.75); }
+.demo-timer { position: relative; align-self: center; justify-self: center; font-family: var(--display); font-weight: 800; font-size: clamp(3.4rem, 9vw, 4.6rem); letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+.demo-margin { position: relative; display: block; margin: 0 1rem; background: var(--paper); color: var(--ink); border-left: 4px solid var(--margin); border-radius: 0 10px 0 0; padding: 0.6rem 0.9rem 0.8rem; }
+.demo-margin-title { display: block; font-family: var(--display); font-weight: 800; font-size: 0.85rem; margin-bottom: 0.15rem; }
+.demo-notes { list-style: none; margin: 0; padding: 0; font-family: var(--hand); font-size: 1.25rem; line-height: 1.25; min-height: 3.2rem; }
+.demo-notes li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.demo-notes .is-example { color: var(--ink-3); }
+.demo-notes .is-new { animation: land 0.9s ease-out; }
+@keyframes land { 0% { background: var(--hl); transform: translateY(-0.5rem); opacity: 0; } 30% { opacity: 1; transform: none; } 100% { background: transparent; } }
+
+/* today + the last seven days */
+.today { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem 3rem; border-top: 2px solid var(--ink); padding-top: 1.2rem; }
+.today p { color: var(--ink-2); margin: 0.3rem 0 0; }
+.week { list-style: none; margin: 0; padding: 0; display: flex; align-items: flex-end; gap: 0.45rem; height: 4.2rem; }
+.week li { display: grid; grid-template-rows: 1fr auto; justify-items: center; height: 100%; width: 1.5rem; }
+.week-bar { align-self: end; width: 100%; background: var(--blue); border-radius: 4px 4px 0 0; min-height: 3px; }
+.week li:last-child .week-bar { background: var(--margin); }
+.week-day { font-size: 0.7rem; color: var(--ink-3); padding-top: 0.2rem; }
 .hero-sub { font-size: 1.15rem; color: var(--ink-2); max-width: 40rem; margin: 1.2rem 0 0; }
 
 /* the input is a ruled line you write on, not a box */
@@ -192,8 +222,6 @@ select.field { appearance: auto; }
 .hero-input::placeholder { color: var(--ink-3); opacity: 1; }
 .hero-input:focus { outline: none; border-bottom-color: var(--margin); box-shadow: 0 2px 0 var(--margin); }
 
-.hero-notes { list-style: none; margin: 1.2rem 0 0; padding: 0; display: grid; gap: 0.35rem; }
-.hero-notes li { font-family: var(--hand); font-size: 1.55rem; line-height: 1.25; }
 .hl { color: var(--on-hl); background: linear-gradient(transparent 12%, var(--hl) 12% 88%, transparent 88%); padding: 0 0.3em; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .hero-open { display: inline-block; margin-top: 0.7rem; font-size: 0.95rem; }
 .hero-cta { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-top: 2.4rem; }
@@ -444,6 +472,7 @@ body.is-immersed .view { padding: 0; max-width: none; }
   .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.2rem 1rem; }
   .tile-value { font-size: 1.6rem; }
   .hero-input { font-size: 1.6rem; }
+  .hero-demo { min-height: 17rem; }
   .score-card { grid-template-columns: 1fr; }
   .stage-head { align-items: flex-start; }
   .margin { border-radius: 0; }

@@ -2,10 +2,10 @@
 """Reads a Sidenote backup file and prints the numbers as JSON.
 
 Usage:
-    python sidenote_stats.py sidenote-backup-2026-11-21.json            # last 7 days
-    python sidenote_stats.py backup.json --days 30                      # last 30 days
-    python sidenote_stats.py backup.json --days 0                       # everything
-    python sidenote_stats.py backup.json --thoughts                     # only the thoughts still waiting
+    python3 sidenote_stats.py sidenote-backup-2026-11-21.json            # last 7 days
+    python3 sidenote_stats.py backup.json --days 30                      # last 30 days
+    python3 sidenote_stats.py backup.json --days 0                       # everything
+    python3 sidenote_stats.py backup.json --thoughts                     # only the thoughts still waiting
 
 Why a script: the recap must quote real numbers. Counting sessions and averaging
 scores by eye from raw JSON goes wrong; this does the arithmetic the same way
@@ -36,7 +36,9 @@ SCENES = OrderedDict([
     ("white",   {"name": "White noise",        "steady": 1.0, "nature": 0.0, "low": 0.1, "rhythm": 0.0, "bright": 1.0}),
     ("silence", {"name": "Silence",            "steady": 1.0, "nature": 0.0, "low": 0.0, "rhythm": 0.0, "bright": 0.0}),
 ])
+ZH_NAMES = {"rain": "窗边的雨", "ocean": "慢慢的海浪", "fire": "壁炉", "forest": "林间的风", "night": "夏夜", "train": "夜行列车", "library": "安静的图书馆", "brown": "棕噪音", "pink": "粉噪音", "white": "白噪音", "silence": "不放声音"}
 TRAITS = ["steady", "nature", "low", "rhythm", "bright"]
+LANG = "en"  # set from the backup's settings.lang
 MIN_BLOCKS_FOR_RECOMMENDATION = 3
 
 
@@ -46,7 +48,15 @@ def js_round(x):
 
 
 def scene_name(scene_id):
+    """The scene's name as the website shows it, in the student's language."""
+    if LANG == "zh" and scene_id in ZH_NAMES:
+        return ZH_NAMES[scene_id]
     return SCENES.get(scene_id, {}).get("name", scene_id)
+
+
+def num(x):
+    """True for a real number (JSON true/false are not numbers here)."""
+    return isinstance(x, (int, float)) and not isinstance(x, bool)
 
 
 def similarity(a, b):
@@ -57,7 +67,7 @@ def similarity(a, b):
 
 
 def scene_report(sessions):
-    scored = [s for s in sessions if isinstance(s.get("score"), (int, float)) and s.get("scene")]
+    scored = [s for s in sessions if num(s.get("score")) and s.get("scene")]
     overall = sum(s["score"] for s in scored) / len(scored) if scored else 0
     by_scene = OrderedDict()
     for s in scored:
@@ -88,10 +98,14 @@ def scene_report(sessions):
                       if sid not in tried and sid != "silence" and sid != best["id"]]
             others.sort(key=lambda x: -x[1])
             similar = [scene_name(sid) for sid, _ in others[:2]]
+        runner_up = rows[1] if len(rows) > 1 else None
         rec = {
             "status": "ready", "best": best["name"], "bestAverageScore": best["averageScore"],
             "bestBlocks": best["blocks"],
             "confidence": "solid" if best["blocks"] >= 3 else "early (fewer than 3 blocks with this scene)",
+            # a tie: the runner-up is within 3 points once small samples are evened out
+            "tie": bool(runner_up and best["adjusted"] - runner_up["adjusted"] < 3),
+            "runnerUp": runner_up["name"] if runner_up else None,
             "similarUntriedScenes": similar,
         }
     for r in rows:
@@ -122,25 +136,55 @@ def main():
 
     # getTimezoneOffset() convention: minutes to ADD to local time to get UTC
     tz = data.get("tzOffsetMinutes")
-    tz = tz if isinstance(tz, (int, float)) else 0
-    now = data.get("exportedAt") if isinstance(data.get("exportedAt"), (int, float)) else time.time() * 1000
+    tz = tz if num(tz) else 0
+    now = data.get("exportedAt") if num(data.get("exportedAt")) else time.time() * 1000
 
-    sessions = [s for s in data["sessions"] if args.include_samples or not s.get("sample")]
-    thoughts = [t for t in data["thoughts"] if args.include_samples or not t.get("sample")]
-    sample_count = len(data["sessions"]) - len(sessions)
-    goal_of = {s.get("id"): s.get("goal") or "" for s in data["sessions"]}
+    global LANG
+    settings = data.get("settings") if isinstance(data.get("settings"), dict) else {}
+    all_thoughts = [t for t in data["thoughts"] if isinstance(t, dict)]
+    all_sessions = [s for s in data["sessions"] if isinstance(s, dict) and num(s.get("startedAt"))]
+    # The language to answer in when the student sent no message: the site's setting,
+    # or failing that, whichever script most of the thoughts are written in.
+    if settings.get("lang") in ("en", "zh"):
+        LANG = settings["lang"]
+    else:
+        text = "".join(str(t.get("text", "")) for t in all_thoughts)
+        cjk = sum(1 for ch in text if "\u4e00" <= ch <= "\u9fff")
+        LANG = "zh" if text and cjk > len(text) * 0.3 else "en"
+
+    sessions = [s for s in all_sessions if args.include_samples or not s.get("sample")]
+    thoughts = [t for t in all_thoughts if args.include_samples or not t.get("sample")]
+    sample_blocks = len(all_sessions) - len(sessions)
+    sample_thoughts = len(all_thoughts) - len(thoughts)
+    goal_of = {s.get("id"): s.get("goal") or "" for s in all_sessions}
 
     def describe(t):
-        out = {"text": t.get("text", ""), "kind": t.get("category", "other"), "parkedOn": local_day(t.get("createdAt", now), tz)}
+        kind = t.get("category") if t.get("category") in CATEGORIES else "other"
+        out = {"text": str(t.get("text", "")), "kind": kind}
+        if num(t.get("createdAt")):
+            out["parkedOn"] = local_day(t["createdAt"], tz)
         if goal_of.get(t.get("sessionId")):
             out["whileStudying"] = goal_of[t["sessionId"]]
-        if isinstance(t.get("offsetSec"), (int, float)):
+        if num(t.get("offsetSec")):
             out["minuteIntoBlock"] = max(1, js_round(t["offsetSec"] / 60))
+        if isinstance(t.get("reply"), dict) and t["reply"].get("text"):
+            # the website already gave an answer; "ai" answers are real, "offline" ones are canned tips
+            out["alreadyAnswered"] = t["reply"].get("source") == "ai"
         return out
 
     waiting = [describe(t) for t in thoughts if t.get("status") != "done"]
+    demo_note = None
+    if sample_thoughts or sample_blocks:
+        demo_note = (f"{sample_blocks} example blocks and {sample_thoughts} example thoughts from the website's "
+                     "demo data were left out. The website's own pages include them until the student removes them.")
+        if not sessions and not thoughts:
+            demo_note = "This file holds only the website's demo data, nothing the student did. " + demo_note
+
     if args.thoughts:
-        print(json.dumps({"waitingThoughts": waiting, "count": len(waiting)}, ensure_ascii=False, indent=2))
+        out = {"language": LANG, "waitingThoughts": waiting, "count": len(waiting)}
+        if demo_note:
+            out["note"] = demo_note
+        print(json.dumps(out, ensure_ascii=False, indent=2))
         return
 
     # "Last 7 days" means today plus the six calendar days before it, in the student's
@@ -150,11 +194,12 @@ def main():
     else:
         today_start = ((now - tz * 60000) // 86400000) * 86400000 + tz * 60000
         since = today_start - (args.days - 1) * 86400000
-    sessions = [s for s in sessions if since <= s.get("startedAt", 0) <= now]
-    thoughts = [t for t in thoughts if since <= t.get("createdAt", 0) <= now]
+    waiting_now = len(waiting)
+    sessions = [s for s in sessions if since <= s["startedAt"] <= now]
+    thoughts = [t for t in thoughts if num(t.get("createdAt")) and since <= t["createdAt"] <= now]
 
     focus_sec = sum(s.get("focusSec") or 0 for s in sessions)
-    scored = [s for s in sessions if isinstance(s.get("score"), (int, float))]
+    scored = [s for s in sessions if num(s.get("score"))]
     avg = js_round(sum(s["score"] for s in scored) / len(scored)) if scored else None
 
     kinds = OrderedDict((c, 0) for c in CATEGORIES)
@@ -169,28 +214,30 @@ def main():
 
     timing = [0] * 10
     for t in thoughts:
-        if isinstance(t.get("offsetSec"), (int, float)):
-            timing[min(9, int(t["offsetSec"] // 300))] += 1
+        if num(t.get("offsetSec")):
+            timing[min(9, max(0, int(t["offsetSec"] // 300)))] += 1
     timing_labels = [f"{i * 5}-{i * 5 + 5} min" for i in range(9)] + ["45+ min"]
 
     in_block = sum(1 for t in thoughts if t.get("sessionId"))
+    planned = [s.get("plannedMin") for s in sessions if num(s.get("plannedMin"))]
+    usual_block = sorted(planned)[len(planned) // 2] if planned else None
     trend = None
     if len(scored) >= 4:
-        ordered = sorted(scored, key=lambda s: s.get("startedAt", 0))
+        ordered = sorted(scored, key=lambda s: s["startedAt"])
         half = len(ordered) // 2
         diff = (sum(s["score"] for s in ordered[-half:]) / half) - (sum(s["score"] for s in ordered[:half]) / half)
         trend = "rising" if diff >= 5 else "falling" if diff <= -5 else "steady"
 
     per_day = OrderedDict()
-    for s in sorted(sessions, key=lambda s: s.get("startedAt", 0)):
-        d = per_day.setdefault(local_day(s.get("startedAt", 0), tz), {"minutes": 0.0, "blocks": 0})
+    for s in sorted(sessions, key=lambda s: s["startedAt"]):
+        d = per_day.setdefault(local_day(s["startedAt"], tz), {"minutes": 0.0, "blocks": 0})
         d["minutes"] += (s.get("focusSec") or 0) / 60
         d["blocks"] += 1
     for d in per_day.values():
         d["minutes"] = js_round(d["minutes"])
 
     goals = []
-    for s in sorted(sessions, key=lambda s: -s.get("startedAt", 0)):
+    for s in sorted(sessions, key=lambda s: -s["startedAt"]):
         if s.get("goal") and s["goal"] not in goals and len(goals) < 6:
             goals.append(s["goal"])
 
@@ -201,31 +248,38 @@ def main():
             finished[s["finished"]] += 1
 
     out = OrderedDict([
+        ("language", LANG),
         ("period", "everything" if args.days <= 0 else f"last {args.days} days"),
+        ("from", local_day(since, tz) if since else (local_day(min(s["startedAt"] for s in sessions), tz) if sessions else None)),
+        ("to", local_day(now, tz)),
+        ("exportedOn", local_day(now, tz) if num(data.get("exportedAt")) else None),
         ("blocks", len(sessions)),
         ("focusMinutes", js_round(focus_sec / 60)),
         ("longestBlockMinutes", js_round(max([s.get("focusSec") or 0 for s in sessions] or [0]) / 60)),
+        ("usualBlockLengthMinutes", usual_block),
         ("averageFocusScore", avg),
         ("focusScoreTrend", trend),
         ("plannedWorkFinished", finished),
         ("pauses", sum(s.get("pauses") or 0 for s in sessions)),
         ("goals", goals),
         ("strayThoughts", len(thoughts)),
-        ("strayThoughtsPer25Minutes", round(in_block * 1500 / focus_sec, 1) if focus_sec else None),
+        # only thoughts parked during a block count toward the rate; too little focus time gives no rate
+        ("strayThoughtsDuringBlocksPer25Minutes", round(in_block * 1500 / focus_sec, 1) if focus_sec >= 600 else None),
         ("thoughtKinds", kinds),
         ("thoughtRange", breadth),
         ("thoughtsByMinuteOfBlock", OrderedDict(zip(timing_labels, timing))),
-        ("thoughtsDealtWith", sum(1 for t in thoughts if t.get("status") == "done")),
-        ("thoughtsStillWaiting", sum(1 for t in thoughts if t.get("status") != "done")),
+        ("parkedInPeriodDealtWith", sum(1 for t in thoughts if t.get("status") == "done")),
+        ("parkedInPeriodStillWaiting", sum(1 for t in thoughts if t.get("status") != "done")),
+        ("waitingNow", waiting_now),
         ("focusMinutesPerDay", per_day),
         ("scenes", scene_rows),
         ("sceneRecommendation", rec),
         ("notes", []),
     ])
-    if sample_count:
-        out["notes"].append(f"{sample_count} example blocks from the website's demo data were left out.")
+    if demo_note:
+        out["notes"].append(demo_note)
     if not sessions:
-        out["notes"].append("No study blocks in this period. Try --days 0 for everything.")
+        out["notes"].append("No study blocks in this period." + ("" if args.days <= 0 else " Try --days 0 for everything."))
     elif len(scored) < 3:
         out["notes"].append("Fewer than 3 rated blocks: treat every average here as a first impression.")
     print(json.dumps(out, ensure_ascii=False, indent=2))

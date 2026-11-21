@@ -21,10 +21,10 @@ export const CONFIG = {
     // Leave empty and no ad code is loaded at all.
     adsenseClient: '',
     // Ad unit ids from AdSense (Ads > By ad unit > Display ads), one per placement.
+    // 'home' sits below the reading list on the front page; 'guide' sits at the
+    // end of each article. There are deliberately no placements on tool screens.
     slots: {
       home: '',
-      lot: '',
-      insights: '',
       guide: '',
     },
   },

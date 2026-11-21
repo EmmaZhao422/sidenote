@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeFocusScore, aggregate, rangeFor, recommendScene, similarScenes, breadthLabel } from '../js/score.js';
+import { computeFocusScore, aggregate, rangeFor, recommendScene, similarScenes, breadthLabel, habit } from '../js/score.js';
 import { buildSample } from '../js/sample.js';
 
 const base = { focusSec: 1500, plannedMin: 25, rating: 5, finished: 'yes', pauses: 0, parkedCount: 0, mode: 'screen', steps: [] };
@@ -16,10 +16,22 @@ test('the score stays between 0 and 100 whatever happens', () => {
   assert.ok(s < 30);
 });
 
-test('more interruptions means a lower score', () => {
+test('pauses lower the score', () => {
   const calm = computeFocusScore({ ...base, rating: 4 }).score;
-  const busy = computeFocusScore({ ...base, rating: 4, parkedCount: 5, pauses: 2 }).score;
+  const busy = computeFocusScore({ ...base, rating: 4, pauses: 2 }).score;
   assert.ok(busy < calm);
+});
+
+test('parking thoughts never costs points', () => {
+  const none = computeFocusScore({ ...base, rating: 4, parkedCount: 0 });
+  const many = computeFocusScore({ ...base, rating: 4, parkedCount: 9 });
+  assert.deepEqual(many, none);
+});
+
+test('a short block is not punished harder for one pause than a long one', () => {
+  const short = computeFocusScore({ ...base, focusSec: 300, plannedMin: 5, pauses: 1 }).steady;
+  const long = computeFocusScore({ ...base, focusSec: 1500, plannedMin: 25, pauses: 1 }).steady;
+  assert.equal(short, long);
 });
 
 test('time away from the tab only counts when studying on paper', () => {
@@ -83,4 +95,27 @@ test('one lucky block does not beat a consistently good scene', () => {
 test('similar scenes share a character', () => {
   assert.deepEqual(similarScenes('brown', [], 1), ['library']);
   assert.ok(similarScenes('rain', [], 3).includes('forest'));
+});
+
+test('streak counts consecutive days and survives a day with no block yet', () => {
+  const noon = (y, m, d) => new Date(y, m, d, 12, 0, 0).getTime();
+  const block = (ts, min = 25) => ({ startedAt: ts, focusSec: min * 60 });
+  const now = noon(2026, 10, 21);
+  // blocks yesterday, the day before, and three days ago; none today
+  const sessions = [block(noon(2026, 10, 20)), block(noon(2026, 10, 19), 45), block(noon(2026, 10, 18)), block(noon(2026, 10, 15))];
+  let h = habit(sessions, now);
+  assert.equal(h.streak, 3);
+  assert.equal(h.todayMinutes, 0);
+  assert.equal(h.week.length, 7);
+  assert.equal(h.week[6].minutes, 0);
+  assert.equal(h.week[5].minutes, 25);
+  assert.equal(h.week[4].minutes, 45);
+  // add one today
+  h = habit([...sessions, block(now, 50)], now);
+  assert.equal(h.streak, 4);
+  assert.equal(h.todayMinutes, 50);
+  assert.equal(h.todayBlocks, 1);
+  // a gap of a full day breaks it
+  assert.equal(habit([block(noon(2026, 10, 19))], now).streak, 0);
+  assert.equal(habit([], now).streak, 0);
 });

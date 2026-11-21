@@ -35,10 +35,10 @@ test('the skill script reports the same numbers as the website summary', () => {
     assert.equal(py.focusMinutes, js.focusMin, `focus minutes, ${key}`);
     assert.equal(py.averageFocusScore, js.avgScore, `average score, ${key}`);
     assert.equal(py.strayThoughts, js.thoughtCount, `thoughts, ${key}`);
-    assert.equal(py.strayThoughtsPer25Minutes, js.wanderPer25, `per 25, ${key}`);
+    assert.equal(py.strayThoughtsDuringBlocksPer25Minutes, js.wanderPer25, `per 25, ${key}`);
     assert.deepEqual(py.thoughtKinds, js.byCategory, `kinds, ${key}`);
     assert.deepEqual(Object.values(py.thoughtsByMinuteOfBlock), js.timing, `timing, ${key}`);
-    assert.equal(py.thoughtsStillWaiting, js.openCount, `waiting, ${key}`);
+    assert.equal(py.parkedInPeriodStillWaiting, js.openCount, `waiting, ${key}`);
     assert.equal(py.longestBlockMinutes, js.longestMin, `longest, ${key}`);
   }
 });
@@ -60,6 +60,43 @@ test('the skill script lists exactly the thoughts still waiting', () => {
   const py = run(file, '--thoughts');
   assert.equal(py.count, thoughts.filter((t) => t.status !== 'done').length);
   assert.ok(py.waitingThoughts.every((t) => t.text && t.kind && t.parkedOn));
+});
+
+test('the skill script survives messy files and explains demo-only ones', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'sidenote-'));
+  const messy = join(dir, 'messy.json');
+  writeFileSync(messy, JSON.stringify({
+    thoughts: [null, 'x', { text: 'no dates', category: null }, { text: 'bad date', createdAt: 'yesterday', status: 'open' }],
+    sessions: [null, { startedAt: 'never' }, { startedAt: Date.now() - 1000, focusSec: 60, score: 70, scene: 'rain' }],
+  }));
+  const a = run(messy, '--thoughts');
+  assert.equal(a.count, 2);
+  assert.ok(a.waitingThoughts.every((t) => t.kind === 'other'));
+  const b = run(messy, '--days', '0');
+  assert.equal(b.blocks, 1);
+  assert.equal(b.strayThoughtsDuringBlocksPer25Minutes, null);
+  assert.equal(b.waitingNow, 2);
+
+  const demo = join(dir, 'demo.json');
+  const { sessions, thoughts } = buildSample('zh', Date.now());
+  writeFileSync(demo, JSON.stringify({ settings: { lang: 'zh' }, thoughts, sessions }));
+  const c = run(demo, '--thoughts');
+  assert.equal(c.count, 0);
+  assert.match(c.note, /only the website's demo data/);
+  assert.equal(c.language, 'zh');
+});
+
+test('scene names follow the language of the backup', () => {
+  const now = Date.now();
+  const { sessions, thoughts } = buildSample('zh', now);
+  sessions.forEach((s) => delete s.sample);
+  thoughts.forEach((t) => delete t.sample);
+  const file = join(mkdtempSync(join(tmpdir(), 'sidenote-')), 'zh.json');
+  writeFileSync(file, JSON.stringify({ settings: { lang: 'zh' }, exportedAt: now, tzOffsetMinutes: 0, thoughts, sessions }));
+  const py = run(file, '--days', '0');
+  const js = recommendScene(sessions);
+  assert.equal(py.sceneRecommendation.best, SCENES.find((s) => s.id === js.best.id).zh);
+  for (const s of SCENES) assert.match(readFileSync(script, 'utf8'), new RegExp(`"${s.id}": "${s.zh}"`), `zh name of ${s.id}`);
 });
 
 test('the scene table in the skill matches the website', () => {

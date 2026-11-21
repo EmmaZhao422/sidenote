@@ -67,7 +67,7 @@ Ads never appear on the planning or study screens. That rule lives in `js/ads.js
 
 ## The focus score
 
-A 0 to 100 number for comparing your own blocks with each other: your own rating after the block (45%), whether you finished the plan (20%), and how uninterrupted the block was (35%). The exact formula is in `js/score.js`. It is a rough yardstick, not a measurement of attention.
+A 0 to 100 number for comparing your own blocks with each other: your own rating after the block (40%), whether you finished the plan (25%), and how uninterrupted the block was (35%). Parking a thought never costs points. The exact formula is in `js/score.js`. It is a rough yardstick, not a measurement of attention.
 
 ## Who made what
 

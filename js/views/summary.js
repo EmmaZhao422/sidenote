@@ -11,7 +11,6 @@ import { getScene, sceneName } from '../scenes.js';
 import { localRecap } from '../recap.js';
 import { aiMode, writeRecap } from '../ai.js';
 import { buildSample } from '../sample.js';
-import { adSlot } from '../ads.js';
 
 export function summaryView(root) {
   let rangeKey = '7d';
@@ -192,6 +191,6 @@ export function summaryView(root) {
     h('header', { class: 'view-head' },
       h('h1', null, t('summary.title')),
       h('p', { class: 'lede' }, t('summary.lede'))),
-    body, adSlot('insights'));
+    body);
   draw();
 }

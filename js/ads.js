@@ -1,8 +1,10 @@
 // Ad placements. Nothing loads until CONFIG.ads.adsenseClient is filled in
 // (see docs/MONETIZATION.md). Two rules are built in on purpose:
 //
-//   1. Ads never appear while someone is planning or focusing. A study tool
-//      that distracts you during the study block is working against itself.
+//   1. Ads never appear while someone is planning or focusing, and never on the
+//      app's own tool screens (margin, summary, settings). A study tool that
+//      distracts you is working against itself, and ad networks do not allow
+//      ads on screens that have no content of their own to read.
 //   2. Each placement is labelled "Advertisement", which AdSense policy allows
 //      and which keeps the page honest.
 //
@@ -23,7 +25,7 @@ function loadAdSense() {
 }
 
 function label(lang) {
-  return lang === 'zh' ? '广告' : 'Advertisement';
+  return String(lang || '').toLowerCase().startsWith('zh') ? '广告' : 'Advertisement';
 }
 
 // Returns an element to place in the page, or null when ads are off.

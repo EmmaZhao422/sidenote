@@ -51,3 +51,43 @@ test('old saved data without newer settings still loads', () => {
   assert.equal(store.state.settings.focusMin, 25);
   assert.equal(store.state.settings.ai.provider, 'anthropic');
 });
+
+test('a change made in another tab is kept, not overwritten', () => {
+  store.addThought('from this tab');
+  // another tab saves a copy that also contains its own thought
+  const other = JSON.parse(JSON.stringify(store.state));
+  other.thoughts.push({ id: 'other-1', text: 'from the other tab', createdAt: 5, status: 'open', category: 'other' });
+  store._externalWrite(other);
+  // this tab now parks one more: all three must survive
+  store.addThought('second from this tab');
+  const texts = store.state.thoughts.map((t) => t.text);
+  assert.deepEqual(texts, ['from this tab', 'from the other tab', 'second from this tab']);
+});
+
+test('steps queued for the next block are handed over once', () => {
+  store.addToNextPlan('Email Prof. Lin');
+  store.addToNextPlan('Email Prof. Lin');
+  store.addToNextPlan('Print the worksheet');
+  assert.deepEqual(store.takeNextPlan(), ['Email Prof. Lin', 'Print the worksheet']);
+  assert.deepEqual(store.takeNextPlan(), []);
+});
+
+test('a backup can be inspected before it replaces anything', () => {
+  store.addThought('keep me');
+  const backup = store.exportJSON();
+  assert.deepEqual(store.peekJSON(backup), { sessions: 0, thoughts: 1 });
+  assert.throws(() => store.peekJSON('{"x":1}'));
+});
+
+test('what was saved is there after the page is loaded again', async () => {
+  const box = new Map();
+  globalThis.localStorage = { getItem: (k) => (box.has(k) ? box.get(k) : null), setItem: (k, v) => box.set(k, String(v)), removeItem: (k) => box.delete(k) };
+  try {
+    const first = await import('../js/store.js?visit=1');
+    first.store.addThought('survives a reload');
+    const second = await import('../js/store.js?visit=2');
+    assert.ok(second.store.state.thoughts.some((t) => t.text === 'survives a reload'));
+  } finally {
+    delete globalThis.localStorage;
+  }
+});

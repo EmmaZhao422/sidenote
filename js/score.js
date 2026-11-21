@@ -9,15 +9,24 @@ const clamp = (x, lo, hi) => Math.min(hi, Math.max(lo, x));
 
 // ---------------------------------------------------------------------------
 // Focus score, 0-100. Three parts, shown to the student so it is not a mystery:
-//   feel    (45%)  their own 1-5 rating right after the block
-//   done    (20%)  did they finish what they planned
-//   steady  (35%)  how uninterrupted the block was
+//   feel    (40%)  their own 1-5 rating right after the block
+//   done    (25%)  did they finish what they planned
+//   steady  (35%)  how uninterrupted the block was: pauses, time away, stopping early
+//
+// Parking a thought never costs points. Writing a stray thought down instead of
+// chasing it is exactly what the student is supposed to do, so the score must
+// not punish it. How often thoughts show up is reported separately, as a fact.
+//
 // It is a rough yardstick for comparing your own sessions, not a measurement
 // of attention.
 // ---------------------------------------------------------------------------
+export const SCORE_WEIGHTS = { feel: 0.4, done: 0.25, steady: 0.35 };
+
 export function computeFocusScore(session) {
   const focusSec = Math.max(1, session.focusSec || 0);
-  const per25 = 1500 / focusSec;
+  // Pauses are counted per 25 minutes, so a long block isn't judged more harshly
+  // than a short one. Blocks shorter than 25 minutes are not scaled up.
+  const per25 = 1500 / Math.max(focusSec, 1500);
 
   const feel = session.rating ? 20 * clamp(session.rating, 1, 5) : 60;
 
@@ -28,8 +37,7 @@ export function computeFocusScore(session) {
     : finishedValue;
 
   let steady = 100;
-  steady -= 7 * (session.parkedCount || 0) * per25;   // each stray thought costs a little
-  steady -= 12 * (session.pauses || 0) * per25;       // each pause costs more
+  steady -= 15 * (session.pauses || 0) * per25;
   if (session.mode === 'paper') {
     // Studying on paper with this tab open: time spent away from the tab is drift.
     const awayRatio = (session.awaySec || 0) / focusSec;
@@ -37,11 +45,11 @@ export function computeFocusScore(session) {
   }
   const plannedSec = (session.plannedMin || 0) * 60;
   if (plannedSec && focusSec < plannedSec * 0.9) {
-    steady -= (1 - focusSec / plannedSec) * 30;        // stopped early
+    steady -= (1 - focusSec / plannedSec) * 40;        // stopped early
   }
   steady = clamp(steady, 0, 100);
 
-  const score = Math.round(0.45 * feel + 0.2 * done + 0.35 * steady);
+  const score = Math.round(SCORE_WEIGHTS.feel * feel + SCORE_WEIGHTS.done * done + SCORE_WEIGHTS.steady * steady);
   return { score, feel: Math.round(feel), done: Math.round(done), steady: Math.round(steady) };
 }
 
@@ -156,6 +164,39 @@ export function aggregate(state, range) {
     wanderPer25: wanderPer25 === null ? null : Math.round(wanderPer25 * 10) / 10,
     goals,
     longestMin: Math.round(Math.max(0, ...sessions.map((s) => s.focusSec || 0)) / 60),
+  };
+}
+
+// Today's totals and the run of consecutive days with at least one block.
+// A streak still counts if today has no block yet but yesterday had one.
+export function habit(sessions, now = Date.now()) {
+  const day = 86400000;
+  const today = startOfDay(now);
+  const minutesByDay = new Map();
+  sessions.forEach((s) => {
+    const k = startOfDay(s.startedAt);
+    minutesByDay.set(k, (minutesByDay.get(k) || 0) + (s.focusSec || 0) / 60);
+  });
+  // Walk back one calendar day at a time. Noon is used as the anchor so that
+  // daylight-saving changes never skip or repeat a day.
+  const dayBefore = (start) => startOfDay(start + day / 2 - day);
+  let streak = 0;
+  let cursor = minutesByDay.has(today) ? today : dayBefore(today);
+  while (minutesByDay.has(cursor)) {
+    streak += 1;
+    cursor = dayBefore(cursor);
+  }
+  const week = [];
+  let d = today;
+  for (let i = 0; i < 7; i++) {
+    week.unshift({ day: d, minutes: Math.round(minutesByDay.get(d) || 0) });
+    d = dayBefore(d);
+  }
+  return {
+    todayMinutes: Math.round(minutesByDay.get(today) || 0),
+    todayBlocks: sessions.filter((s) => startOfDay(s.startedAt) === today).length,
+    streak,
+    week,
   };
 }
 
