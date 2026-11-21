@@ -251,3 +251,23 @@ test('a standing reminder repeats, and starts at the next time the clock shows t
   assert.equal(nextAt('21:30', 'daily', sat).getDate(), 21);
   assert.equal(nextAt('', 'daily', sat).getHours(), 19);
 });
+
+test('a key removed in one tab is not written back by another tab', () => {
+  const r = fresh(`
+    globalThis.window = undefined;
+    const { store } = await import('./js/store.js');
+    // this tab holds a remembered key
+    store.setAiSettings({ key: 'sk-REMEMBERED', remember: true });
+    const gen = store.state.settings.ai.keyGen;
+    // another tab removes it: the disk copy has no key and a newer generation
+    const disk = JSON.parse(localStorage.getItem('sidenote.v1'));
+    disk.settings.ai.key = '';
+    disk.settings.ai.keyGen = gen + 1;
+    store._externalWrite(JSON.stringify(disk));
+    // this tab saves something else
+    store.addThought('buy milk');
+    const after = JSON.parse(localStorage.getItem('sidenote.v1')).settings.ai;
+    console.log(JSON.stringify({ diskKey: after.key, memKey: store.state.settings.ai.key }));
+  `);
+  assert.deepEqual(r, { diskKey: '', memKey: '' });
+});

@@ -70,7 +70,7 @@ export function marginView(root) {
       h('div', { class: 'row' },
         tab === 'open' && unanswered.length >= 2 && aiMode() !== 'offline'
           ? sortAllButton(() => unanswered.map((x) => x.id), goalOf, draw) : null,
-        tab === 'open' && aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.status !== 'done' && x.category !== 'worry' && x.category !== 'urge')) : null,
+        tab === 'open' && aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.status !== 'done' && x.category !== 'worry' && x.category !== 'urge'), open.length) : null,
         tab === 'open' && open.length
           ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.status !== 'done')) : null));
 
@@ -157,7 +157,7 @@ export function reviewView(root, navigate, sessionId) {
         h('h2', null, t('review.thoughtsTitle', { n: undecided.length })),
         h('div', { class: 'row' },
           unanswered.length >= 2 && aiMode() !== 'offline' ? sortAllButton(() => unanswered.map((x) => x.id), () => session.goal, draw) : null,
-          aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done' && !isPlanned(x) && x.category !== 'worry' && x.category !== 'urge')) : null,
+          aiMode() === 'offline' ? askAllLink(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done' && !isPlanned(x) && x.category !== 'worry' && x.category !== 'urge'), undecided.length) : null,
           open.length ? copyForClaudeButton(() => store.state.thoughts.filter((x) => x.sessionId === sessionId && x.status !== 'done')) : null)),
       notes);
     if (focusId) {

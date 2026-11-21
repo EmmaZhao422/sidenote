@@ -179,7 +179,22 @@ function downloadBackup() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 store.onStorageFailure(() => banner('storage-banner', t('settings.storageFailed'), { label: t('settings.export'), run: downloadBackup }));
-if (store.foundUnreadable) banner('unreadable-banner', t('settings.unreadable'));
+if (store.foundUnreadable) {
+  banner('unreadable-banner', t('settings.unreadable'), {
+    label: t('settings.unreadableGet'),
+    run: () => {
+      const text = store.unreadableCopy();
+      if (!text) return;
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+      a.download = 'sidenote-damaged-copy.txt';
+      document.body.append(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    },
+  });
+}
 
 // A page left open overnight: when the student comes back on a new day, "today" has moved
 let shownDay = store.dayKey(0);

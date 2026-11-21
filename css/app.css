@@ -727,3 +727,22 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
 /* a worry: one question, two answers */
 .note-sort { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.5rem; margin-top: 0.7rem; }
 .note-sort-more { font-size: 0.85rem; margin-left: 0.3rem; }
+
+/* thumbs: controls a phone user has to hit are at least 44px tall */
+@media (pointer: coarse) {
+  .stage .btn, .margin-count, .lang, .linklike, .note-kind { min-height: 44px; }
+  .margin-count, .lang, .linklike { display: inline-flex; align-items: center; }
+  .margin-peek-x { min-width: 44px; min-height: 40px; }
+  .wrap-links { gap: 0.2rem 1.6rem; }
+  .hero-ai a, .hero-open { display: inline-block; padding: 0.6rem 0; }
+  .note-actions .btn, .note-link, .chip { min-height: 40px; }
+}
+.hero-parked { scroll-margin: 6rem 0; }
+/* a phone held sideways: the timer shrinks so the margin stays on the screen */
+@media (max-height: 30rem) {
+  .stage-inner { gap: 0.6rem; padding-top: 0.7rem; }
+  .timer { font-size: clamp(3rem, 30vh, 7rem); }
+  .focus-center { gap: 0.3rem; }
+  .margin { padding-top: 0.5rem; padding-bottom: calc(0.6rem + env(safe-area-inset-bottom)); margin-bottom: 0; }
+  .stage-hint, .lock-note { display: none; }
+}

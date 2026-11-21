@@ -722,7 +722,7 @@ page('privacy.html', 'en', 'Privacy', 'What Sidenote stores, what it sends, and 
       <li><strong>AI recap:</strong> your summary numbers and the goals you typed. The thoughts themselves are not included.</li>
     </ul>
     <p>Depending on how the site is set up, the request goes either through this site's own server, which forwards it to the model provider and does not store the text (it keeps only a count of requests, to stop abuse; Cloudflare, which runs that server, may log technical details such as IP addresses), or, if you entered your own API key in Settings, straight from your browser to the provider you chose. As of the date above, this site's own server connection is switched off, so a thought reaches an AI only through your own key, the Claude app, or the "Ask" buttons described below. The provider handles that text under its own terms and privacy policy. Nothing is sent until you click, so please don't park anything you wouldn't want processed that way and then ask the AI about it.</p>
-    <p>If you paste in your own API key, it is kept only until you close the browser, unless you tick "Remember the key on this device". It is sent only to the provider you chose, and it is never written into a backup file.</p>
+    <p>If you paste in your own API key, it is kept only in the tab you pasted it into, until you close that tab, unless you tick "Remember the key on this device". It is sent only to the provider you chose, and it is never written into a backup file.</p>
 
     <h2>Advertising</h2>
     <p>Sidenote is free, and some pages may show ads to pay for running it. As of the date above, no ads are running. Ads are never shown while you are planning or in a study block. When ads are enabled they will be provided by Google AdSense, and then:</p>
@@ -765,7 +765,7 @@ page('zh/privacy.html', 'zh', '隐私说明', '走神本不用注册，你写的
       <li><strong>AI 总结：</strong>你的统计数字和你输入过的目标，不包含念头本身。</li>
     </ul>
     <p>根据网站的配置，请求有两种走法：一种是经过本站自己的服务器转发给模型服务商，这台服务器不保存文字内容（只记请求次数，用来防滥用；提供这台服务器的 Cloudflare 可能会记录 IP 地址等技术信息）；另一种是你在「设置」里填了自己的 API key，这时请求从你的浏览器直接发给你选的服务商。截至上面的日期，本站自己的服务器连接还没有开通，所以念头只会通过你自己的 key、Claude 应用，或者下面说的「问 AI」按钮到达 AI。服务商会按它自己的条款和隐私政策处理这些文字。你不点击就不会发送，所以，不想被这样处理的内容，请不要记下来之后再让 AI 处理。</p>
-    <p>如果你填了自己的 API key，它只保留到浏览器关闭为止，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
+    <p>如果你填了自己的 API key，它只留在你粘贴它的那个标签页里，关掉标签页就没了，除非你勾选「在这台设备上记住 key」。它只会发给你选的服务商，也不会被写进备份文件。</p>
 
     <h2>广告</h2>
     <p>走神本免费使用，部分页面可能展示广告来支付运行成本。截至上面的日期，网站没有投放任何广告。在你做计划或学习的过程中，永远不会显示广告。广告开启后将由 Google AdSense 提供，届时：</p>

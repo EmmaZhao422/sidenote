@@ -6,6 +6,16 @@ import { audio } from './audio.js';
 import { isTouchDevice } from './ui.js';
 import { breakTimer } from './breaktimer.js';
 
+// The id of a block started a moment ago in this page. The study screen asks for it
+// once: a block it finds running that it did not just start is one it is coming
+// back to (a reload, a closed tab), and that one resumes paused.
+let fresh = null;
+export function takeFresh(id) {
+  const hit = fresh !== null && fresh === id;
+  fresh = null;
+  return hit;
+}
+
 // opts: { goal, minutes, scene, mode, prep, steps: [text] }
 // Anything left out falls back to the student's last choices.
 export function startBlock(opts = {}) {
@@ -24,8 +34,9 @@ export function startBlock(opts = {}) {
   const steps = [...carried, ...own].slice(0, 3).map((text) => ({ text, done: false }));
 
   const now = Date.now();
+  fresh = uid();
   store.setActive({
-    id: uid(),
+    id: fresh,
     owner: TAB_ID,
     stage: prep > 0 ? 'prep' : 'focus',
     goal: String(opts.goal || '').trim(),
@@ -54,7 +65,9 @@ export function startBlock(opts = {}) {
 export function heldElsewhere(active, now = Date.now()) {
   if (!active || !active.owner || active.owner === TAB_ID || active.stage === 'wrap' || active.pausedAt) return false;
   const beat = store.lastBeat();
-  return beat.tab === active.owner && now - beat.at < 15000;
+  if (beat.gone) return false; // its page was closed
+  // Browsers slow a hidden tab's timers to about one a minute, so its heartbeat is allowed to be older
+  return beat.tab === active.owner && now - beat.at < (beat.hidden ? 90000 : 15000);
 }
 
 // When a block ends, the queued to-dos it took on are settled: a step that was
@@ -63,15 +76,16 @@ export function heldElsewhere(active, now = Date.now()) {
 export function settleCarried(carried = [], steps = null) {
   carried.forEach((text) => {
     const done = steps && steps.some((s) => s.text === text && s.done);
-    const thought = store.state.thoughts.find((x) => x.queued && x.text === text && x.status !== 'done');
+    const twins = store.state.thoughts.filter((x) => x.queued && x.text === text && x.status !== 'done');
+    const thought = twins[0];
     if (done) {
-      if (thought) store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
+      twins.forEach((x) => store.updateThought(x.id, { status: 'done', doneAt: Date.now(), queued: false }));
     } else if (steps === null) {
       store.addToNextPlan(text);      // the block was thrown away: it still waits for the next one
     } else if (thought) {
       // Not ticked off: it goes back to the list of thoughts instead of following
       // the student into every block from now on.
-      store.updateThought(thought.id, { queued: false });
+      twins.forEach((x) => store.updateThought(x.id, { queued: false }));
     }
   });
 }

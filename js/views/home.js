@@ -69,6 +69,8 @@ export function homeView(root, navigate) {
       h('p', { class: 'hero-parked-head' }, t(real.length ? 'home.parkedHeadBack' : 'home.parkedHead')),
       noteCard(id, { onChange: (what) => { drawParked(false); drawTodo(); if (what === 'status') showParked(id); } }));
     parkedBox.hidden = false;
+    // on a phone the card would otherwise open below the fold, behind the tab bar
+    parkedBox.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   function drawParked(justAdded) {

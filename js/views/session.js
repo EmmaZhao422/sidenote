@@ -8,7 +8,7 @@
 import { h, mount, toast, clock, segmented, isTouchDevice, timeLabel } from '../ui.js';
 import { t, getLang } from '../i18n.js';
 import { store, TAB_ID } from '../store.js';
-import { startBlock, heldElsewhere, settleCarried } from '../block.js';
+import { startBlock, heldElsewhere, settleCarried, takeFresh } from '../block.js';
 import { breakTimer } from '../breaktimer.js';
 import { SCENES, getScene, sceneName, sceneBlurb } from '../scenes.js';
 import { audio } from '../audio.js';
@@ -584,12 +584,18 @@ export function sessionView(root, navigate) {
       if (document.hidden) {
         save({ awaySince: Date.now() });
       } else if (cur.awaySince) {
-        const gone = Date.now() - cur.awaySince;
+        // If the computer slept, the ticker below will pause the block from its last
+        // tick. Time away is counted up to that tick only, not through the sleep as well.
+        const until = Date.now() - lastTick > SLEEP_GAP_MS ? lastTick : Date.now();
+        const gone = Math.max(0, until - cur.awaySince);
         save({ awayMs: cur.awayMs + gone, awayCount: cur.awayCount + (gone > 5000 ? 1 : 0), awaySince: null });
       }
     };
     document.addEventListener('visibilitychange', onVisibility);
-    offVisibility = () => document.removeEventListener('visibilitychange', onVisibility);
+    // a last heartbeat as the page goes away, so a reload costs no study time
+    const onHide = () => { const cur = active(); if (cur && cur.owner === TAB_ID && cur.stage === 'focus' && !cur.pausedAt) store.beat(true); };
+    window.addEventListener('pagehide', onHide);
+    offVisibility = () => { document.removeEventListener('visibilitychange', onVisibility); window.removeEventListener('pagehide', onHide); };
 
     let lastTick = Date.now();
     ticker = setInterval(() => {
@@ -600,7 +606,8 @@ export function sessionView(root, navigate) {
       const now = Date.now();
       const gap = now - lastTick;
       lastTick = now;
-      if (gap > SLEEP_GAP_MS && !cur.pausedAt) {
+      const lockedPhone = isTouchDevice() && cur.mode === 'paper'; // the setup screen promises the timer runs on
+      if (gap > SLEEP_GAP_MS && !cur.pausedAt && !lockedPhone) {
         save({ pausedAt: now - gap, autoPauses: (cur.autoPauses || 0) + 1, awaySince: null });
         audio.stop(0.3);
         drawPause();
@@ -741,7 +748,7 @@ export function sessionView(root, navigate) {
 
   // Coming back after a reload or a closed tab (same tab: the block picks up paused)
   const a = active();
-  if (a && (a.owner === TAB_ID || !a.owner)) {
+  if (a && !takeFresh(a.id) && (a.owner === TAB_ID || !a.owner)) {
     if (a.stage === 'prep') {
       // the get-ready clock carries on from where it was, in the same phase
       save({ owner: TAB_ID, prepStartedAt: Date.now() - Math.min(a.prepMin * 60000, Math.max(0, lastAlive(a) - a.prepStartedAt)) });

@@ -51,7 +51,7 @@ export function noteCard(thoughtId, opts = {}) {
           type: 'button', class: 'btn btn-quiet',
           onclick: () => {
             if (thought.queued) store.removeFromNextPlan(thought.text);
-            store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
+            store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
             opts.onChange?.('status');
           },
         }, t('note.done')),
@@ -117,7 +117,7 @@ export function noteCard(thoughtId, opts = {}) {
     if (links.children.length) replyBox.append(links);
     card.append(replyBox);
   }
-  if (looksLikeCrisis(thought.text)) {
+  if (looksLikeCrisis(thought.text) && !(reply && reply.source === 'offline')) {
     card.append(h('p', { class: 'note-care' }, t('note.care')));
   }
 
@@ -258,7 +258,8 @@ export function noteCard(thoughtId, opts = {}) {
     const doneBtn = h('button', {
       type: 'button', class: 'btn btn-quiet',
       onclick: () => {
-        store.updateThought(thought.id, { status: 'done', doneAt: Date.now() });
+        if (thought.queued) store.removeFromNextPlan(thought.text);
+        store.updateThought(thought.id, { status: 'done', doneAt: Date.now(), queued: false });
         opts.onChange?.('status');
       },
     }, t('note.done'));
@@ -276,6 +277,7 @@ export function noteCard(thoughtId, opts = {}) {
         setTimeout(() => { armed = false; del.textContent = t('note.delete'); }, 3000);
         return;
       }
+      if (thought.queued) store.removeFromNextPlan(thought.text);
       store.deleteThought(thought.id);
       opts.onChange?.('status');
     },

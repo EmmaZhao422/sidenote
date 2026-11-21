@@ -49,12 +49,13 @@ export function copyForClaudeButton(getThoughts) {
 // chat. It runs on the student's own Claude account. A very long list would not
 // fit in a link, so past that size the button is not offered and Copy is used.
 const MAX_LINK = 6000;
-export function askAllLink(getThoughts) {
+// total: how many thoughts are on the page, so the label can say when some are left out
+export function askAllLink(getThoughts, total = 0) {
   const url = () => `https://claude.ai/new?q=${encodeURIComponent(marginAsText(getThoughts()))}`;
   const list = getThoughts();
   if (list.length < 2 || url().length > MAX_LINK) return null;
   return h('a', {
     class: 'btn btn-quiet', href: url(), target: '_blank', rel: 'noopener noreferrer', title: t('handoff.askAllHint'),
     onclick: (e) => { e.currentTarget.href = url(); },
-  }, t('handoff.askAll', { n: list.length }));
+  }, t(total > list.length ? 'handoff.askSome' : 'handoff.askAll', { n: list.length }));
 }

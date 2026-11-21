@@ -22,7 +22,9 @@ const DEFAULTS = {
     chime: true,
     notify: false,       // system notification when a block ends in a background tab
     // remember: false = the key lives only until the browser is closed (the default)
-    ai: { provider: 'anthropic', key: '', baseUrl: '', model: '', remember: false },
+    // keyGen goes up every time the key is set, removed or erased, in any tab. A tab
+    // holding a key from an older generation drops it instead of writing it back.
+    ai: { provider: 'anthropic', key: '', baseUrl: '', model: '', remember: false, keyGen: 0 },
   },
   thoughts: [],
   sessions: [],
@@ -115,16 +117,22 @@ function readRaw() {
 }
 
 // The API key is kept out of the saved data unless the visitor asked for it to be remembered
-function sessionKey(value) {
+// It is stored with the generation it belongs to, so a key removed in another tab
+// is not picked up again here after a reload.
+function sessionKey(value, gen = 0) {
   try {
-    if (value === undefined) return sessionStorage.getItem(KEY_KEY) || '';
-    if (value) sessionStorage.setItem(KEY_KEY, value); else sessionStorage.removeItem(KEY_KEY);
+    if (value === undefined) {
+      const saved = sessionStorage.getItem(KEY_KEY) || '';
+      const cut = saved.indexOf(':');
+      return cut > 0 && Number(saved.slice(0, cut)) === gen ? saved.slice(cut + 1) : '';
+    }
+    if (value) sessionStorage.setItem(KEY_KEY, `${gen}:${value}`); else sessionStorage.removeItem(KEY_KEY);
   } catch { /* no session storage: the key lasts until the page is closed */ }
   return value || '';
 }
 
 function hydrate(data) {
-  if (!data.settings.ai.key) data.settings.ai.key = sessionKey();
+  if (!data.settings.ai.key) data.settings.ai.key = sessionKey(undefined, data.settings.ai.keyGen || 0);
   return data;
 }
 
@@ -151,16 +159,18 @@ function refresh() {
   const text = readRaw();
   if (text === lastWritten) return;
   try {
-    const key = state.settings.ai.key;
+    const { key, keyGen } = state.settings.ai;
     state = normalise(text ? JSON.parse(text) : null);
-    if (!state.settings.ai.key) state.settings.ai.key = key;
+    // This tab's key (kept in memory, not on disk) carries over only if no tab has
+    // set, removed or erased the key since. Otherwise what is on disk wins.
+    if (!state.settings.ai.key && (state.settings.ai.keyGen || 0) === (keyGen || 0)) state.settings.ai.key = key;
     lastWritten = text;
   } catch { /* unreadable: keep what we have */ }
 }
 
 function persist() {
   const ai = state.settings.ai;
-  sessionKey(ai.key);
+  sessionKey(ai.key, ai.keyGen || 0);
   // what goes to disk: everything, minus the key unless it is to be remembered
   const text = JSON.stringify(ai.remember ? state : { ...state, settings: { ...state.settings, ai: { ...ai, key: '' } } });
   const s = storage();
@@ -227,10 +237,21 @@ export const store = {
   get savingWorks() { return !storageFailed && Boolean(storage()); },
   // True if the saved data was damaged when the page opened (a copy was set aside)
   get foundUnreadable() { return unreadable; },
+  // The newest copy that was set aside because it could not be read
+  unreadableCopy() {
+    try {
+      const s = storage();
+      const keys = [];
+      for (let i = 0; i < s.length; i += 1) { const k = s.key(i); if (k && k.startsWith(`${KEY}.unreadable-`)) keys.push(k); }
+      keys.sort();
+      return keys.length ? s.getItem(keys[keys.length - 1]) : '';
+    } catch { return ''; }
+  },
 
   // ---- the running block's heartbeat: { tab, at }, written every few seconds ----
-  beat() {
-    try { storage()?.setItem(BEAT_KEY, JSON.stringify({ tab: TAB_ID, at: Date.now() })); } catch { /* not vital */ }
+  // gone: true is written as the page is closed or reloaded
+  beat(gone = false) {
+    try { storage()?.setItem(BEAT_KEY, JSON.stringify({ tab: TAB_ID, at: Date.now(), gone, hidden: !gone && typeof document !== 'undefined' && document.hidden === true })); } catch { /* not vital */ }
   },
   lastBeat() {
     try { return JSON.parse(storage()?.getItem(BEAT_KEY) || 'null') || { tab: '', at: 0 }; } catch { return { tab: '', at: 0 }; }
@@ -289,6 +310,7 @@ export const store = {
   },
   setAiSettings(patch) {
     refresh();
+    if ('key' in patch && patch.key !== state.settings.ai.key) patch = { ...patch, keyGen: (state.settings.ai.keyGen || 0) + 1 };
     Object.assign(state.settings.ai, patch);
     persist();
   },
@@ -387,7 +409,10 @@ export const store = {
     persist();
   },
   clearAll() {
+    refresh();
+    const gen = (state.settings.ai.keyGen || 0) + 1; // so other open tabs let go of the key too
     state = normalise(null);
+    state.settings.ai.keyGen = gen;
     persist();
   },
 
