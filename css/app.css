@@ -720,3 +720,7 @@ html[lang^="zh"] { --hand: "LXGW WenKai Screen", "Kaiti SC", "STKaiti", "KaiTi",
 }
 .load-failed { border: 2px solid var(--danger); border-radius: var(--radius); padding: 1rem 1.2rem; margin-bottom: 1.5rem; max-width: 40rem; }
 .load-failed p { margin: 0 0 0.8rem; }
+.scene-chosen { display: inline-flex; align-items: center; font-weight: 700; font-size: 0.95rem; color: #18213D; background: #FFE566; border-radius: 999px; padding: 0.35rem 0.9rem; }
+/* the volume slider on a light page: a track you can see */
+#vol { accent-color: var(--ink); }
+:root[data-theme="dark"] #vol { accent-color: var(--hl); }

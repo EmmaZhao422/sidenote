@@ -28,8 +28,7 @@ export function scenesView(root) {
     } else {
       mount(advice,
         h('h2', null, t('scenes.adviceTitle')),
-        h('p', null, rec.oneScene ? t('scenes.oneScene') : t('scenes.learning', { n: rec.need })),
-        h('p', { class: 'hint' }, t('scenes.how')));
+        h('p', null, rec.oneScene ? t('scenes.oneScene') : t('scenes.learning', { n: rec.need })));
     }
 
     mount(grid, SCENES.map((sc) => {
@@ -46,16 +45,17 @@ export function scenesView(root) {
           draw();
         },
       }, isPlaying ? t('scenes.stop') : t('scenes.listen'));
-      const choose = h('button', {
-        type: 'button', class: 'btn btn-ghost', disabled: isDefault,
+      // the chosen scene carries a tag, not a greyed-out button that looks broken
+      const choose = isDefault ? h('span', { class: 'scene-chosen' }, t('scenes.isDefault')) : h('button', {
+        type: 'button', class: 'btn btn-ghost',
         onclick: () => { store.setSettings({ scene: sc.id }); toast(t('scenes.chosen', { scene: sceneName(sc, lang) })); draw(); },
-      }, isDefault ? t('scenes.isDefault') : t('scenes.use'));
+      }, t('scenes.use'));
 
       return h('article', { class: 'scene-card', style: `--sky-a:${sc.sky[0]};--sky-b:${sc.sky[1]}` },
         h('h2', null, sceneName(sc, lang),
           rec.status === 'ready' && rec.best.id === sc.id ? h('span', { class: 'scene-best' }, t('setup.yourBest')) : null),
         h('p', null, sceneBlurb(sc, lang)),
-        h('p', { class: 'scene-stat' }, stat ? t('scenes.stat', { score: stat.avg, n: stat.n }) : t('scenes.untried')),
+        stat ? h('p', { class: 'scene-stat' }, t('scenes.stat', { score: stat.avg, n: stat.n })) : null,
         h('div', { class: 'row' }, play, choose));
     }));
   }
