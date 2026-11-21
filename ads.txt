@@ -1,0 +1,3 @@
+# ads.txt tells ad buyers who is allowed to sell ads on this site.
+# After AdSense approves the site, remove the "#" from the next line and put in your own publisher id.
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

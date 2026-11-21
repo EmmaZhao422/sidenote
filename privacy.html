@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy | Sidenote</title>
+  <meta name="description" content="What Sidenote stores, what it sends, and who else is involved.">
+  <link rel="canonical" href="https://emmazhao422.github.io/sidenote/privacy.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <header class="site-head">
+    <a class="brand" href=""><span class="brand-mark" aria-hidden="true"></span>Sidenote</a>
+    <nav><a href="#/focus">Start a study block</a><a href="guides/">Study guides</a><a href="zh/privacy.html" lang="zh-CN">中文</a></nav>
+  </header>
+  <main class="prose">
+<h1>Privacy</h1>
+    <p class="byline">Last updated November 21, 2026</p>
+    <p>The short version: there is no account, your notes stay in your browser, and the text of a thought leaves your device only when you ask the AI to deal with it.</p>
+
+    <h2>What is stored, and where</h2>
+    <p>Everything you enter (parked thoughts, study goals and steps, session history, ratings and settings) is saved in your browser's local storage on your own device. We don't have a database of users and we can't see this data. Clearing your browser data erases it. You can download a backup or erase everything from the Settings page.</p>
+
+    <h2>What is sent to an AI model</h2>
+    <p>When you click to have a thought dealt with, ask for suggested steps, or ask for an AI-written recap, the relevant text is sent to an AI model so it can reply:</p>
+    <ul>
+      <li><strong>Dealing with a thought:</strong> the text of that thought and the goal of the study block it came from.</li>
+      <li><strong>Suggested steps:</strong> the goal you typed and the length of the block.</li>
+      <li><strong>AI recap:</strong> your summary numbers and the goals you typed. The thoughts themselves are not included.</li>
+    </ul>
+    <p>Depending on how the site is set up, the request goes either through this site's own server, which forwards it to the model provider and doesn't store it, or, if you entered your own API key in Settings, straight from your browser to the provider you chose. The provider handles that text under its own terms and privacy policy. Nothing is sent until you click, so please don't park anything you wouldn't want processed that way and then ask the AI about it.</p>
+    <p>If you enter your own API key, it is stored only in your browser and is not included in backups.</p>
+
+    <h2>Advertising</h2>
+    <p>Sidenote is free, and some pages may show ads to pay for running it. Ads are never shown while you are planning or in a study block. When ads are enabled they are provided by Google AdSense:</p>
+    <ul>
+      <li>Third-party vendors, including Google, use cookies to serve ads based on your prior visits to this and other websites.</li>
+      <li>Google's use of advertising cookies enables it and its partners to serve ads based on your visits to this site and other sites on the Internet.</li>
+      <li>You can opt out of personalised advertising in <a href="https://adssettings.google.com/">Google's Ads Settings</a>, or opt out of some third-party vendors' cookies at <a href="https://www.aboutads.info/choices/">aboutads.info</a>.</li>
+    </ul>
+    <p>Where the law requires it (for example in the EEA, the UK and Switzerland), you will be asked for consent before advertising cookies are used. The content of your notes is never shared with advertisers.</p>
+
+    <h2>Other services involved</h2>
+    <ul>
+      <li><strong>Hosting:</strong> the site is served by GitHub Pages, which logs technical information such as IP addresses.</li>
+      <li><strong>Fonts:</strong> typefaces are loaded from Google Fonts, so your browser makes a request to Google's servers.</li>
+    </ul>
+    <p>Sidenote doesn't run its own analytics or tracking scripts.</p>
+
+    <h2>Children</h2>
+    <p>Sidenote is not directed at children under 13, and we don't knowingly collect personal information from them.</p>
+
+    <h2>Changes and contact</h2>
+    <p>If this page changes, the date at the top changes with it. Questions can be raised on the <a href="https://github.com/EmmaZhao422/sidenote/issues">GitHub issues page</a>.</p>
+
+  </main>
+  <footer class="prose-foot"><a href="">Home</a><a href="about.html">About</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="https://github.com/EmmaZhao422/sidenote">Source on GitHub</a></footer>
+  <script type="module" src="js/site.js"></script>
+</body>
+</html>

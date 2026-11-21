@@ -1,0 +1,10 @@
+{
+  "name": "Sidenote",
+  "short_name": "Sidenote",
+  "description": "Park stray thoughts while you study, deal with them afterwards.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F5F7FC",
+  "theme_color": "#F5F7FC",
+  "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://emmazhao422.github.io/sidenote/sitemap.xml

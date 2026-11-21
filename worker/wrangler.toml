@@ -1,0 +1,22 @@
+# Cloudflare Worker settings for the AI proxy. Steps: docs/SETUP-AI.md
+name = "sidenote-ai"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+[vars]
+# Pages that may call this Worker, comma-separated. Add your custom domain here later.
+ALLOWED_ORIGINS = "https://emmazhao422.github.io"
+# Requests one visitor may make per 10 minutes.
+PER_VISITOR_LIMIT = "30"
+# Total requests per day across all visitors (only enforced once the KV below is set up).
+DAILY_LIMIT = "2000"
+
+# Optional but recommended: a daily cap that survives restarts.
+# 1. Run:  npx wrangler kv namespace create LIMITS
+# 2. Paste the id it prints below and remove the three "#" marks.
+# [[kv_namespaces]]
+# binding = "LIMITS"
+# id = "paste-the-id-here"
+
+# The API key is a secret, never written in this file. Set it with:
+#   npx wrangler secret put ANTHROPIC_API_KEY

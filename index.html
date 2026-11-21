@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sidenote: park stray thoughts while you study</title>
+  <meta name="description" content="A free study timer with one extra box: type every stray thought into the margin, keep studying, and let AI answer, plan or talk it through when the block is over. Then see where your attention went.">
+  <link rel="canonical" href="https://emmazhao422.github.io/sidenote/">
+  <meta property="og:title" content="Sidenote: park stray thoughts while you study">
+  <meta property="og:description" content="Type every stray thought into the margin, keep studying, deal with it afterwards. Free, no sign-up.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://emmazhao422.github.io/sidenote/">
+  <meta name="theme-color" content="#F5F7FC">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <a class="skip" href="#view">Skip to content</a>
+
+  <div class="page">
+    <header class="rail">
+      <a class="brand" href="#/"><span class="brand-mark" aria-hidden="true"></span><span data-brand>Sidenote</span></a>
+      <nav class="nav" aria-label="Main">
+        <a href="#/" data-nav="" data-i18n="nav.home">Home</a>
+        <a href="#/focus" data-nav="focus" data-i18n="nav.focus">Focus</a>
+        <a href="#/margin" data-nav="margin"><span data-i18n="nav.margin">Margin</span><span class="badge" id="open-count" hidden></span></a>
+        <a href="#/summary" data-nav="summary" data-i18n="nav.summary">Summary</a>
+        <a href="#/scenes" data-nav="scenes" data-i18n="nav.scenes">Scenes</a>
+        <a href="#/settings" data-nav="settings" data-i18n="nav.settings">Settings</a>
+      </nav>
+      <button type="button" class="lang" id="lang-toggle">中文</button>
+    </header>
+
+    <main id="view" class="view" tabindex="-1">
+      <!-- Shown until the app loads, and to anything that doesn't run JavaScript -->
+      <section class="hero">
+        <h1 class="hero-title">Mind wandered? Put it in the margin.</h1>
+        <p class="hero-sub">While you study, every stray thought goes here in one line. When the block is over, the AI answers the questions, plans the errands and talks through the worries. Then it shows you where your attention went.</p>
+        <noscript><p>Sidenote needs JavaScript to run the timer and save your notes in this browser.</p></noscript>
+      </section>
+    </main>
+  </div>
+
+  <footer class="foot">
+    <p data-i18n="foot.local">Your notes stay in this browser. No account, no tracking of what you write.</p>
+    <nav aria-label="Footer">
+      <a href="guides/" data-guides data-i18n="foot.guides">Study guides</a>
+      <a href="about.html" data-page="about.html" data-i18n="foot.about">About</a>
+      <a href="privacy.html" data-page="privacy.html" data-i18n="foot.privacy">Privacy</a>
+      <a href="terms.html" data-page="terms.html" data-i18n="foot.terms">Terms</a>
+      <a href="https://github.com/EmmaZhao422/sidenote" id="source-link" data-i18n="foot.source">Source on GitHub</a>
+      <a href="#" id="support-link" data-i18n="foot.support" hidden>Support this project</a>
+    </nav>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
