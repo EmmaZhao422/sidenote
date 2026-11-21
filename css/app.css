@@ -665,3 +665,5 @@ body.is-immersed .view { padding: 0; max-width: none; }
 .static-home h2 { margin: 1.6rem 0 0.6rem; }
 .static-home li { margin: 0.35rem 0; }
 .is-deep #view > .hero, .is-deep #view > .static-home { display: none; }
+.share-preview { margin-top: 1rem; }
+.share-preview img { display: block; width: min(100%, 24rem); height: auto; border-radius: 12px; border: 1px solid var(--rule); margin-bottom: 0.8rem; }

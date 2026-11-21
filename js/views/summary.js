@@ -199,9 +199,10 @@ export function summaryView(root) {
           h('td', null, preview ? null : h('a', { href: `#/review/${s.id}` }, t('summary.review'))))))));
 
     // a picture of these numbers to share (numbers only: no goals, no thoughts)
-    const share = preview ? null : h('div', { class: 'row share-row' },
-      shareCardButton(() => ({ stats, rec, rangeLabel: t(`summary.${rangeKey}`) })),
-      h('span', { class: 'hint' }, t('share.hint')));
+    const [shareBtn, sharePreview] = preview ? [] : shareCardButton(() => ({ stats, rec, rangeLabel: t(`summary.${rangeKey}`) }));
+    const share = preview ? null : h('div', { class: 'share-row' },
+      h('div', { class: 'row' }, shareBtn, h('span', { class: 'hint' }, t('share.hint'))),
+      sharePreview);
 
     mount(body, sampleNote, ranges, tiles, share, recap, perDay, byGoal,
       h('div', { class: 'two-col' }, kinds, timing), scenes, blocks,

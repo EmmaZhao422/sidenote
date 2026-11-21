@@ -141,8 +141,11 @@ function wrapText(g, text, x, y, maxWidth, lineHeight) {
   if (line.trim()) g.fillText(line.trimEnd(), x, yy);
 }
 
-// A button that makes the picture, then shares it (phones) or saves it (computers)
+// A button that makes the picture. Phones get the share sheet; on a computer the
+// picture appears on the page first, with buttons to save or copy it, so nothing
+// lands in the downloads folder unseen.
 export function shareCardButton(getData) {
+  const preview = h('div', { class: 'share-preview', hidden: true });
   const btn = h('button', {
     type: 'button', class: 'btn btn-quiet',
     onclick: async () => {
@@ -155,12 +158,21 @@ export function shareCardButton(getData) {
         if (navigator.canShare?.({ files: [file] })) {
           try { await navigator.share({ files: [file], title: t('share.title') }); } catch { /* the student closed the share sheet */ }
         } else {
-          const a = h('a', { href: URL.createObjectURL(blob), download: 'sidenote-week.png' });
-          document.body.append(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-          toast(t('share.saved'));
+          const url = URL.createObjectURL(blob);
+          const canCopy = Boolean(navigator.clipboard?.write) && typeof ClipboardItem !== 'undefined';
+          preview.replaceChildren(
+            h('img', { src: url, alt: t('share.alt'), width: String(canvas.width), height: String(canvas.height) }),
+            h('div', { class: 'row' }, ...[
+              h('a', { class: 'btn btn-ink', href: url, download: 'sidenote-week.png', onclick: () => toast(t('share.saved')) }, t('share.save')),
+              canCopy ? h('button', {
+                type: 'button', class: 'btn btn-quiet',
+                onclick: async () => {
+                  try { await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast(t('share.copied')); } catch { toast(t('offline.copyFailed')); }
+                },
+              }, t('share.copy')) : null,
+            ].filter(Boolean)));
+          preview.hidden = false;
+          preview.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
       } catch {
         toast(t('share.failed'));
@@ -168,5 +180,5 @@ export function shareCardButton(getData) {
       btn.disabled = false;
     },
   }, t('share.button'));
-  return btn;
+  return [btn, preview];
 }
